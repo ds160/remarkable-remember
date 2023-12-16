@@ -5,7 +5,7 @@ namespace ReMarkableRemember.Entities;
 
 public class SyncDocument
 {
-    public SyncDocument(String id, String modified, String downloaded)
+    public SyncDocument(String id, DateTime modified, String downloaded)
     {
         this.Id = id;
         this.Modified = modified;
@@ -16,7 +16,7 @@ public class SyncDocument
     public String Id { get; set; }
 
     [Required]
-    public String Modified { get; set; }
+    public DateTime Modified { get; set; }
 
     [Required]
     public String Downloaded { get; set; }

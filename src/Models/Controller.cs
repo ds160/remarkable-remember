@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -48,11 +47,11 @@ public sealed class Controller : IDisposable
         SyncDocument? document = await this.database.SyncDocuments.FindAsync(configuration.Id).ConfigureAwait(false);
         if (document != null)
         {
-            document.Modified = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture);
+            document.Modified = DateTime.Now;
         }
         else
         {
-            this.database.SyncDocuments.Add(new SyncDocument(configuration.Id, DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture), "Sepp"));
+            this.database.SyncDocuments.Add(new SyncDocument(configuration.Id, DateTime.Now, "Sepp"));
         }
         await this.database.SaveChangesAsync().ConfigureAwait(false);
     }

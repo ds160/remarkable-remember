@@ -13,6 +13,13 @@ public class DatabaseContext : DbContext
         this.databaseFile = databaseFile ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ReMarkableRemember.db");
     }
 
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        if (configurationBuilder == null) { throw new ArgumentNullException(nameof(configurationBuilder)); }
+
+        configurationBuilder.Properties<DateTime>().HaveConversion<DateTimeConverter>();
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlite($"Data Source={this.databaseFile}");

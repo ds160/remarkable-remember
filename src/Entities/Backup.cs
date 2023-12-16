@@ -5,7 +5,7 @@ namespace ReMarkableRemember.Entities;
 
 public class Backup
 {
-    public Backup(String id, String name, String parentCollectionId, String modified)
+    public Backup(String id, String name, String parentCollectionId, DateTime modified)
     {
         this.Id = id;
         this.Name = name;
@@ -23,7 +23,7 @@ public class Backup
     public String ParentCollectionId { get; set; }
 
     [Required]
-    public String Modified { get; set; }
+    public DateTime Modified { get; set; }
 
-    public String? Deleted { get; set; }
+    public DateTime? Deleted { get; set; }
 }
