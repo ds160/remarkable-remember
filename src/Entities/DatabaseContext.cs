@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
+using ReMarkableRemember.Helper;
 
 namespace ReMarkableRemember.Entities;
 
@@ -17,7 +18,7 @@ public class DatabaseContext : DbContext
     {
         if (configurationBuilder == null) { throw new ArgumentNullException(nameof(configurationBuilder)); }
 
-        configurationBuilder.Properties<DateTime>().HaveConversion<DateTimeConverter>();
+        configurationBuilder.Properties<DateTime>().HaveConversion<DateTimeToStringConverter>();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
