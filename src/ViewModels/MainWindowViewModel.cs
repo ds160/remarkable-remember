@@ -10,12 +10,12 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 {
     private const Int32 CONNECTION_STATE_DELAY = 1;
 
+    private String? connectionState;
     private readonly Controller controller;
-    private String? tabletConnectionMessage;
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(String dataSource)
     {
-        this.controller = new Controller();
+        this.controller = new Controller(dataSource);
 
         this.CommandSync = ReactiveCommand.CreateFromTask(this.controller.Sync);
 
@@ -42,7 +42,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     public String? ConnectionState
     {
-        get { return this.tabletConnectionMessage; }
-        private set { this.RaiseAndSetIfChanged(ref this.tabletConnectionMessage, value); }
+        get { return this.connectionState; }
+        private set { this.RaiseAndSetIfChanged(ref this.connectionState, value); }
     }
 }

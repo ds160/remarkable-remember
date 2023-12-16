@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -17,9 +19,17 @@ public partial class App : Application
     {
         if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow() { DataContext = new MainWindowViewModel() };
+            String dataSource = GetDataSource(desktop.Args);
+            desktop.MainWindow = new MainWindow() { DataContext = new MainWindowViewModel(dataSource) };
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static String GetDataSource(String[]? args)
+    {
+        return args?.Length == 1 && Path.Exists(args[0])
+            ? args[0]
+            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"{nameof(ReMarkableRemember)}.db");
     }
 }

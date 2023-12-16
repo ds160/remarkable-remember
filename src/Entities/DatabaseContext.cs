@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using Microsoft.EntityFrameworkCore;
 using ReMarkableRemember.Helper;
 
@@ -7,11 +6,8 @@ namespace ReMarkableRemember.Entities;
 
 public class DatabaseContext : DbContext
 {
-    private readonly String databaseFile;
-
-    public DatabaseContext(String? databaseFile = null)
+    public DatabaseContext(String dataSource) : base(new DbContextOptionsBuilder<DatabaseContext>().UseSqlite($"Data Source={dataSource}").Options)
     {
-        this.databaseFile = databaseFile ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ReMarkableRemember.db");
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
@@ -19,11 +15,6 @@ public class DatabaseContext : DbContext
         if (configurationBuilder == null) { throw new ArgumentNullException(nameof(configurationBuilder)); }
 
         configurationBuilder.Properties<DateTime>().HaveConversion<DateTimeToStringConverter>();
-    }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseSqlite($"Data Source={this.databaseFile}");
     }
 
     public DbSet<Backup> Backups { get; private set; }

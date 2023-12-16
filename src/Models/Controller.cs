@@ -11,9 +11,9 @@ public sealed class Controller : IDisposable
     private readonly DatabaseContext database;
     private readonly Tablet tablet;
 
-    public Controller()
+    public Controller(String dataSource)
     {
-        this.database = new DatabaseContext();
+        this.database = new DatabaseContext(dataSource);
         this.database.Database.Migrate();
 
         String? tabletIp = this.database.Settings.Find(Setting.Keys.TabletIp)?.Value;
