@@ -24,6 +24,7 @@ dotnet_analyzer_diagnostic.category-Usage.severity = error
 dotnet_analyzer_diagnostic.category-CodeQuality.severity = error
 
 [*.cs]
+# csharp_new_line_before_open_brace = none
 csharp_style_expression_bodied_accessors = false
 csharp_style_expression_bodied_properties = false
 csharp_style_implicit_object_creation_when_type_is_apparent = false

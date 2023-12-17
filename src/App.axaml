@@ -4,6 +4,10 @@
              xmlns:local="using:ReMarkableRemember"
              RequestedThemeVariant="Default">
 
+    <Application.DataTemplates>
+        <local:ViewLocator/>
+    </Application.DataTemplates>
+
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>

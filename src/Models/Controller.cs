@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ReMarkableRemember.Entities;
@@ -19,7 +21,6 @@ public sealed class Controller : IDisposable
         String? tabletIp = this.database.Settings.Find(Setting.Keys.TabletIp)?.Value;
         String? tabletPassword = this.database.Settings.Find(Setting.Keys.TabletPassword)?.Value;
         this.tablet = new Tablet(tabletIp, tabletPassword);
-
     }
 
     public void Dispose()
@@ -37,21 +38,28 @@ public sealed class Controller : IDisposable
 
     public async Task Sync()
     {
-        SyncConfiguration configuration = await this.database.SyncConfigurations.FirstAsync().ConfigureAwait(false);
+        IEnumerable<TabletItem> tabletItems = await this.tablet.GetItems().ConfigureAwait(false);
+
+        SyncConfiguration? configuration = await this.database.SyncConfigurations.FirstOrDefaultAsync().ConfigureAwait(false);
+        if (configuration == null) { return; }
+
+        TabletItem tabletItem = tabletItems.Single(item => item.Id == configuration.Id);
+        String downloadPath = Path.Combine(configuration.Destination, $"{tabletItem.Name}.pdf");
 
         using Stream sourceStream = await this.tablet.Download(configuration.Id).ConfigureAwait(false);
-        using Stream targetStream = File.Create(Path.Combine(configuration.Destination, "Sepp.pdf"));
+        using Stream targetStream = File.Create(downloadPath);
 
         await sourceStream.CopyToAsync(targetStream).ConfigureAwait(false);
 
         SyncDocument? document = await this.database.SyncDocuments.FindAsync(configuration.Id).ConfigureAwait(false);
         if (document != null)
         {
-            document.Modified = DateTime.Now;
+            document.Modified = tabletItem.Modified;
+            document.Downloaded = downloadPath;
         }
         else
         {
-            this.database.SyncDocuments.Add(new SyncDocument(configuration.Id, DateTime.Now, "Sepp"));
+            await this.database.SyncDocuments.AddAsync(new SyncDocument(configuration.Id, tabletItem.Modified, downloadPath)).ConfigureAwait(false);
         }
         await this.database.SaveChangesAsync().ConfigureAwait(false);
     }
