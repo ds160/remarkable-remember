@@ -17,29 +17,37 @@ namespace ReMarkableRemember.Models;
 
 public sealed class TabletException : Exception
 {
-    public TabletException()
-    {
-    }
+    public TabletException() { }
 
-    public TabletException(String message) : base(message)
-    {
-    }
+    public TabletException(String message) : base(message) { }
 
-    public TabletException(String message, Exception innerException) : base(message, innerException)
-    {
-    }
+    public TabletException(String message, Exception innerException) : base(message, innerException) { }
+}
+
+internal struct TabletFileContent
+{
+    public String FileType { get; set; }
+    public Int32 FormatVersion { get; set; }
+    public TabletFileContentPageCollection CPages { get; set; }
+}
+
+internal struct TabletFileContentPage
+{
+    public Object? Deleted { get; set; }
+    public String Id { get; set; }
+}
+
+internal struct TabletFileContentPageCollection
+{
+    public Collection<TabletFileContentPage> Pages { get; set; }
 }
 
 internal struct TabletFileMetaData
 {
     public Boolean? Deleted { get; set; }
-
     public String LastModified { get; set; }
-
     public String Parent { get; set; }
-
     public String Type { get; set; }
-
     public String VisibleName { get; set; }
 }
 
@@ -56,15 +64,10 @@ public class TabletItem
     }
 
     public Collection<TabletItem>? Collection { get; }
-
     public String Id { get; }
-
     public DateTime Modified { get; }
-
     public String Name { get; }
-
     public String ParentCollectionId { get; }
-
     public Boolean Trashed { get; set; }
 }
 
@@ -173,8 +176,8 @@ public sealed class Tablet : IDisposable
             List<TabletItem> tabletItems = new List<TabletItem>();
             foreach (ISftpFile file in files)
             {
-                String fileContent = client.ReadAllText(file.FullName);
-                TabletFileMetaData fileMetaData = JsonSerializer.Deserialize<TabletFileMetaData>(fileContent, jsonSerializerOptions);
+                String fileText = client.ReadAllText(file.FullName);
+                TabletFileMetaData fileMetaData = JsonSerializer.Deserialize<TabletFileMetaData>(fileText, jsonSerializerOptions);
                 if (fileMetaData.Deleted != true)
                 {
                     tabletItems.Add(new TabletItem(Path.GetFileNameWithoutExtension(file.Name), fileMetaData));
@@ -190,6 +193,35 @@ public sealed class Tablet : IDisposable
             this.sshSemaphore.Release();
         }
     }
+
+    public async Task<IEnumerable<Notebook>> GetNotebook(String id)
+    {
+        await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
+
+        try
+        {
+            using SftpClient client = this.CreateSftpClient();
+
+            String fileText = client.ReadAllText(Path.Combine(PATH_NOTEBOOKS, $"{id}.content"));
+            TabletFileContent fileContent = JsonSerializer.Deserialize<TabletFileContent>(fileText, jsonSerializerOptions);
+
+            if (fileContent.FileType != "notebook") { throw new NotebookException("Unsupported file type."); }
+            if (fileContent.FormatVersion != 2) { throw new NotebookException("Unsupported file format version."); }
+
+            IEnumerable<Notebook> notebook = fileContent.CPages.Pages.Where(page => page.Deleted == null).Select(page =>
+            {
+                Byte[] notebookBuffer = client.ReadAllBytes(Path.Combine(PATH_NOTEBOOKS, id, $"{page.Id}.rm"));
+                return new Notebook(notebookBuffer);
+            }).ToList();
+
+            return notebook;
+        }
+        finally
+        {
+            this.sshSemaphore.Release();
+        }
+    }
+
 
     public void Setup(String? host, String? password)
     {

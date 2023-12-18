@@ -17,6 +17,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     {
         this.controller = new Controller(dataSource);
 
+        this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.controller.HandWritingRecognition);
         this.CommandSync = ReactiveCommand.CreateFromTask(this.controller.Sync);
 
         _ = this.UpdateConnectionState();
@@ -38,6 +39,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         }
     }
 
+    public ICommand CommandHandWritingRecognition { get; }
     public ICommand CommandSync { get; }
 
     public String? ConnectionState

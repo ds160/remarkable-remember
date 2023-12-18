@@ -11,12 +11,17 @@ namespace ReMarkableRemember.Models;
 public sealed class Controller : IDisposable
 {
     private readonly DatabaseContext database;
+    private readonly MyScript myScript;
     private readonly Tablet tablet;
 
     public Controller(String dataSource)
     {
         this.database = new DatabaseContext(dataSource);
         this.database.Database.Migrate();
+
+        String? myScriptApplicationKey = this.database.Settings.Find(Setting.Keys.MyScriptApplicationKey)?.Value;
+        String? myScriptHmacKey = this.database.Settings.Find(Setting.Keys.MyScriptHmacKey)?.Value;
+        this.myScript = new MyScript(myScriptApplicationKey, myScriptHmacKey);
 
         String? tabletIp = this.database.Settings.Find(Setting.Keys.TabletIp)?.Value;
         String? tabletPassword = this.database.Settings.Find(Setting.Keys.TabletPassword)?.Value;
@@ -34,6 +39,19 @@ public sealed class Controller : IDisposable
     public async Task<String?> GetConnectionStatus()
     {
         return await this.tablet.GetConnectionStatus().ConfigureAwait(false);
+    }
+
+    // public async Task<String> HandWritingRecognition(String id, String language)
+    public async Task HandWritingRecognition()
+    {
+        String id = "476b9716-4b20-481f-bd71-044f0d682b48";
+        String language = "de_DE";
+
+        IEnumerable<Notebook> notebookPages = await this.tablet.GetNotebook(id).ConfigureAwait(false);
+        IEnumerable<String> myScriptPages = await Task.WhenAll(notebookPages.Select(page => this.myScript.Recognize(page, language))).ConfigureAwait(false);
+
+        Console.WriteLine(String.Join(Environment.NewLine, myScriptPages));
+        // return String.Join(Environment.NewLine, myScriptPages);
     }
 
     public async Task Sync()

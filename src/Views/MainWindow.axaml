@@ -19,6 +19,7 @@
         </StackPanel>
 
         <StackPanel Margin="6" Spacing="12">
+            <Button Command="{Binding CommandHandWritingRecognition}" Content="HandWritingRecognition" />
             <Button Command="{Binding CommandSync}" Content="Sync" />
         </StackPanel>
     </DockPanel>
