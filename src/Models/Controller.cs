@@ -47,8 +47,8 @@ public sealed class Controller : IDisposable
         String id = "476b9716-4b20-481f-bd71-044f0d682b48";
         String language = "de_DE";
 
-        IEnumerable<Notebook> notebookPages = await this.tablet.GetNotebook(id).ConfigureAwait(false);
-        IEnumerable<String> myScriptPages = await Task.WhenAll(notebookPages.Select(page => this.myScript.Recognize(page, language))).ConfigureAwait(false);
+        Notebook notebook = await this.tablet.GetNotebook(id).ConfigureAwait(false);
+        IEnumerable<String> myScriptPages = await Task.WhenAll(notebook.Pages.Select(page => this.myScript.Recognize(page, language))).ConfigureAwait(false);
 
         Console.WriteLine(String.Join(Environment.NewLine, myScriptPages));
         // return String.Join(Environment.NewLine, myScriptPages);
@@ -56,12 +56,12 @@ public sealed class Controller : IDisposable
 
     public async Task Sync()
     {
-        IEnumerable<TabletItem> tabletItems = await this.tablet.GetItems().ConfigureAwait(false);
+        IEnumerable<Tablet.Item> tabletItems = await this.tablet.GetItems().ConfigureAwait(false);
 
         SyncConfiguration? configuration = await this.database.SyncConfigurations.FirstOrDefaultAsync().ConfigureAwait(false);
         if (configuration == null) { return; }
 
-        TabletItem tabletItem = tabletItems.Single(item => item.Id == configuration.Id);
+        Tablet.Item tabletItem = tabletItems.Single(item => item.Id == configuration.Id);
         String downloadPath = Path.Combine(configuration.Destination, $"{tabletItem.Name}.pdf");
 
         using Stream sourceStream = await this.tablet.Download(configuration.Id).ConfigureAwait(false);

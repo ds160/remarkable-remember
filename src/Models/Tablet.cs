@@ -15,63 +15,7 @@ using Renci.SshNet.Sftp;
 
 namespace ReMarkableRemember.Models;
 
-public sealed class TabletException : Exception
-{
-    public TabletException() { }
-
-    public TabletException(String message) : base(message) { }
-
-    public TabletException(String message, Exception innerException) : base(message, innerException) { }
-}
-
-internal struct TabletFileContent
-{
-    public String FileType { get; set; }
-    public Int32 FormatVersion { get; set; }
-    public TabletFileContentPageCollection CPages { get; set; }
-}
-
-internal struct TabletFileContentPage
-{
-    public Object? Deleted { get; set; }
-    public String Id { get; set; }
-}
-
-internal struct TabletFileContentPageCollection
-{
-    public Collection<TabletFileContentPage> Pages { get; set; }
-}
-
-internal struct TabletFileMetaData
-{
-    public Boolean? Deleted { get; set; }
-    public String LastModified { get; set; }
-    public String Parent { get; set; }
-    public String Type { get; set; }
-    public String VisibleName { get; set; }
-}
-
-public class TabletItem
-{
-    internal TabletItem(String id, TabletFileMetaData fileMetaData)
-    {
-        this.Collection = (fileMetaData.Type == "CollectionType") ? new Collection<TabletItem>() : null;
-        this.Id = id;
-        this.Modified = DateTime.UnixEpoch.AddMilliseconds(Double.Parse(fileMetaData.LastModified, CultureInfo.InvariantCulture));
-        this.Name = fileMetaData.VisibleName;
-        this.ParentCollectionId = fileMetaData.Parent;
-        this.Trashed = fileMetaData.Parent == "trash";
-    }
-
-    public Collection<TabletItem>? Collection { get; }
-    public String Id { get; }
-    public DateTime Modified { get; }
-    public String Name { get; }
-    public String ParentCollectionId { get; }
-    public Boolean Trashed { get; set; }
-}
-
-public sealed class Tablet : IDisposable
+internal sealed class Tablet : IDisposable
 {
     private const String IP = "10.11.99.1";
     private const String PATH_NOTEBOOKS = "/home/root/.local/share/remarkable/xochitl";
@@ -161,7 +105,7 @@ public sealed class Tablet : IDisposable
         return null;
     }
 
-    public async Task<IEnumerable<TabletItem>> GetItems()
+    public async Task<IEnumerable<Item>> GetItems()
     {
         await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -173,19 +117,20 @@ public sealed class Tablet : IDisposable
                 .ListDirectory(PATH_NOTEBOOKS)
                 .Where(file => file.IsRegularFile && file.Name.EndsWith(".metadata", StringComparison.OrdinalIgnoreCase));
 
-            List<TabletItem> tabletItems = new List<TabletItem>();
+            List<Item> allItems = new List<Item>();
             foreach (ISftpFile file in files)
             {
-                String fileText = client.ReadAllText(file.FullName);
-                TabletFileMetaData fileMetaData = JsonSerializer.Deserialize<TabletFileMetaData>(fileText, jsonSerializerOptions);
-                if (fileMetaData.Deleted != true)
+                String metaDataFileText = client.ReadAllText(file.FullName);
+                MetaDataFile metaDataFile = JsonSerializer.Deserialize<MetaDataFile>(metaDataFileText, jsonSerializerOptions);
+                if (metaDataFile.Deleted != true)
                 {
-                    tabletItems.Add(new TabletItem(Path.GetFileNameWithoutExtension(file.Name), fileMetaData));
+                    String id = Path.GetFileNameWithoutExtension(file.Name);
+                    allItems.Add(new Item(id, metaDataFile.LastModified, metaDataFile.Parent, metaDataFile.Type, metaDataFile.VisibleName));
                 }
             }
 
-            IEnumerable<TabletItem> items = tabletItems.Where(item => String.IsNullOrEmpty(item.ParentCollectionId) || item.Trashed);
-            foreach (TabletItem item in items) { this.UpdateTabletItems(item, tabletItems); }
+            IEnumerable<Item> items = allItems.Where(item => String.IsNullOrEmpty(item.ParentCollectionId) || item.Trashed);
+            foreach (Item item in items) { this.UpdateItems(item, allItems); }
             return items;
         }
         finally
@@ -194,7 +139,7 @@ public sealed class Tablet : IDisposable
         }
     }
 
-    public async Task<IEnumerable<Notebook>> GetNotebook(String id)
+    public async Task<Notebook> GetNotebook(String id)
     {
         await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -202,19 +147,17 @@ public sealed class Tablet : IDisposable
         {
             using SftpClient client = this.CreateSftpClient();
 
-            String fileText = client.ReadAllText(Path.Combine(PATH_NOTEBOOKS, $"{id}.content"));
-            TabletFileContent fileContent = JsonSerializer.Deserialize<TabletFileContent>(fileText, jsonSerializerOptions);
+            String contentFileText = client.ReadAllText(Path.Combine(PATH_NOTEBOOKS, $"{id}.content"));
+            ContentFile contentFile = JsonSerializer.Deserialize<ContentFile>(contentFileText, jsonSerializerOptions);
 
-            if (fileContent.FileType != "notebook") { throw new NotebookException("Unsupported file type."); }
-            if (fileContent.FormatVersion != 2) { throw new NotebookException("Unsupported file format version."); }
+            if (contentFile.FileType != "notebook") { throw new NotebookException("Unsupported file type."); }
+            if (contentFile.FormatVersion != 2) { throw new NotebookException("Unsupported file format version."); }
 
-            IEnumerable<Notebook> notebook = fileContent.CPages.Pages.Where(page => page.Deleted == null).Select(page =>
-            {
-                Byte[] notebookBuffer = client.ReadAllBytes(Path.Combine(PATH_NOTEBOOKS, id, $"{page.Id}.rm"));
-                return new Notebook(notebookBuffer);
-            }).ToList();
+            IEnumerable<Byte[]> pageBuffers = contentFile.CPages.Pages
+                .Where(page => page.Deleted == null)
+                .Select(page => client.ReadAllBytes(Path.Combine(PATH_NOTEBOOKS, id, $"{page.Id}.rm")));
 
-            return notebook;
+            return new Notebook(pageBuffers);
         }
         finally
         {
@@ -288,15 +231,62 @@ public sealed class Tablet : IDisposable
         }
     }
 
-    private void UpdateTabletItems(TabletItem parentItem, IEnumerable<TabletItem> tabletItems)
+    private void UpdateItems(Item parentItem, IEnumerable<Item> allItems)
     {
-        IEnumerable<TabletItem> children = tabletItems.Where(item => item.ParentCollectionId == parentItem.Id);
-        foreach (TabletItem child in children)
+        IEnumerable<Item> children = allItems.Where(item => item.ParentCollectionId == parentItem.Id);
+        foreach (Item child in children)
         {
             child.Trashed = parentItem.Trashed;
             parentItem.Collection?.Add(child);
 
-            this.UpdateTabletItems(child, tabletItems);
+            this.UpdateItems(child, allItems);
         }
+    }
+
+    private struct ContentFile
+    {
+        public String FileType { get; set; }
+        public Int32 FormatVersion { get; set; }
+        public PagesContainer CPages { get; set; }
+
+        public struct PagesContainer
+        {
+            public Collection<Page> Pages { get; set; }
+
+            public struct Page
+            {
+                public Object? Deleted { get; set; }
+                public String Id { get; set; }
+            }
+        }
+    }
+
+    private struct MetaDataFile
+    {
+        public Boolean? Deleted { get; set; }
+        public String LastModified { get; set; }
+        public String Parent { get; set; }
+        public String Type { get; set; }
+        public String VisibleName { get; set; }
+    }
+
+    internal sealed class Item
+    {
+        public Item(String id, String lastModified, String parent, String type, String visibleName)
+        {
+            this.Collection = (type == "CollectionType") ? new Collection<Item>() : null;
+            this.Id = id;
+            this.Modified = DateTime.UnixEpoch.AddMilliseconds(Double.Parse(lastModified, CultureInfo.InvariantCulture));
+            this.Name = visibleName;
+            this.ParentCollectionId = parent;
+            this.Trashed = parent == "trash";
+        }
+
+        public Collection<Item>? Collection { get; }
+        public String Id { get; }
+        public DateTime Modified { get; }
+        public String Name { get; }
+        public String ParentCollectionId { get; }
+        public Boolean Trashed { get; set; }
     }
 }
