@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 
 namespace ReMarkableRemember.Models;
@@ -9,7 +10,7 @@ internal sealed class Notebook
 {
     public Notebook(IEnumerable<Byte[]> pageBuffers)
     {
-        this.Pages = pageBuffers.Select(pageBuffer => new Page(pageBuffer)).ToList();
+        this.Pages = pageBuffers.Select(pageBuffer => new Page(pageBuffer)).ToArray();
     }
 
     public IEnumerable<Page> Pages { get; }
@@ -131,9 +132,9 @@ internal sealed class Notebook
             Byte versionCurrent = buffer.ReadByte();
             Byte type = buffer.ReadByte();
 
-            if (unknown != 0) { throw new NotebookException("Invalid reMarkable .lines file block header."); }
+            if (unknown != 0) { throw new NotebookException($"Invalid reMarkable .lines file block header: '{unknown}'."); }
             if (versionMinimum > versionCurrent) { throw new NotebookException("Invalid reMarkable .lines file block header version."); }
-            if (versionCurrent > 2) { throw new NotebookException("Unknown reMarkable .lines file block header version."); }
+            if (versionCurrent > 2) { throw new NotebookException($"Unknown reMarkable .lines file block header version: '{versionCurrent}'."); }
 
             return new BlockHeader(buffer.Position + length, length, type, versionCurrent);
         }
@@ -199,17 +200,6 @@ internal sealed class Notebook
 
         internal sealed class Line
         {
-            public Line(PenColor color, PenType type, List<Point> points)
-            {
-                this.Color = color;
-                this.Type = type;
-
-                this.Points = points;
-            }
-            public PenColor Color { get; }
-            public IEnumerable<Point> Points { get; }
-            public PenType Type { get; }
-
             internal enum PenColor
             {
                 Black = 0,
@@ -244,6 +234,17 @@ internal sealed class Notebook
                 Caligraphy = 21
             }
 
+            public Line(PenColor color, PenType type, List<Point> points)
+            {
+                this.Color = color;
+                this.Type = type;
+
+                this.Points = points;
+            }
+            public PenColor Color { get; }
+            public IEnumerable<Point> Points { get; }
+            public PenType Type { get; }
+
             internal sealed class Point
             {
                 public Point(Single x, Single y)
@@ -259,6 +260,14 @@ internal sealed class Notebook
 
         private sealed class PageBuffer
         {
+            private enum TagType
+            {
+                Byte4 = 0x4,
+                Byte8 = 0x8,
+                Length4 = 0xC,
+                ID = 0xF
+            }
+
             private readonly Byte[] buffer;
 
             public PageBuffer(Byte[] buffer)
@@ -364,28 +373,19 @@ internal sealed class Notebook
 
             private Int32 ReadUIntVariable()
             {
+                Int32 byteValue;
                 Int32 result = 0;
                 Int32 shift = 0;
 
-                while (true)
+                do
                 {
-                    Int32 byteValue = this.ReadByte();
-
+                    byteValue = this.ReadByte();
                     result |= (byteValue & 0x7F) << shift;
                     shift += 7;
-
-                    if ((byteValue & 0x80) == 0) { break; }
                 }
+                while ((byteValue & 0x80) != 0);
 
                 return result;
-            }
-
-            private enum TagType
-            {
-                Byte4 = 0x4,
-                Byte8 = 0x8,
-                Length4 = 0xC,
-                ID = 0xF
             }
         }
     }

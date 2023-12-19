@@ -23,5 +23,5 @@ public class DatabaseContext : DbContext
 
     public DbSet<SyncConfiguration> SyncConfigurations { get; private set; }
 
-    public DbSet<SyncDocument> SyncDocuments { get; private set; }
+    public DbSet<Sync> Syncs { get; private set; }
 }

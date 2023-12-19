@@ -38,18 +38,18 @@ public class Migration001 : Migration
         modelBuilder.Entity("ReMarkableRemember.Entities.SyncConfiguration", builder =>
         {
             builder.Property<String>("Id").HasColumnType("TEXT");
-            builder.Property<String>("Destination").IsRequired().HasColumnType("TEXT");
+            builder.Property<String>("TargetDirectory").IsRequired().HasColumnType("TEXT");
             builder.HasKey("Id");
             builder.ToTable("SyncConfigurations");
         });
 
-        modelBuilder.Entity("ReMarkableRemember.Entities.SyncDocument", builder =>
+        modelBuilder.Entity("ReMarkableRemember.Entities.Sync", builder =>
         {
             builder.Property<String>("Id").HasColumnType("TEXT");
             builder.Property<String>("Downloaded").IsRequired().HasColumnType("TEXT");
             builder.Property<String>("Modified").IsRequired().HasColumnType("TEXT");
             builder.HasKey("Id");
-            builder.ToTable("SyncDocuments");
+            builder.ToTable("Syncs");
         });
     }
 
@@ -91,7 +91,7 @@ public class Migration001 : Migration
             columns: table => new
             {
                 Id = table.Column<String>(type: "TEXT", nullable: false),
-                Destination = table.Column<String>(type: "TEXT", nullable: false)
+                TargetDirectory = table.Column<String>(type: "TEXT", nullable: false)
             },
             constraints: table =>
             {
@@ -100,7 +100,7 @@ public class Migration001 : Migration
         );
 
         migrationBuilder.CreateTable(
-            name: "SyncDocuments",
+            name: "Syncs",
             columns: table => new
             {
                 Id = table.Column<String>(type: "TEXT", nullable: false),
@@ -109,7 +109,7 @@ public class Migration001 : Migration
             },
             constraints: table =>
             {
-                table.PrimaryKey("PK_SyncDocuments", entity => entity.Id);
+                table.PrimaryKey("PK_Syncs", entity => entity.Id);
             }
         );
 
@@ -122,6 +122,6 @@ public class Migration001 : Migration
         migrationBuilder.DropTable("Backups");
         migrationBuilder.DropTable("Settings");
         migrationBuilder.DropTable("SyncConfigurations");
-        migrationBuilder.DropTable("SyncDocuments");
+        migrationBuilder.DropTable("Syncs");
     }
 }

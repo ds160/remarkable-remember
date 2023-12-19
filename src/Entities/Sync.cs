@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ReMarkableRemember.Entities;
 
-public class SyncDocument
+public class Sync
 {
-    public SyncDocument(String id, DateTime modified, String downloaded)
+    public Sync(String id, DateTime modified, String downloaded)
     {
         this.Id = id;
         this.Modified = modified;

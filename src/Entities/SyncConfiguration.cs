@@ -5,15 +5,15 @@ namespace ReMarkableRemember.Entities;
 
 public class SyncConfiguration
 {
-    public SyncConfiguration(String id, String destination)
+    public SyncConfiguration(String id, String targetDirectory)
     {
         this.Id = id;
-        this.Destination = destination;
+        this.TargetDirectory = targetDirectory;
     }
 
     [Key]
     public String Id { get; set; }
 
     [Required]
-    public String Destination { get; set; }
+    public String TargetDirectory { get; set; }
 }

@@ -28,7 +28,7 @@ public partial class App : Application
 
     private static String GetDataSource(String[]? args)
     {
-        return args?.Length == 1 && Path.Exists(args[0])
+        return args?.Length == 1 && File.Exists(args[0])
             ? args[0]
             : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"{nameof(ReMarkableRemember)}.db");
     }

@@ -36,18 +36,18 @@ public class DatabaseModelSnapshot : ModelSnapshot
         modelBuilder.Entity("ReMarkableRemember.Entities.SyncConfiguration", builder =>
         {
             builder.Property<String>("Id").HasColumnType("TEXT");
-            builder.Property<String>("Destination").IsRequired().HasColumnType("TEXT");
+            builder.Property<String>("TargetDirectory").IsRequired().HasColumnType("TEXT");
             builder.HasKey("Id");
             builder.ToTable("SyncConfigurations");
         });
 
-        modelBuilder.Entity("ReMarkableRemember.Entities.SyncDocument", builder =>
+        modelBuilder.Entity("ReMarkableRemember.Entities.Sync", builder =>
         {
             builder.Property<String>("Id").HasColumnType("TEXT");
             builder.Property<String>("Downloaded").IsRequired().HasColumnType("TEXT");
             builder.Property<String>("Modified").IsRequired().HasColumnType("TEXT");
             builder.HasKey("Id");
-            builder.ToTable("SyncDocuments");
+            builder.ToTable("Syncs");
         });
     }
 }

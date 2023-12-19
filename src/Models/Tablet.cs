@@ -19,14 +19,10 @@ internal sealed class Tablet : IDisposable
 {
     private const String IP = "10.11.99.1";
     private const String PATH_NOTEBOOKS = "/home/root/.local/share/remarkable/xochitl";
-    private const String SSH_AUTHENTICATION_MESSAGE = "SSH protocol information not configured (Menu > Settings > Help > Copyrights and licenses)";
     private const Int32 SSH_TIMEOUT = 2;
-    private const String SSH_TIMEOUT_MESSAGE = "Not connected via WiFi or USB";
     private const String SSH_USER = "root";
-    private const String USB_REFUSED_MESSAGE = "USB web interface not activated (Menu > Settings > Storage)";
     private const Int32 USB_TIMEOUT_DOCUMENT = 1;
     private const Int32 USB_TIMEOUT_DOWNLOAD = 10;
-    private const String USB_TIMEOUT_MESSAGE = "Not connected via USB";
 
     private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
@@ -70,7 +66,7 @@ internal sealed class Tablet : IDisposable
         }
     }
 
-    public async Task<String?> GetConnectionStatus()
+    public async Task<TabletConnectionError?> GetConnectionStatus()
     {
         await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -80,7 +76,7 @@ internal sealed class Tablet : IDisposable
         }
         catch (TabletException exception)
         {
-            return exception.Message;
+            return exception.Error;
         }
         finally
         {
@@ -95,7 +91,7 @@ internal sealed class Tablet : IDisposable
         }
         catch (TabletException exception)
         {
-            return exception.Message;
+            return exception.Error;
         }
         finally
         {
@@ -150,12 +146,13 @@ internal sealed class Tablet : IDisposable
             String contentFileText = client.ReadAllText(Path.Combine(PATH_NOTEBOOKS, $"{id}.content"));
             ContentFile contentFile = JsonSerializer.Deserialize<ContentFile>(contentFileText, jsonSerializerOptions);
 
-            if (contentFile.FileType != "notebook") { throw new NotebookException("Unsupported file type."); }
-            if (contentFile.FormatVersion != 2) { throw new NotebookException("Unsupported file format version."); }
+            if (contentFile.FileType != "notebook") { throw new NotebookException($"Invalid reMarkable file type: '{contentFile.FileType}'."); }
+            if (contentFile.FormatVersion != 2) { throw new NotebookException($"Invalid reMarkable file format version: '{contentFile.FormatVersion}'."); }
 
             IEnumerable<Byte[]> pageBuffers = contentFile.CPages.Pages
                 .Where(page => page.Deleted == null)
-                .Select(page => client.ReadAllBytes(Path.Combine(PATH_NOTEBOOKS, id, $"{page.Id}.rm")));
+                .Select(page => client.ReadAllBytes(Path.Combine(PATH_NOTEBOOKS, id, $"{page.Id}.rm")))
+                .ToArray();
 
             return new Notebook(pageBuffers);
         }
@@ -181,19 +178,19 @@ internal sealed class Tablet : IDisposable
         }
         catch (ProxyException exception)
         {
-            throw new TabletException(SSH_TIMEOUT_MESSAGE, exception);
+            throw new TabletException(exception.Message, exception);
         }
         catch (SocketException exception)
         {
-            throw new TabletException(SSH_TIMEOUT_MESSAGE, exception);
+            throw new TabletException(exception.Message, exception);
         }
         catch (SshAuthenticationException exception)
         {
-            throw new TabletException(SSH_AUTHENTICATION_MESSAGE, exception);
+            throw new TabletException(TabletConnectionError.SshNotConfigured, "SSH protocol information are not configured or wrong (Menu > Settings > Help > Copyrights and licenses).", exception);
         }
         catch (SshOperationTimeoutException exception)
         {
-            throw new TabletException(SSH_TIMEOUT_MESSAGE, exception);
+            throw new TabletException(TabletConnectionError.SshNotConnected, "reMarkable is not connected via WiFi or USB.", exception);
         }
     }
 
@@ -213,13 +210,9 @@ internal sealed class Tablet : IDisposable
         {
             if (exception.InnerException is SocketException socketException)
             {
-                if (socketException.SocketErrorCode is SocketError.ConnectionRefused)
+                if (socketException.SocketErrorCode is SocketError.ConnectionRefused or SocketError.NetworkDown or SocketError.NetworkUnreachable)
                 {
-                    throw new TabletException(USB_REFUSED_MESSAGE, exception);
-                }
-                else if (socketException.SocketErrorCode is SocketError.NetworkDown or SocketError.NetworkUnreachable)
-                {
-                    throw new TabletException(USB_TIMEOUT_MESSAGE, exception);
+                    throw new TabletException(TabletConnectionError.UsbNotActived, "USB web interface is not activated (Menu > Settings > Storage).", exception);
                 }
             }
 
@@ -227,7 +220,7 @@ internal sealed class Tablet : IDisposable
         }
         catch (TaskCanceledException exception)
         {
-            throw new TabletException(USB_TIMEOUT_MESSAGE, exception);
+            throw new TabletException(TabletConnectionError.UsbNotConnected, "reMarkable is not connected via USB.", exception);
         }
     }
 
