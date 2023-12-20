@@ -11,27 +11,28 @@ namespace ReMarkableRemember.Models;
 
 internal sealed class Controller : IDisposable
 {
-    private readonly DatabaseContext database;
+    private readonly String dataSource;
     private readonly MyScript myScript;
     private readonly Tablet tablet;
 
     public Controller(String dataSource)
     {
-        this.database = new DatabaseContext(dataSource);
-        this.database.Database.Migrate();
+        this.dataSource = dataSource;
 
-        String? myScriptApplicationKey = this.database.Settings.Find(Setting.Keys.MyScriptApplicationKey)?.Value;
-        String? myScriptHmacKey = this.database.Settings.Find(Setting.Keys.MyScriptHmacKey)?.Value;
+        using DatabaseContext database = new DatabaseContext(this.dataSource);
+        database.Database.Migrate();
+
+        String? myScriptApplicationKey = database.Settings.Find(Setting.Keys.MyScriptApplicationKey)?.Value;
+        String? myScriptHmacKey = database.Settings.Find(Setting.Keys.MyScriptHmacKey)?.Value;
         this.myScript = new MyScript(myScriptApplicationKey, myScriptHmacKey);
 
-        String? tabletIp = this.database.Settings.Find(Setting.Keys.TabletIp)?.Value;
-        String? tabletPassword = this.database.Settings.Find(Setting.Keys.TabletPassword)?.Value;
+        String? tabletIp = database.Settings.Find(Setting.Keys.TabletIp)?.Value;
+        String? tabletPassword = database.Settings.Find(Setting.Keys.TabletPassword)?.Value;
         this.tablet = new Tablet(tabletIp, tabletPassword);
     }
 
     public void Dispose()
     {
-        this.database.Dispose();
         this.tablet.Dispose();
 
         GC.SuppressFinalize(this);
@@ -44,8 +45,9 @@ internal sealed class Controller : IDisposable
 
     public async Task<IEnumerable<Item>> GetItems()
     {
+        using DatabaseContext database = new DatabaseContext(this.dataSource);
         IEnumerable<Tablet.Item> tabletItems = await this.tablet.GetItems().ConfigureAwait(false);
-        return tabletItems.Select(tabletItem => this.MapItem(tabletItem)).ToArray();
+        return tabletItems.Select(tabletItem => MapItem(database, tabletItem)).ToArray();
     }
 
     // public async Task<String> HandWritingRecognition(Item item, String language)
@@ -83,7 +85,8 @@ internal sealed class Controller : IDisposable
         using Stream targetStream = FileHelper.Create(item.SyncPath);
         await sourceStream.CopyToAsync(targetStream).ConfigureAwait(false);
 
-        Sync? sync = await this.database.Syncs.FindAsync(item.Id).ConfigureAwait(false);
+        using DatabaseContext database = new DatabaseContext(this.dataSource);
+        Sync? sync = await database.Syncs.FindAsync(item.Id).ConfigureAwait(false);
         if (sync != null)
         {
             sync.Modified = item.Modified;
@@ -91,26 +94,26 @@ internal sealed class Controller : IDisposable
         }
         else
         {
-            await this.database.Syncs.AddAsync(new Sync(item.Id, item.Modified, item.SyncPath)).ConfigureAwait(false);
+            await database.Syncs.AddAsync(new Sync(item.Id, item.Modified, item.SyncPath)).ConfigureAwait(false);
         }
-        await this.database.SaveChangesAsync().ConfigureAwait(false);
+        await database.SaveChangesAsync().ConfigureAwait(false);
     }
 
-    private Item MapItem(Tablet.Item tabletItem, String? parentTargetDirectory = null)
+    private static Item MapItem(DatabaseContext database, Tablet.Item tabletItem, String? parentTargetDirectory = null)
     {
-        String? targetDirectory = this.MapItemGetTargetDirectory(tabletItem, parentTargetDirectory);
-        IEnumerable<Item>? collection = tabletItem.Collection?.Select(childTabletItem => this.MapItem(childTabletItem, targetDirectory)).ToArray();
+        String? targetDirectory = MapItemGetTargetDirectory(database, tabletItem, parentTargetDirectory);
+        IEnumerable<Item>? collection = tabletItem.Collection?.Select(childTabletItem => MapItem(database, childTabletItem, targetDirectory)).ToArray();
         String? syncPath = (targetDirectory != null && collection == null) ? Path.Combine(targetDirectory, $"{tabletItem.Name}.pdf") : targetDirectory;
 
-        Backup? previousBackup = this.database.Backups.Find(tabletItem.Id);
-        Sync? previousSync = this.database.Syncs.Find(tabletItem.Id);
+        Backup? previousBackup = database.Backups.Find(tabletItem.Id);
+        Sync? previousSync = database.Syncs.Find(tabletItem.Id);
 
         return new Item(tabletItem, collection, previousBackup, previousSync, syncPath);
     }
 
-    private String? MapItemGetTargetDirectory(Tablet.Item tabletItem, String? parentTargetDirectory)
+    private static String? MapItemGetTargetDirectory(DatabaseContext database, Tablet.Item tabletItem, String? parentTargetDirectory)
     {
-        SyncConfiguration? syncConfiguration = this.database.SyncConfigurations.Find(tabletItem.Id);
+        SyncConfiguration? syncConfiguration = database.SyncConfigurations.Find(tabletItem.Id);
         if (syncConfiguration != null) { return syncConfiguration.TargetDirectory; }
 
         return (parentTargetDirectory != null && tabletItem.Collection != null) ? Path.Combine(parentTargetDirectory, tabletItem.Name) : parentTargetDirectory;
