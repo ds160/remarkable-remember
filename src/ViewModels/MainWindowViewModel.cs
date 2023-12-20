@@ -18,7 +18,7 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     private TabletConnectionError? connectionState;
     private readonly Controller controller;
-    private HierarchicalTreeDataGridSource<Controller.Item>? treeSource;
+    private HierarchicalTreeDataGridSource<Item>? treeSource;
 
     public MainWindowViewModel(String dataSource)
     {
@@ -42,9 +42,10 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     private async Task HandWritingRecognition()
     {
-        Controller.Item? selectedItem = this.TreeSource?.RowSelection?.SelectedItem;
+        Item? selectedItem = this.TreeSource?.RowSelection?.SelectedItem;
         if (selectedItem != null)
         {
+            // TODO: Language and ResultDialog
             String text = await this.controller.HandWritingRecognition(selectedItem, "de_DE").ConfigureAwait(false);
             throw new MyScriptException(text);
         }
@@ -54,35 +55,38 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
     {
         this.TreeSource = null;
 
-        IEnumerable<Controller.Item> items = await this.controller.GetItems().ConfigureAwait(false);
+        IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(false);
 
-        this.TreeSource = new HierarchicalTreeDataGridSource<Controller.Item>(items.Where(item => !item.Trashed))
+        this.TreeSource = new HierarchicalTreeDataGridSource<Item>(items.Where(item => !item.Trashed))
         {
             Columns =
             {
-                new HierarchicalExpanderColumn<Controller.Item>(new TextColumn<Controller.Item, String>("Name", item => item.Name), item => item.Collection),
-                new TextColumn<Controller.Item, String>("Modified", item => item.Modified.ToDisplayString()),
-                new TextColumn<Controller.Item, String>("Sync Path", item => item.SyncPath),
-                new TextColumn<Controller.Item, String>("Sync Hint", item => item.SyncHint.HasValue ? item.SyncHint.Value.ToString() : null),
-                new TextColumn<Controller.Item, String>("Last Sync", item => item.Sync != null ? item.Sync.Date.ToDisplayString() : null),
-                new TextColumn<Controller.Item, String>("Backup Hint", item => item.BackupHint.HasValue ? item.BackupHint.Value.ToString() : null),
-                new TextColumn<Controller.Item, String>("Last Backup", item => item.Backup.HasValue ? item.Backup.Value.ToDisplayString() : null),
-                new TextColumn<Controller.Item, String>("ID", item => item.Id),
+                new HierarchicalExpanderColumn<Item>(new TextColumn<Item, String>("Name", item => item.Name), item => item.Collection),
+                new TextColumn<Item, String>("Modified", item => item.Modified.ToDisplayString()),
+                new TextColumn<Item, String>("Sync Path", item => item.SyncPath),
+                new TextColumn<Item, String>("Sync Hint", item => item.SyncHint.HasValue ? item.SyncHint.Value.ToString() : null),
+                new TextColumn<Item, String>("Last Sync", item => item.Sync != null ? item.Sync.Date.ToDisplayString() : null),
+                new TextColumn<Item, String>("Backup Hint", item => item.BackupHint.HasValue ? item.BackupHint.Value.ToString() : null),
+                new TextColumn<Item, String>("Last Backup", item => item.Backup.HasValue ? item.Backup.Value.ToDisplayString() : null),
+                new TextColumn<Item, String>("ID", item => item.Id),
             }
         };
 
-        this.TreeSource?.Sort(new Comparison<Controller.Item>((x, y) =>
+        this.TreeSource?.Sort(new Comparison<Item>((itemA, itemB) =>
         {
-            Int32 xCol = (x.Collection == null) ? 1 : 0;
-            Int32 yCol = (y.Collection == null) ? 1 : 0;
-            Int32 col = xCol - yCol;
-            return (col != 0) ? col : String.CompareOrdinal(x.Name, y.Name);
+            Int32 collectionA = (itemA.Collection == null) ? 1 : 0;
+            Int32 collectionB = (itemB.Collection == null) ? 1 : 0;
+            Int32 collectionCompareResult = collectionA - collectionB;
+
+            return (collectionCompareResult != 0)
+                ? collectionCompareResult
+                : String.CompareOrdinal(itemA.Name, itemB.Name);
         }));
     }
 
     private async Task Sync()
     {
-        Controller.Item? selectedItem = this.TreeSource?.RowSelection?.SelectedItem;
+        Item? selectedItem = this.TreeSource?.RowSelection?.SelectedItem;
         if (selectedItem != null)
         {
             await this.controller.SyncItem(selectedItem).ConfigureAwait(false);
@@ -109,7 +113,7 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         private set { this.RaiseAndSetIfChanged(ref this.connectionState, value); }
     }
 
-    public HierarchicalTreeDataGridSource<Controller.Item>? TreeSource
+    public HierarchicalTreeDataGridSource<Item>? TreeSource
     {
         get { return this.treeSource; }
         private set { this.RaiseAndSetIfChanged(ref this.treeSource, value); }
