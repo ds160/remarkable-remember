@@ -16,14 +16,14 @@
     <Grid RowDefinitions="Auto,*,Auto">
         <StackPanel Grid.Row="0" Margin="6" Orientation="Horizontal" Spacing="12">
             <Button Command="{Binding CommandRefresh}" Content="Refresh"/>
-            <Button Command="{Binding CommandHandWritingRecognition}" Content="HandWritingRecognition"/>
-            <Button Command="{Binding CommandSync}" Content="Sync"/>
+            <Button Command="{Binding CommandProcess}" Content="Process"/>
+            <Button Command="{Binding CommandHandWritingRecognition}" Content="Hand Writing Recognition"/>
         </StackPanel>
 
         <TreeDataGrid Grid.Row="1" Source="{Binding TreeSource}" CanUserResizeColumns="True" CanUserSortColumns="False" Margin="6"/>
 
         <StackPanel Grid.Row="2" Margin="6">
-            <Label Content="{Binding ConnectionState}"/>
+            <Label Content="{Binding ConnectionStatus}"/>
         </StackPanel>
     </Grid>
 </Window>

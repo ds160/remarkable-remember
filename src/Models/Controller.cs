@@ -57,17 +57,44 @@ internal sealed class Controller : IDisposable
         return String.Join(Environment.NewLine, myScriptPages);
     }
 
-    public async Task SyncItem(Item item)
+    public async Task ProcessItem(Item item)
     {
-        if (item.SyncPath == null) { return; }
-
         if (item.Collection != null)
         {
-            await Task.WhenAll(item.Collection.Select(this.SyncItem)).ConfigureAwait(false);
+            await Task.WhenAll(item.Collection.Select(this.ProcessItem)).ConfigureAwait(false);
         }
 
+        await this.ItemSync(item).ConfigureAwait(false);
+
+        this.ItemSave(item);
+    }
+
+    private void ItemSave(Item item)
+    {
+        using DatabaseContext database = new DatabaseContext(this.dataSource);
+
+        if (item.SyncPath != null)
+        {
+            Sync? sync = database.Syncs.Find(item.Id);
+            if (sync != null)
+            {
+                sync.Modified = item.Modified;
+                sync.Downloaded = item.SyncPath;
+            }
+            else
+            {
+                database.Syncs.Add(new Sync(item.Id, item.Modified, item.SyncPath));
+            }
+        }
+
+        database.SaveChanges();
+    }
+
+    private async Task ItemSync(Item item)
+    {
         if (item.SyncHint == null) { return; }
         if (item.SyncHint is Item.Hint.DocumentExistsInTarget or Item.Hint.ItemTrashed) { return; }
+        if (item.SyncPath == null) { return; }
 
         if (item.Sync != null && item.SyncHint is Item.Hint.DocumentDownloadPathChanged)
         {
@@ -77,19 +104,6 @@ internal sealed class Controller : IDisposable
         using Stream sourceStream = await this.tablet.Download(item.Id).ConfigureAwait(false);
         using Stream targetStream = FileHelper.Create(item.SyncPath);
         await sourceStream.CopyToAsync(targetStream).ConfigureAwait(false);
-
-        using DatabaseContext database = new DatabaseContext(this.dataSource);
-        Sync? sync = await database.Syncs.FindAsync(item.Id).ConfigureAwait(false);
-        if (sync != null)
-        {
-            sync.Modified = item.Modified;
-            sync.Downloaded = item.SyncPath;
-        }
-        else
-        {
-            await database.Syncs.AddAsync(new Sync(item.Id, item.Modified, item.SyncPath)).ConfigureAwait(false);
-        }
-        await database.SaveChangesAsync().ConfigureAwait(false);
     }
 
     private static Item MapItem(DatabaseContext database, Tablet.Item tabletItem, String? parentTargetDirectory = null)
