@@ -15,8 +15,6 @@ namespace ReMarkableRemember.ViewModels;
 
 internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
 {
-    private const Int32 CONNECTION_STATE_DELAY = 1;
-
     private TabletConnectionError? connectionStatus;
     private readonly Controller controller;
     private readonly ObservableCollection<Item> items;
@@ -41,16 +39,11 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
             }
         };
 
-        IObservable<Boolean> sepp = this.TreeSource.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
-        // IObservable<Boolean> hugo = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(state => state == null);
-        // this.WhenAnyValue(vm => vm.ConnectionState).Subscribe(state => Console.WriteLine(state));
-        // IObservable<Boolean> combinedObservable = Observable.CombineLatest(sepp, hugo, (value1, value2) => value1 && value2);
+        this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
+        this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process, this.Process_CanExecute());
+        this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh, this.Refresh_CanExecute());
 
-        this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, sepp);
-        this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process);
-        this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh);
-
-        _ = this.UpdateConnectionStatus().ConfigureAwait(false);
+        _ = this.UpdateConnectionStatus();
     }
 
     public void Dispose()
@@ -71,6 +64,14 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         }
     }
 
+    private IObservable<Boolean> HandWritingRecognition_CanExecute()
+    {
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(state => state is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
+        IObservable<Boolean> treeSelection = this.TreeSource.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
+
+        return Observable.CombineLatest(connectionStatus, treeSelection, (value1, value2) => value1 && value2);
+    }
+
     private async Task Process()
     {
         Item? selectedItem = this.TreeSource?.RowSelection?.SelectedItem;
@@ -85,6 +86,14 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 await this.Refresh().ConfigureAwait(false);
             }
         }
+    }
+
+    private IObservable<Boolean> Process_CanExecute()
+    {
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(state => state is null);
+        IObservable<Boolean> treeSelection = this.TreeSource.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null);
+
+        return Observable.CombineLatest(connectionStatus, treeSelection, (value1, value2) => value1 && value2);
     }
 
     private async Task Refresh()
@@ -109,12 +118,17 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         }));
     }
 
+    private IObservable<Boolean> Refresh_CanExecute()
+    {
+        return this.WhenAnyValue(vm => vm.ConnectionStatus).Select(state => state is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
+    }
+
     private async Task UpdateConnectionStatus()
     {
         while (true)
         {
-            this.ConnectionStatus = await this.controller.GetConnectionStatus().ConfigureAwait(false);
-            await Task.Delay(TimeSpan.FromSeconds(CONNECTION_STATE_DELAY)).ConfigureAwait(false);
+            this.ConnectionStatus = await this.controller.GetConnectionStatus().ConfigureAwait(true);
+            await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(true);
         }
     }
 
