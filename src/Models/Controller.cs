@@ -50,20 +50,13 @@ internal sealed class Controller : IDisposable
         return tabletItems.Select(tabletItem => MapItem(database, tabletItem)).ToArray();
     }
 
-    // public async Task<String> HandWritingRecognition(Item item, String language)
-    public async Task HandWritingRecognition()
+    public async Task<String> HandWritingRecognition(Item item, String language)
     {
-        String id = "476b9716-4b20-481f-bd71-044f0d682b48";
-        String language = "de_DE";
-
-        Notebook notebook = await this.tablet.GetNotebook(id).ConfigureAwait(false);
+        Notebook notebook = await this.tablet.GetNotebook(item.Id).ConfigureAwait(false);
         IEnumerable<String> myScriptPages = await Task.WhenAll(notebook.Pages.Select(page => this.myScript.Recognize(page, language))).ConfigureAwait(false);
-
-        Console.WriteLine(String.Join(Environment.NewLine, myScriptPages));
-        // return String.Join(Environment.NewLine, myScriptPages);
+        return String.Join(Environment.NewLine, myScriptPages);
     }
 
-    // ItemDeleted,
     public async Task SyncItem(Item item)
     {
         if (item.SyncPath == null) { return; }
@@ -85,6 +78,7 @@ internal sealed class Controller : IDisposable
         using Stream targetStream = FileHelper.Create(item.SyncPath);
         await sourceStream.CopyToAsync(targetStream).ConfigureAwait(false);
 
+        // TODO: Save in method with semaphore
         using DatabaseContext database = new DatabaseContext(this.dataSource);
         Sync? sync = await database.Syncs.FindAsync(item.Id).ConfigureAwait(false);
         if (sync != null)
@@ -103,7 +97,7 @@ internal sealed class Controller : IDisposable
     {
         String? targetDirectory = MapItemGetTargetDirectory(database, tabletItem, parentTargetDirectory);
         IEnumerable<Item>? collection = tabletItem.Collection?.Select(childTabletItem => MapItem(database, childTabletItem, targetDirectory)).ToArray();
-        String? syncPath = (targetDirectory != null && collection == null) ? Path.Combine(targetDirectory, $"{tabletItem.Name}.pdf") : targetDirectory;
+        String? syncPath = (targetDirectory != null && collection == null) ? Path.Combine(targetDirectory, tabletItem.Name) : targetDirectory;
 
         Backup? previousBackup = database.Backups.Find(tabletItem.Id);
         Sync? previousSync = database.Syncs.Find(tabletItem.Id);

@@ -14,4 +14,9 @@ public static class DateTimeExtensions
     {
         return DateTime.Parse(value, CultureInfo.InvariantCulture).ToUniversalTime();
     }
+
+    public static String ToDisplayString(this DateTime value)
+    {
+        return value.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
+    }
 }

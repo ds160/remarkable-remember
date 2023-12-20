@@ -146,7 +146,7 @@ internal sealed class Tablet : IDisposable
             String contentFileText = client.ReadAllText(Path.Combine(PATH_NOTEBOOKS, $"{id}.content"));
             ContentFile contentFile = JsonSerializer.Deserialize<ContentFile>(contentFileText, jsonSerializerOptions);
 
-            if (contentFile.FileType != "notebook") { throw new NotebookException($"Invalid reMarkable file type: '{contentFile.FileType}'."); }
+            if (contentFile.FileType != "notebook") { throw new NotebookException("Invalid reMarkable file type."); }
             if (contentFile.FormatVersion != 2) { throw new NotebookException($"Invalid reMarkable file format version: '{contentFile.FormatVersion}'."); }
 
             IEnumerable<Byte[]> pageBuffers = contentFile.CPages.Pages
@@ -270,7 +270,7 @@ internal sealed class Tablet : IDisposable
             this.Collection = (type == "CollectionType") ? new Collection<Item>() : null;
             this.Id = id;
             this.Modified = DateTime.UnixEpoch.AddMilliseconds(Double.Parse(lastModified, CultureInfo.InvariantCulture));
-            this.Name = visibleName;
+            this.Name = (type == "DocumentType") ? $"{visibleName}.pdf" : visibleName;
             this.ParentCollectionId = parent;
             this.Trashed = parent == "trash";
         }
