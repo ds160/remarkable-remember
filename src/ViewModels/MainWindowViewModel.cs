@@ -56,7 +56,7 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         Item? selectedItem = this.TreeSource.RowSelection!.SelectedItem;
         if (selectedItem != null)
         {
-            String text = await this.controller.HandWritingRecognition(selectedItem, "de_DE").ConfigureAwait(false);
+            String text = await this.controller.HandWritingRecognition(selectedItem, "de_DE").ConfigureAwait(true);
             throw new MyScriptException(text);
         }
     }
@@ -76,11 +76,11 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         {
             try
             {
-                await this.controller.ProcessItem(selectedItem).ConfigureAwait(false);
+                await this.controller.ProcessItem(selectedItem).ConfigureAwait(true);
             }
             finally
             {
-                await this.Refresh().ConfigureAwait(false);
+                await this.Refresh().ConfigureAwait(true);
             }
         }
     }
@@ -97,7 +97,7 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(false);
+            IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(true);
             this.TreeSource.Items = items.Where(item => !item.Trashed).ToList();
 
             this.TreeSource.Sort(new Comparison<Item>((itemA, itemB) =>
