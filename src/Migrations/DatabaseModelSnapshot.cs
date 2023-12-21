@@ -19,8 +19,6 @@ public class DatabaseModelSnapshot : ModelSnapshot
             builder.Property<String>("Id").HasColumnType("TEXT");
             builder.Property<String>("Deleted").HasColumnType("TEXT");
             builder.Property<String>("Modified").IsRequired().HasColumnType("TEXT");
-            builder.Property<String>("Name").IsRequired().HasColumnType("TEXT");
-            builder.Property<String>("ParentCollectionId").IsRequired().HasColumnType("TEXT");
             builder.HasKey("Id");
             builder.ToTable("Backups");
         });

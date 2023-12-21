@@ -12,9 +12,9 @@ namespace ReMarkableRemember.Templates;
 internal sealed class TreeDataGridItemHintColumn : IDataTemplate
 {
     private readonly Func<Item, DateTime?> getDateTime;
-    private readonly Func<Item, Item.Hint?> getHint;
+    private readonly Func<Item, Item.Hint> getHint;
 
-    public TreeDataGridItemHintColumn(Func<Item, DateTime?> getDateTime, Func<Item, Item.Hint?> getHint)
+    public TreeDataGridItemHintColumn(Func<Item, DateTime?> getDateTime, Func<Item, Item.Hint> getHint)
     {
         this.getDateTime = getDateTime;
         this.getHint = getHint;
@@ -24,7 +24,7 @@ internal sealed class TreeDataGridItemHintColumn : IDataTemplate
         Item item = param as Item ?? throw new ArgumentNullException(nameof(param));
 
         DateTime? dateTime = this.getDateTime(item);
-        Item.Hint? hint = this.getHint(item);
+        Item.Hint hint = this.getHint(item);
 
         StackPanel stackPanel = new StackPanel() { Margin = new Thickness(4.0), Orientation = Orientation.Horizontal, Spacing = 4.0 };
         stackPanel.Children.Add(new Image() { Source = GetImage(dateTime, hint), Height = 10.0, Width = 10.0 });
@@ -38,34 +38,47 @@ internal sealed class TreeDataGridItemHintColumn : IDataTemplate
         return data is Item;
     }
 
-    private static Bitmap? GetImage(DateTime? dateTime, Item.Hint? hint)
+    public static Item.Hint GetHintIncludingCollection(Item item)
     {
-        if (hint == null) { return (dateTime != null) ? new Bitmap("Assets/DotGreen.png") : null; }
+        Item.Hint hint = item.BackupHint | item.SyncHint;
 
-        switch (hint)
+        if (item.Collection != null)
         {
-            case Item.Hint.DocumentSyncPathChanged: return new Bitmap("Assets/DotYellow.png");
-            case Item.Hint.DocumentExistsInTarget: return new Bitmap("Assets/DotRed.png");
-            case Item.Hint.DocumentNotFoundInTarget: return new Bitmap("Assets/DotYellow.png");
-            case Item.Hint.ItemModified: return new Bitmap("Assets/DotYellow.png");
-            case Item.Hint.ItemNew: return new Bitmap("Assets/DotYellow.png");
-            case Item.Hint.ItemTrashed: return new Bitmap("Assets/DotRed.png");
-            default: throw new NotImplementedException();
+            foreach (Item childItem in item.Collection)
+            {
+                hint |= GetHintIncludingCollection(childItem);
+            }
         }
+
+        return hint;
     }
-    private static String? GetToolTip(DateTime? dateTime, Item.Hint? hint)
-    {
-        if (hint == null) { return (dateTime != null) ? "Up-to-date" : null; }
 
-        switch (hint)
-        {
-            case Item.Hint.DocumentSyncPathChanged: return "Document sync path changed";
-            case Item.Hint.DocumentExistsInTarget: return "Document exists already in target directory";
-            case Item.Hint.DocumentNotFoundInTarget: return "Document not found in target directory";
-            case Item.Hint.ItemModified: return "Modified item";
-            case Item.Hint.ItemNew: return "New item";
-            case Item.Hint.ItemTrashed: return "Trashed item";
-            default: throw new NotImplementedException();
-        }
+    private static Bitmap? GetImage(DateTime? dateTime, Item.Hint hint)
+    {
+        if ((hint & Item.Hint.Trashed) != 0) { return new Bitmap("Assets/DotRed.png"); }
+        if ((hint & Item.Hint.ExistsInTarget) != 0) { return new Bitmap("Assets/DotRed.png"); }
+
+        if ((hint & Item.Hint.New) != 0) { return new Bitmap("Assets/DotYellow.png"); }
+        if ((hint & Item.Hint.Modified) != 0) { return new Bitmap("Assets/DotYellow.png"); }
+        if ((hint & Item.Hint.SyncPathChanged) != 0) { return new Bitmap("Assets/DotYellow.png"); }
+        if ((hint & Item.Hint.NotFoundInTarget) != 0) { return new Bitmap("Assets/DotYellow.png"); }
+
+        if (hint == 0) { return (dateTime != null) ? new Bitmap("Assets/DotGreen.png") : null; }
+
+        throw new NotImplementedException();
+    }
+    private static String? GetToolTip(DateTime? dateTime, Item.Hint hint)
+    {
+        if ((hint & Item.Hint.Trashed) != 0) { return "Trashed"; }
+        if ((hint & Item.Hint.ExistsInTarget) != 0) { return "Exists already in target directory"; }
+
+        if ((hint & Item.Hint.New) != 0) { return "New"; }
+        if ((hint & Item.Hint.Modified) != 0) { return "Modified"; }
+        if ((hint & Item.Hint.SyncPathChanged) != 0) { return "Sync path changed"; }
+        if ((hint & Item.Hint.NotFoundInTarget) != 0) { return "Not found in target directory"; }
+
+        if (hint == 0) { return (dateTime != null) ? "Up-to-date" : null; }
+
+        throw new NotImplementedException();
     }
 }

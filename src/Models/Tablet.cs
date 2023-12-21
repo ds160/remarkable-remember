@@ -51,6 +51,26 @@ internal sealed class Tablet : IDisposable
         GC.SuppressFinalize(this);
     }
 
+    public async Task Backup(String id, String targetDirectory)
+    {
+        await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
+
+        try
+        {
+            using SftpClient client = this.CreateSftpClient();
+
+            IEnumerable<ISftpFile> files = client
+                .ListDirectory(PATH_NOTEBOOKS)
+                .Where(file => file.Name.StartsWith(id, StringComparison.OrdinalIgnoreCase));
+
+            this.BackupFiles(client, files, targetDirectory);
+        }
+        finally
+        {
+            this.sshSemaphore.Release();
+        }
+    }
+
     public async Task<Stream> Download(String id)
     {
         await this.usbSemaphore.WaitAsync().ConfigureAwait(false);
@@ -166,6 +186,25 @@ internal sealed class Tablet : IDisposable
     public void Setup(String? host, String? password)
     {
         this.sshConnectionInfo = CreateSshConnectionInfo(host, password);
+    }
+
+    private void BackupFiles(SftpClient client, IEnumerable<ISftpFile> files, String targetDirectory)
+    {
+        foreach (ISftpFile file in files.Where(file => file.Name is not "." and not ".."))
+        {
+            String targetPath = Path.Combine(targetDirectory, file.Name);
+
+            if (file.IsDirectory)
+            {
+                this.BackupFiles(client, client.ListDirectory(file.FullName), targetPath);
+            }
+
+            if (file.IsRegularFile)
+            {
+                using Stream fileStream = FileSystem.Create(targetPath);
+                client.DownloadFile(file.FullName, fileStream);
+            }
+        }
     }
 
     private SftpClient CreateSftpClient()

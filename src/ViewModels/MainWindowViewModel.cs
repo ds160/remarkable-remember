@@ -29,9 +29,10 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
             {
                 new HierarchicalExpanderColumn<Item>(new TextColumn<Item, String>("Name", item => item.Name), item => item.Collection),
                 new TextColumn<Item, String>("Modified", item => item.Modified.ToDisplayString()),
+                new TemplateColumn<Item>(null, new TreeDataGridItemHintColumn(item => null, TreeDataGridItemHintColumn.GetHintIncludingCollection)),
                 new TextColumn<Item, String>("Sync Path", item => item.SyncPath),
                 new TemplateColumn<Item>("Sync Information", new TreeDataGridItemHintColumn(item => item.Sync?.Date, item => item.SyncHint)),
-                new TemplateColumn<Item>("Backup Information", new TreeDataGridItemHintColumn(item => item.Backup, item => item.BackupHint)),
+                new TemplateColumn<Item>("Backup Information", new TreeDataGridItemHintColumn(item => item.Backup, item => item.BackupHint))
             }
         };
 
