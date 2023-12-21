@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Templates;
+using Avalonia.Layout;
 using ReactiveUI;
 using ReMarkableRemember.Helper;
 using ReMarkableRemember.Models;
@@ -31,11 +35,8 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 new HierarchicalExpanderColumn<Item>(new TextColumn<Item, String>("Name", item => item.Name), item => item.Collection),
                 new TextColumn<Item, String>("Modified", item => item.Modified.ToDisplayString()),
                 new TextColumn<Item, String>("Sync Path", item => item.SyncPath),
-                new TextColumn<Item, String>("Sync Hint", item => item.SyncHint.HasValue ? item.SyncHint.Value.ToString() : null),
-                new TextColumn<Item, String>("Last Sync", item => item.Sync != null ? item.Sync.Date.ToDisplayString() : null),
-                new TextColumn<Item, String>("Backup Hint", item => item.BackupHint.HasValue ? item.BackupHint.Value.ToString() : null),
-                new TextColumn<Item, String>("Last Backup", item => item.Backup.HasValue ? item.Backup.Value.ToDisplayString() : null),
-                new TextColumn<Item, String>("ID", item => item.Id),
+                new TemplateColumn<Item>("Sync Information", new TemplateColumnTemplate(item => item.Sync?.Date, item => item.SyncHint)),
+                new TemplateColumn<Item>("Backup Information", new TemplateColumnTemplate(item => item.Backup, item => item.BackupHint)),
             }
         };
 
@@ -66,7 +67,7 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     private IObservable<Boolean> HandWritingRecognition_CanExecute()
     {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(state => state is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
         IObservable<Boolean> treeSelection = this.TreeSource.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
 
         return Observable.CombineLatest(connectionStatus, treeSelection, (value1, value2) => value1 && value2);
@@ -83,14 +84,15 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
             }
             finally
             {
-                await this.Refresh().ConfigureAwait(false);
+                // TODO: Refresh
+                // await this.Refresh().ConfigureAwait(false);
             }
         }
     }
 
     private IObservable<Boolean> Process_CanExecute()
     {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(state => state is null);
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status is null);
         IObservable<Boolean> treeSelection = this.TreeSource.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null);
 
         return Observable.CombineLatest(connectionStatus, treeSelection, (value1, value2) => value1 && value2);
@@ -120,7 +122,7 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     private IObservable<Boolean> Refresh_CanExecute()
     {
-        return this.WhenAnyValue(vm => vm.ConnectionStatus).Select(state => state is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
+        return this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
     }
 
     private async Task UpdateConnectionStatus()
@@ -143,4 +145,35 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
     }
 
     public HierarchicalTreeDataGridSource<Item> TreeSource { get; }
+
+    private sealed class TemplateColumnTemplate : IDataTemplate
+    {
+        private readonly Func<Item, DateTime?> getDateTime;
+        private readonly Func<Item, Item.Hint?> getHint;
+
+        public TemplateColumnTemplate(Func<Item, DateTime?> getDateTime, Func<Item, Item.Hint?> getHint)
+        {
+            this.getDateTime = getDateTime;
+            this.getHint = getHint;
+        }
+        public Control? Build(Object? param)
+        {
+            Item item = param as Item ?? throw new ArgumentNullException(nameof(param));
+
+            // TODO: IDataTemplate for Hint+Last and Indicator for any child hint
+            DateTime? dateTime = this.getDateTime(item);
+            Item.Hint? hint = this.getHint(item);
+
+            StackPanel stackPanel = new StackPanel() { Margin = new Thickness(4.0), Orientation = Orientation.Horizontal, Spacing = 4.0 };
+            stackPanel.Children.Add(new TextBlock() { Text = dateTime?.ToDisplayString() });
+            stackPanel.Children.Add(new TextBlock() { Text = hint.HasValue ? hint.Value.ToString() : null });
+            ToolTip.SetTip(stackPanel, hint.HasValue ? hint.Value.ToString() : null);
+            return stackPanel;
+        }
+
+        public Boolean Match(Object? data)
+        {
+            return data is Item;
+        }
+    }
 }

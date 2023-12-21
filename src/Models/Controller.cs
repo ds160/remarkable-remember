@@ -64,37 +64,37 @@ internal sealed class Controller : IDisposable
             await Task.WhenAll(item.Collection.Select(this.ProcessItem)).ConfigureAwait(false);
         }
 
-        await this.ItemSync(item).ConfigureAwait(false);
+        String? syncPath = await this.ItemSync(item).ConfigureAwait(false);
 
-        this.ItemSave(item);
+        this.ItemSave(item.Id, item.Modified, syncPath);
     }
 
-    private void ItemSave(Item item)
+    private void ItemSave(String id, DateTime modified, String? syncPath)
     {
         using DatabaseContext database = new DatabaseContext(this.dataSource);
 
-        if (item.SyncPath != null)
+        if (syncPath != null)
         {
-            Sync? sync = database.Syncs.Find(item.Id);
+            Sync? sync = database.Syncs.Find(id);
             if (sync != null)
             {
-                sync.Modified = item.Modified;
-                sync.Downloaded = item.SyncPath;
+                sync.Modified = modified;
+                sync.Downloaded = syncPath;
             }
             else
             {
-                database.Syncs.Add(new Sync(item.Id, item.Modified, item.SyncPath));
+                database.Syncs.Add(new Sync(id, modified, syncPath));
             }
         }
 
         database.SaveChanges();
     }
 
-    private async Task ItemSync(Item item)
+    private async Task<String?> ItemSync(Item item)
     {
-        if (item.SyncHint == null) { return; }
-        if (item.SyncHint is Item.Hint.DocumentExistsInTarget or Item.Hint.ItemTrashed) { return; }
-        if (item.SyncPath == null) { return; }
+        if (item.SyncHint == null) { return null; }
+        if (item.SyncHint is Item.Hint.DocumentExistsInTarget or Item.Hint.ItemTrashed) { return null; }
+        if (item.SyncPath == null) { return null; }
 
         if (item.Sync != null && item.SyncHint is Item.Hint.DocumentDownloadPathChanged)
         {
@@ -104,6 +104,8 @@ internal sealed class Controller : IDisposable
         using Stream sourceStream = await this.tablet.Download(item.Id).ConfigureAwait(false);
         using Stream targetStream = FileHelper.Create(item.SyncPath);
         await sourceStream.CopyToAsync(targetStream).ConfigureAwait(false);
+
+        return item.SyncPath;
     }
 
     private static Item MapItem(DatabaseContext database, Tablet.Item tabletItem, String? parentTargetDirectory = null)

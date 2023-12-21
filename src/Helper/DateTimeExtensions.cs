@@ -17,6 +17,6 @@ public static class DateTimeExtensions
 
     public static String ToDisplayString(this DateTime value)
     {
-        return value.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
+        return value.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
     }
 }
