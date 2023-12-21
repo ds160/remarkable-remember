@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Reactive.Linq;
@@ -19,14 +18,12 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
 {
     private TabletConnectionError? connectionStatus;
     private readonly Controller controller;
-    private readonly ObservableCollection<Item> items;
 
     public MainWindowViewModel(String dataSource)
     {
         this.controller = new Controller(dataSource);
-        this.items = new ObservableCollection<Item>();
 
-        this.TreeSource = new HierarchicalTreeDataGridSource<Item>(this.items)
+        this.TreeSource = new HierarchicalTreeDataGridSource<Item>(new List<Item>())
         {
             Columns =
             {
@@ -41,6 +38,8 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
         this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process, this.Process_CanExecute());
         this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh, this.Refresh_CanExecute());
+
+        this.WhenAnyValue(vm => vm.ConnectionStatus).Subscribe(status => this.RaisePropertyChanged(nameof(this.ConnectionStatusText)));
 
         _ = this.UpdateConnectionStatus();
     }
@@ -81,8 +80,7 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
             }
             finally
             {
-                IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(false);
-                this.UpdateTreeSource(items);
+                await this.Refresh().ConfigureAwait(false);
             }
         }
     }
@@ -97,8 +95,28 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     private async Task Refresh()
     {
-        IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(false);
-        this.UpdateTreeSource(items);
+        try
+        {
+            IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(false);
+            this.TreeSource.Items = items.Where(item => !item.Trashed).ToList();
+
+            this.TreeSource.Sort(new Comparison<Item>((itemA, itemB) =>
+            {
+                Int32 collectionA = (itemA.Collection == null) ? 1 : 0;
+                Int32 collectionB = (itemB.Collection == null) ? 1 : 0;
+                Int32 collectionCompareResult = collectionA - collectionB;
+
+                return (collectionCompareResult != 0)
+                    ? collectionCompareResult
+                    : String.CompareOrdinal(itemA.Name, itemB.Name);
+            }));
+        }
+        catch
+        {
+            this.TreeSource.Items = new List<Item>();
+
+            throw;
+        }
     }
 
     private IObservable<Boolean> Refresh_CanExecute()
@@ -115,27 +133,6 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private void UpdateTreeSource(IEnumerable<Item> items)
-    {
-        this.items.Clear();
-
-        foreach (Item item in items.Where(item => !item.Trashed).ToArray())
-        {
-            this.items.Add(item);
-        }
-
-        this.TreeSource.Sort(new Comparison<Item>((itemA, itemB) =>
-        {
-            Int32 collectionA = (itemA.Collection == null) ? 1 : 0;
-            Int32 collectionB = (itemB.Collection == null) ? 1 : 0;
-            Int32 collectionCompareResult = collectionA - collectionB;
-
-            return (collectionCompareResult != 0)
-                ? collectionCompareResult
-                : String.CompareOrdinal(itemA.Name, itemB.Name);
-        }));
-    }
-
     public ICommand CommandHandWritingRecognition { get; }
     public ICommand CommandProcess { get; }
     public ICommand CommandRefresh { get; }
@@ -144,6 +141,23 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
     {
         get { return this.connectionStatus; }
         private set { this.RaiseAndSetIfChanged(ref this.connectionStatus, value); }
+    }
+
+    public String ConnectionStatusText
+    {
+        get
+        {
+            switch (this.ConnectionStatus)
+            {
+                case null: return "Connected";
+                case TabletConnectionError.Unknown: return "Unknown connection error";
+                case TabletConnectionError.SshNotConfigured: return "SSH protocol information are not configured or wrong";
+                case TabletConnectionError.SshNotConnected: return "Not connected via WiFi or USB";
+                case TabletConnectionError.UsbNotActived: return "USB web interface is not activated";
+                case TabletConnectionError.UsbNotConnected: return "Not connected via USB";
+                default: throw new NotImplementedException();
+            }
+        }
     }
 
     public HierarchicalTreeDataGridSource<Item> TreeSource { get; }

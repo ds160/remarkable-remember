@@ -46,8 +46,8 @@ public class Migration001 : Migration
         modelBuilder.Entity("ReMarkableRemember.Entities.Sync", builder =>
         {
             builder.Property<String>("Id").HasColumnType("TEXT");
-            builder.Property<String>("Downloaded").IsRequired().HasColumnType("TEXT");
             builder.Property<String>("Modified").IsRequired().HasColumnType("TEXT");
+            builder.Property<String>("Path").IsRequired().HasColumnType("TEXT");
             builder.HasKey("Id");
             builder.ToTable("Syncs");
         });
@@ -105,7 +105,7 @@ public class Migration001 : Migration
             {
                 Id = table.Column<String>(type: "TEXT", nullable: false),
                 Modified = table.Column<String>(type: "TEXT", nullable: false),
-                Downloaded = table.Column<String>(type: "TEXT", nullable: false)
+                Path = table.Column<String>(type: "TEXT", nullable: false)
             },
             constraints: table =>
             {

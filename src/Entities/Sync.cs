@@ -5,11 +5,11 @@ namespace ReMarkableRemember.Entities;
 
 public class Sync
 {
-    public Sync(String id, DateTime modified, String downloaded)
+    public Sync(String id, DateTime modified, String path)
     {
         this.Id = id;
         this.Modified = modified;
-        this.Downloaded = downloaded;
+        this.Path = path;
     }
 
     [Key]
@@ -19,5 +19,5 @@ public class Sync
     public DateTime Modified { get; set; }
 
     [Required]
-    public String Downloaded { get; set; }
+    public String Path { get; set; }
 }

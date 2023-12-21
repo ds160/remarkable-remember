@@ -78,7 +78,7 @@ internal sealed class Controller : IDisposable
             if (sync != null)
             {
                 sync.Modified = modified;
-                sync.Downloaded = syncPath;
+                sync.Path = syncPath;
             }
             else
             {

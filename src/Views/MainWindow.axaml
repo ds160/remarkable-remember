@@ -3,6 +3,7 @@
         xmlns:vm="using:ReMarkableRemember.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converter="using:ReMarkableRemember.Views.Converter"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ReMarkableRemember.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -13,8 +14,12 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
+    <Window.Resources>
+        <converter:NullableBooleanConverter x:Key="NullableBooleanConverter"/>
+    </Window.Resources>
+
     <Grid RowDefinitions="Auto,*,Auto">
-        <StackPanel Grid.Row="0" Margin="6" Orientation="Horizontal" Spacing="12">
+        <StackPanel Grid.Row="0" Margin="6" Orientation="Horizontal" Spacing="6">
             <Button Command="{Binding CommandRefresh}" Content="Refresh"/>
             <Button Command="{Binding CommandProcess}" Content="Process"/>
             <Button Command="{Binding CommandHandWritingRecognition}" Content="Hand Writing Recognition"/>
@@ -22,8 +27,10 @@
 
         <TreeDataGrid Grid.Row="1" Source="{Binding TreeSource}" CanUserResizeColumns="True" CanUserSortColumns="False" Margin="6"/>
 
-        <StackPanel Grid.Row="2" Margin="6">
-            <Label Content="{Binding ConnectionStatus}"/>
+        <StackPanel Grid.Row="2" Margin="6" Orientation="Horizontal">
+            <Image Source="/Assets/Connected.png" IsVisible="{Binding ConnectionStatus, Converter={StaticResource NullableBooleanConverter}, ConverterParameter=True}"/>
+            <Image Source="/Assets/Disconnected.png" IsVisible="{Binding ConnectionStatus, Converter={StaticResource NullableBooleanConverter}, ConverterParameter=False}"/>
+            <Label Content="{Binding ConnectionStatusText}"/>
         </StackPanel>
     </Grid>
 </Window>

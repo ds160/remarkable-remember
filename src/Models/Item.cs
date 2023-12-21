@@ -59,7 +59,7 @@ internal sealed class Item
         if (tabletItem.Trashed) { return Hint.ItemTrashed; }
         if (previousSync == null && Path.Exists(syncPath)) { return Hint.DocumentExistsInTarget; }
         if (previousSync == null) { return Hint.ItemNew; }
-        if (previousSync.Downloaded != syncPath) { return Hint.DocumentSyncPathChanged; }
+        if (previousSync.Path != syncPath) { return Hint.DocumentSyncPathChanged; }
         if (previousSync.Modified < tabletItem.Modified) { return Hint.ItemModified; }
         if (!Path.Exists(syncPath)) { return Hint.DocumentNotFoundInTarget; }
 
@@ -71,7 +71,7 @@ internal sealed class Item
         public SyncDetail(Sync sync)
         {
             this.Date = sync.Modified;
-            this.Path = sync.Downloaded;
+            this.Path = sync.Path;
         }
 
         public DateTime Date { get; }

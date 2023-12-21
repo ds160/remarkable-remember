@@ -44,8 +44,8 @@ public class DatabaseModelSnapshot : ModelSnapshot
         modelBuilder.Entity("ReMarkableRemember.Entities.Sync", builder =>
         {
             builder.Property<String>("Id").HasColumnType("TEXT");
-            builder.Property<String>("Downloaded").IsRequired().HasColumnType("TEXT");
             builder.Property<String>("Modified").IsRequired().HasColumnType("TEXT");
+            builder.Property<String>("Path").IsRequired().HasColumnType("TEXT");
             builder.HasKey("Id");
             builder.ToTable("Syncs");
         });
