@@ -57,13 +57,12 @@ internal sealed class Tablet : IDisposable
 
         try
         {
-            using SftpClient client = this.CreateSftpClient();
+            using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
 
-            IEnumerable<ISftpFile> files = client
-                .ListDirectory(PATH_NOTEBOOKS)
-                .Where(file => file.Name.StartsWith(id, StringComparison.OrdinalIgnoreCase));
+            IEnumerable<ISftpFile> files = await Task.Run(() => client.ListDirectory(PATH_NOTEBOOKS)).ConfigureAwait(false);
 
-            this.BackupFiles(client, files, targetDirectory);
+            IEnumerable<ISftpFile> itemFiles = files.Where(file => file.Name.StartsWith(id, StringComparison.OrdinalIgnoreCase));
+            await this.BackupFiles(itemFiles, targetDirectory).ConfigureAwait(false);
         }
         finally
         {
@@ -77,8 +76,7 @@ internal sealed class Tablet : IDisposable
 
         try
         {
-            Stream stream = await ExecuteHttp(() => this.usbClientDownload.GetStreamAsync(new Uri($"http://{IP}/download/{id}/placeholder"))).ConfigureAwait(false);
-            return stream;
+            return await ExecuteHttp(() => this.usbClientDownload.GetStreamAsync(new Uri($"http://{IP}/download/{id}/placeholder"))).ConfigureAwait(false);
         }
         finally
         {
@@ -92,7 +90,7 @@ internal sealed class Tablet : IDisposable
 
         try
         {
-            using SftpClient client = this.CreateSftpClient();
+            using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
         }
         catch (TabletException exception)
         {
@@ -127,16 +125,14 @@ internal sealed class Tablet : IDisposable
 
         try
         {
-            using SftpClient client = this.CreateSftpClient();
+            using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
 
-            IEnumerable<ISftpFile> files = client
-                .ListDirectory(PATH_NOTEBOOKS)
-                .Where(file => file.IsRegularFile && file.Name.EndsWith(".metadata", StringComparison.OrdinalIgnoreCase));
+            IEnumerable<ISftpFile> files = await Task.Run(() => client.ListDirectory(PATH_NOTEBOOKS)).ConfigureAwait(false);
 
             List<Item> allItems = new List<Item>();
-            foreach (ISftpFile file in files)
+            foreach (ISftpFile file in files.Where(file => file.IsRegularFile && file.Name.EndsWith(".metadata", StringComparison.OrdinalIgnoreCase)))
             {
-                String metaDataFileText = client.ReadAllText(file.FullName);
+                String metaDataFileText = await Task.Run(() => client.ReadAllText(file.FullName)).ConfigureAwait(false);
                 MetaDataFile metaDataFile = JsonSerializer.Deserialize<MetaDataFile>(metaDataFileText, jsonSerializerOptions);
                 if (metaDataFile.Deleted != true)
                 {
@@ -161,19 +157,20 @@ internal sealed class Tablet : IDisposable
 
         try
         {
-            using SftpClient client = this.CreateSftpClient();
+            using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
 
-            String contentFileText = client.ReadAllText(Path.Combine(PATH_NOTEBOOKS, $"{id}.content"));
+            String contentFileText = await Task.Run(() => client.ReadAllText(Path.Combine(PATH_NOTEBOOKS, $"{id}.content"))).ConfigureAwait(false);
             ContentFile contentFile = JsonSerializer.Deserialize<ContentFile>(contentFileText, jsonSerializerOptions);
 
             if (contentFile.FileType != "notebook") { throw new NotebookException("Invalid reMarkable file type."); }
             if (contentFile.FormatVersion != 2) { throw new NotebookException($"Invalid reMarkable file format version: '{contentFile.FormatVersion}'."); }
 
-            IEnumerable<Byte[]> pageBuffers = contentFile.CPages.Pages
-                .Where(page => page.Deleted == null)
-                .Select(page => client.ReadAllBytes(Path.Combine(PATH_NOTEBOOKS, id, $"{page.Id}.rm")))
-                .ToArray();
-
+            List<Byte[]> pageBuffers = new List<Byte[]>();
+            foreach (ContentFile.PagesContainer.Page page in contentFile.CPages.Pages.Where(page => page.Deleted == null))
+            {
+                Byte[] pageBuffer = await Task.Run(() => client.ReadAllBytes(Path.Combine(PATH_NOTEBOOKS, id, $"{page.Id}.rm"))).ConfigureAwait(false);
+                pageBuffers.Add(pageBuffer);
+            }
             return new Notebook(pageBuffers);
         }
         finally
@@ -188,31 +185,34 @@ internal sealed class Tablet : IDisposable
         this.sshConnectionInfo = CreateSshConnectionInfo(host, password);
     }
 
-    private void BackupFiles(SftpClient client, IEnumerable<ISftpFile> files, String targetDirectory)
+    private async Task BackupFiles(IEnumerable<ISftpFile> files, String targetDirectory)
     {
+        using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
+
         foreach (ISftpFile file in files.Where(file => file.Name is not "." and not ".."))
         {
             String targetPath = Path.Combine(targetDirectory, file.Name);
 
             if (file.IsDirectory)
             {
-                this.BackupFiles(client, client.ListDirectory(file.FullName), targetPath);
+                IEnumerable<ISftpFile> directoryFiles = await Task.Run(() => client.ListDirectory(file.FullName)).ConfigureAwait(false);
+                await this.BackupFiles(directoryFiles, targetPath).ConfigureAwait(false);
             }
 
             if (file.IsRegularFile)
             {
                 using Stream fileStream = FileSystem.Create(targetPath);
-                client.DownloadFile(file.FullName, fileStream);
+                await Task.Run(() => client.DownloadFile(file.FullName, fileStream)).ConfigureAwait(false);
             }
         }
     }
 
-    private SftpClient CreateSftpClient()
+    private async Task<SftpClient> CreateSftpClient()
     {
         try
         {
             SftpClient client = new SftpClient(this.sshConnectionInfo);
-            client.Connect();
+            await Task.Run(client.Connect).ConfigureAwait(false);
             return client;
         }
         catch (ProxyException exception)

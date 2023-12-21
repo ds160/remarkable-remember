@@ -21,6 +21,7 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     public MainWindowViewModel(String dataSource)
     {
+        this.connectionStatus = TabletConnectionError.SshNotConnected;
         this.controller = new Controller(dataSource);
 
         this.TreeSource = new HierarchicalTreeDataGridSource<Item>(new List<Item>())
