@@ -4,7 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using ReMarkableRemember.ViewModels;
 
-namespace ReMarkableRemember;
+namespace ReMarkableRemember.Templates;
 
 public class ViewLocator : IDataTemplate
 {

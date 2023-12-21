@@ -9,9 +9,9 @@ internal sealed class Item
 {
     public enum Hint
     {
-        DocumentDownloadPathChanged,
         DocumentExistsInTarget,
         DocumentNotFoundInTarget,
+        DocumentSyncPathChanged,
         ItemModified,
         ItemNew,
         ItemTrashed
@@ -59,7 +59,7 @@ internal sealed class Item
         if (tabletItem.Trashed) { return Hint.ItemTrashed; }
         if (previousSync == null && Path.Exists(syncPath)) { return Hint.DocumentExistsInTarget; }
         if (previousSync == null) { return Hint.ItemNew; }
-        if (previousSync.Downloaded != syncPath) { return Hint.DocumentDownloadPathChanged; }
+        if (previousSync.Downloaded != syncPath) { return Hint.DocumentSyncPathChanged; }
         if (previousSync.Modified < tabletItem.Modified) { return Hint.ItemModified; }
         if (!Path.Exists(syncPath)) { return Hint.DocumentNotFoundInTarget; }
 

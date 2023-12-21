@@ -1,11 +1,11 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ReMarkableRemember.App"
-             xmlns:local="using:ReMarkableRemember"
+             xmlns:templates="using:ReMarkableRemember.Templates"
              RequestedThemeVariant="Default">
 
     <Application.DataTemplates>
-        <local:ViewLocator/>
+        <templates:ViewLocator/>
     </Application.DataTemplates>
 
     <Application.Styles>

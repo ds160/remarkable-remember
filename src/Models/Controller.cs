@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ReMarkableRemember.Entities;
-using ReMarkableRemember.Helper;
 
 namespace ReMarkableRemember.Models;
 
@@ -96,13 +95,13 @@ internal sealed class Controller : IDisposable
         if (item.SyncHint is Item.Hint.DocumentExistsInTarget or Item.Hint.ItemTrashed) { return null; }
         if (item.SyncPath == null) { return null; }
 
-        if (item.Sync != null && item.SyncHint is Item.Hint.DocumentDownloadPathChanged)
+        if (item.Sync != null && item.SyncHint is Item.Hint.DocumentSyncPathChanged)
         {
-            FileHelper.Delete(item.Sync.Path);
+            FileSystem.Delete(item.Sync.Path);
         }
 
         using Stream sourceStream = await this.tablet.Download(item.Id).ConfigureAwait(false);
-        using Stream targetStream = FileHelper.Create(item.SyncPath);
+        using Stream targetStream = FileSystem.Create(item.SyncPath);
         await sourceStream.CopyToAsync(targetStream).ConfigureAwait(false);
 
         return item.SyncPath;

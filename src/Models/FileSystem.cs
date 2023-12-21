@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 
-namespace ReMarkableRemember.Helper;
+namespace ReMarkableRemember.Models;
 
-public static class FileHelper
+internal static class FileSystem
 {
     public static FileStream Create(String path)
     {
