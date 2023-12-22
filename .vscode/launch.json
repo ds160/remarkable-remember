@@ -9,6 +9,7 @@
             "program": "${workspaceFolder}/bin/Debug/net7.0/ReMarkableRemember.dll",
             "args": [
                 "${workspaceFolder}/bin/Debug/net7.0/ReMarkableRemember.db"
+                // "/home/daniel/SynologyDrive/Remarkable/remarkable.db"
             ],
             "cwd": "${workspaceFolder}/src",
             "console": "internalConsole",

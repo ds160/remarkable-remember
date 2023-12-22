@@ -21,8 +21,7 @@ internal sealed class Tablet : IDisposable
     private const String PATH_NOTEBOOKS = "/home/root/.local/share/remarkable/xochitl";
     private const Int32 SSH_TIMEOUT = 2;
     private const String SSH_USER = "root";
-    private const Int32 USB_TIMEOUT_DOCUMENT = 1;
-    private const Int32 USB_TIMEOUT_DOWNLOAD = 10;
+    private const Int32 USB_TIMEOUT = 1;
 
     private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
@@ -36,8 +35,8 @@ internal sealed class Tablet : IDisposable
     {
         this.sshConnectionInfo = CreateSshConnectionInfo(host, password);
         this.sshSemaphore = new SemaphoreSlim(1, 1);
-        this.usbClientDocument = new HttpClient() { Timeout = TimeSpan.FromSeconds(USB_TIMEOUT_DOCUMENT) };
-        this.usbClientDownload = new HttpClient() { Timeout = TimeSpan.FromSeconds(USB_TIMEOUT_DOWNLOAD) };
+        this.usbClientDocument = new HttpClient() { Timeout = TimeSpan.FromSeconds(USB_TIMEOUT) };
+        this.usbClientDownload = new HttpClient();
         this.usbSemaphore = new SemaphoreSlim(1, 1);
     }
 
@@ -163,12 +162,13 @@ internal sealed class Tablet : IDisposable
             ContentFile contentFile = JsonSerializer.Deserialize<ContentFile>(contentFileText, jsonSerializerOptions);
 
             if (contentFile.FileType != "notebook") { throw new NotebookException("Invalid reMarkable file type."); }
-            if (contentFile.FormatVersion != 2) { throw new NotebookException($"Invalid reMarkable file format version: '{contentFile.FormatVersion}'."); }
+            if (contentFile.FormatVersion is not (1 or 2)) { throw new NotebookException($"Invalid reMarkable file format version: '{contentFile.FormatVersion}'."); }
 
             List<Byte[]> pageBuffers = new List<Byte[]>();
-            foreach (ContentFile.PagesContainer.Page page in contentFile.CPages.Pages.Where(page => page.Deleted == null))
+            IEnumerable<String> pages = (contentFile.FormatVersion == 1) ? contentFile.Pages : contentFile.CPages.Pages.Where(page => page.Deleted == null).Select(page => page.Id);
+            foreach (String page in pages)
             {
-                Byte[] pageBuffer = await Task.Run(() => client.ReadAllBytes(Path.Combine(PATH_NOTEBOOKS, id, $"{page.Id}.rm"))).ConfigureAwait(false);
+                Byte[] pageBuffer = await Task.Run(() => client.ReadAllBytes(Path.Combine(PATH_NOTEBOOKS, id, $"{page}.rm"))).ConfigureAwait(false);
                 pageBuffers.Add(pageBuffer);
             }
             return new Notebook(pageBuffers);
@@ -225,7 +225,7 @@ internal sealed class Tablet : IDisposable
         }
         catch (SshAuthenticationException exception)
         {
-            throw new TabletException(TabletConnectionError.SshNotConfigured, "SSH protocol information are not configured or wrong (Menu > Settings > Help > Copyrights and licenses).", exception);
+            throw new TabletException(TabletConnectionError.SshNotConfigured, "SSH protocol information are not configured or wrong.", exception);
         }
         catch (SshOperationTimeoutException exception)
         {
@@ -251,7 +251,7 @@ internal sealed class Tablet : IDisposable
             {
                 if (socketException.SocketErrorCode is SocketError.ConnectionRefused or SocketError.NetworkDown or SocketError.NetworkUnreachable)
                 {
-                    throw new TabletException(TabletConnectionError.UsbNotActived, "USB web interface is not activated (Menu > Settings > Storage).", exception);
+                    throw new TabletException(TabletConnectionError.UsbNotActived, "USB web interface is not activated.", exception);
                 }
             }
 
@@ -280,6 +280,7 @@ internal sealed class Tablet : IDisposable
         public String FileType { get; set; }
         public Int32 FormatVersion { get; set; }
         public PagesContainer CPages { get; set; }
+        public IEnumerable<String> Pages { get; set; }
 
         public struct PagesContainer
         {

@@ -21,7 +21,10 @@ internal sealed class ItemViewModel : ViewModelBase
 
     public ItemViewModel(Item source, ItemViewModel? parent)
     {
-        this.Collection = source.Collection?.Select(childItem => new ItemViewModel(childItem, this)).ToArray();
+        List<ItemViewModel>? collection = source.Collection?.Select(childItem => new ItemViewModel(childItem, this)).ToList();
+        collection?.Sort(new Comparison<ItemViewModel>(Compare));
+
+        this.Collection = collection;
         this.Parent = parent;
         this.Source = source;
     }

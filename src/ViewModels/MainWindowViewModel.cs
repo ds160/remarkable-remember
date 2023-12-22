@@ -18,11 +18,13 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
 {
     private TabletConnectionError? connectionStatus;
     private readonly Controller controller;
+    private Boolean hasItems;
 
     public MainWindowViewModel(String dataSource)
     {
         this.connectionStatus = TabletConnectionError.SshNotConnected;
         this.controller = new Controller(dataSource);
+        this.hasItems = false;
 
         this.ShowDialog = new Interaction<String, Boolean>();
         this.TreeSource = new HierarchicalTreeDataGridSource<ItemViewModel>(new List<ItemViewModel>())
@@ -40,7 +42,7 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
         this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
         this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process, this.Process_CanExecute());
-        this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh, this.Refresh_CanExecute());
+        this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh);
 
         this.WhenAnyValue(vm => vm.ConnectionStatus).Subscribe(status => this.RaisePropertyChanged(nameof(this.ConnectionStatusText)));
 
@@ -103,7 +105,10 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     private IObservable<Boolean> Process_CanExecute()
     {
-        return this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
+        IObservable<Boolean> items = this.WhenAnyValue(vm => vm.HasItems);
+
+        return Observable.CombineLatest(connectionStatus, items, (value1, value2) => value1 && value2);
     }
 
     private async Task Refresh()
@@ -111,19 +116,21 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         try
         {
             IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(true);
-            this.TreeSource.Items = items.Where(item => !item.Trashed).Select(item => new ItemViewModel(item, null)).ToArray();
-            this.TreeSource.Sort(new Comparison<ItemViewModel>(ItemViewModel.Compare));
+
+            List<ItemViewModel> list = items.Where(item => !item.Trashed).Select(item => new ItemViewModel(item, null)).ToList();
+            list.Sort(new Comparison<ItemViewModel>(ItemViewModel.Compare));
+
+            this.TreeSource.Items = list;
         }
         catch
         {
             this.TreeSource.Items = new List<ItemViewModel>();
             throw;
         }
-    }
-
-    private IObservable<Boolean> Refresh_CanExecute()
-    {
-        return this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
+        finally
+        {
+            this.HasItems = this.TreeSource.Items.Any();
+        }
     }
 
     private async Task UpdateConnectionStatus()
@@ -160,6 +167,12 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 default: throw new NotImplementedException();
             }
         }
+    }
+
+    public Boolean HasItems
+    {
+        get { return this.hasItems; }
+        private set { this.RaiseAndSetIfChanged(ref this.hasItems, value); }
     }
 
     public Interaction<String, Boolean> ShowDialog { get; }
