@@ -76,10 +76,22 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     private async Task Process()
     {
-        List<ItemViewModel> items = this.TreeSource.Items.ToList();
-        foreach (ItemViewModel item in items)
+        try
         {
-            await this.Process(item).ConfigureAwait(true);
+            List<ItemViewModel> items = this.TreeSource.Items.ToList();
+            foreach (ItemViewModel item in items)
+            {
+                await this.Process(item).ConfigureAwait(true);
+            }
+        }
+        catch
+        {
+            this.TreeSource.Items = new List<ItemViewModel>();
+            throw;
+        }
+        finally
+        {
+            this.HasItems = this.TreeSource.Items.Any();
         }
     }
 

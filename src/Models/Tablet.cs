@@ -58,10 +58,7 @@ internal sealed class Tablet : IDisposable
         {
             using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
 
-            IEnumerable<ISftpFile> files = await Task.Run(() => client.ListDirectory(PATH_NOTEBOOKS)).ConfigureAwait(false);
-
-            IEnumerable<ISftpFile> itemFiles = files.Where(file => file.Name.StartsWith(id, StringComparison.OrdinalIgnoreCase));
-            await this.BackupFiles(itemFiles, targetDirectory).ConfigureAwait(false);
+            await this.BackupFiles(client, PATH_NOTEBOOKS, targetDirectory, file => file.Name.StartsWith(id, StringComparison.OrdinalIgnoreCase)).ConfigureAwait(false);
         }
         finally
         {
@@ -185,18 +182,16 @@ internal sealed class Tablet : IDisposable
         this.sshConnectionInfo = CreateSshConnectionInfo(host, password);
     }
 
-    private async Task BackupFiles(IEnumerable<ISftpFile> files, String targetDirectory)
+    private async Task BackupFiles(SftpClient client, String sourceDirectory, String targetDirectory, Func<ISftpFile, Boolean> filter)
     {
-        using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
-
-        foreach (ISftpFile file in files.Where(file => file.Name is not "." and not ".."))
+        IEnumerable<ISftpFile> files = await Task.Run(() => client.ListDirectory(sourceDirectory)).ConfigureAwait(false);
+        foreach (ISftpFile file in files.Where(filter))
         {
             String targetPath = Path.Combine(targetDirectory, file.Name);
 
             if (file.IsDirectory)
             {
-                IEnumerable<ISftpFile> directoryFiles = await Task.Run(() => client.ListDirectory(file.FullName)).ConfigureAwait(false);
-                await this.BackupFiles(directoryFiles, targetPath).ConfigureAwait(false);
+                await this.BackupFiles(client, file.FullName, targetPath, file => file.Name is not "." and not "..").ConfigureAwait(false);
             }
 
             if (file.IsRegularFile)

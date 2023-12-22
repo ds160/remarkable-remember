@@ -19,6 +19,14 @@ internal sealed class ItemViewModel : ViewModelBase
         ExistsInTarget = Item.Hint.ExistsInTarget
     }
 
+    public enum Image
+    {
+        None,
+        Green,
+        Yellow,
+        Red
+    }
+
     public ItemViewModel(Item source, ItemViewModel? parent)
     {
         List<ItemViewModel>? collection = source.Collection?.Select(childItem => new ItemViewModel(childItem, this)).ToList();
@@ -79,5 +87,31 @@ internal sealed class ItemViewModel : ViewModelBase
         }
 
         return hint;
+    }
+
+    public static Image GetImage(DateTime? dateTime, Hint hint)
+    {
+        if ((hint & Hint.ExistsInTarget) != 0) { return Image.Red; }
+        if ((hint & Hint.New) != 0) { return Image.Yellow; }
+        if ((hint & Hint.Modified) != 0) { return Image.Yellow; }
+        if ((hint & Hint.SyncPathChanged) != 0) { return Image.Yellow; }
+        if ((hint & Hint.NotFoundInTarget) != 0) { return Image.Yellow; }
+
+        if (hint == 0) { return (dateTime != null) ? Image.Green : Image.None; }
+
+        throw new NotImplementedException();
+    }
+
+    public static String? GetToolTip(DateTime? dateTime, Hint hint)
+    {
+        if ((hint & Hint.ExistsInTarget) != 0) { return "Exists already in target directory"; }
+        if ((hint & Hint.New) != 0) { return "New"; }
+        if ((hint & Hint.Modified) != 0) { return "Modified"; }
+        if ((hint & Hint.SyncPathChanged) != 0) { return "Sync path changed"; }
+        if ((hint & Hint.NotFoundInTarget) != 0) { return "Not found in target directory"; }
+
+        if (hint == 0) { return (dateTime != null) ? "Up-to-date" : null; }
+
+        throw new NotImplementedException();
     }
 }

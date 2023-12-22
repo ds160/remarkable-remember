@@ -45,37 +45,12 @@ internal sealed class ItemHintColumnView : StackPanel
         this.image.Source = GetImage(dateTime, hint);
         this.textBlock.Text = dateTime?.ToDisplayString();
 
-        ToolTip.SetTip(this, GetToolTip(dateTime, hint));
+        ToolTip.SetTip(this, ItemViewModel.GetToolTip(dateTime, hint));
     }
 
     private static Bitmap? GetImage(DateTime? dateTime, ItemViewModel.Hint hint)
     {
-        if ((hint & ItemViewModel.Hint.ExistsInTarget) != 0) { return LoadBitmap("/Assets/DotRed.png"); }
-        if ((hint & ItemViewModel.Hint.New) != 0) { return LoadBitmap("/Assets/DotYellow.png"); }
-        if ((hint & ItemViewModel.Hint.Modified) != 0) { return LoadBitmap("/Assets/DotYellow.png"); }
-        if ((hint & ItemViewModel.Hint.SyncPathChanged) != 0) { return LoadBitmap("/Assets/DotYellow.png"); }
-        if ((hint & ItemViewModel.Hint.NotFoundInTarget) != 0) { return LoadBitmap("/Assets/DotYellow.png"); }
-
-        if (hint == 0) { return (dateTime != null) ? LoadBitmap("/Assets/DotGreen.png") : null; }
-
-        throw new NotImplementedException();
-    }
-
-    private static String? GetToolTip(DateTime? dateTime, ItemViewModel.Hint hint)
-    {
-        if ((hint & ItemViewModel.Hint.ExistsInTarget) != 0) { return "Exists already in target directory"; }
-        if ((hint & ItemViewModel.Hint.New) != 0) { return "New"; }
-        if ((hint & ItemViewModel.Hint.Modified) != 0) { return "Modified"; }
-        if ((hint & ItemViewModel.Hint.SyncPathChanged) != 0) { return "Sync path changed"; }
-        if ((hint & ItemViewModel.Hint.NotFoundInTarget) != 0) { return "Not found in target directory"; }
-
-        if (hint == 0) { return (dateTime != null) ? "Up-to-date" : null; }
-
-        throw new NotImplementedException();
-    }
-
-    private static Bitmap LoadBitmap(String uri)
-    {
-        return new Bitmap(AssetLoader.Open(new Uri($"avares://{assemblyName}{uri}")));
+        ItemViewModel.Image image = ItemViewModel.GetImage(dateTime, hint);
+        return (image != ItemViewModel.Image.None) ? new Bitmap(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/Dot{image}.png"))) : null;
     }
 }
