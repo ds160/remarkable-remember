@@ -60,9 +60,7 @@ internal sealed class TreeDataGridItemHintColumn : IDataTemplate
 
     private static Bitmap? GetImage(DateTime? dateTime, Item.Hint hint)
     {
-        if ((hint & Item.Hint.Trashed) != 0) { return LoadBitmap("/Assets/DotRed.png"); }
         if ((hint & Item.Hint.ExistsInTarget) != 0) { return LoadBitmap("/Assets/DotRed.png"); }
-
         if ((hint & Item.Hint.New) != 0) { return LoadBitmap("/Assets/DotYellow.png"); }
         if ((hint & Item.Hint.Modified) != 0) { return LoadBitmap("/Assets/DotYellow.png"); }
         if ((hint & Item.Hint.SyncPathChanged) != 0) { return LoadBitmap("/Assets/DotYellow.png"); }
@@ -75,9 +73,7 @@ internal sealed class TreeDataGridItemHintColumn : IDataTemplate
 
     private static String? GetToolTip(DateTime? dateTime, Item.Hint hint)
     {
-        if ((hint & Item.Hint.Trashed) != 0) { return "Trashed"; }
         if ((hint & Item.Hint.ExistsInTarget) != 0) { return "Exists already in target directory"; }
-
         if ((hint & Item.Hint.New) != 0) { return "New"; }
         if ((hint & Item.Hint.Modified) != 0) { return "Modified"; }
         if ((hint & Item.Hint.SyncPathChanged) != 0) { return "Sync path changed"; }

@@ -39,41 +39,10 @@ internal sealed class Controller : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public async Task<TabletConnectionError?> GetConnectionStatus()
-    {
-        return await this.tablet.GetConnectionStatus().ConfigureAwait(false);
-    }
-
-    public async Task<IEnumerable<Item>> GetItems()
-    {
-        using DatabaseContext database = new DatabaseContext(this.dataSource);
-        IEnumerable<Tablet.Item> tabletItems = await this.tablet.GetItems().ConfigureAwait(false);
-        return tabletItems.Select(tabletItem => MapItem(database, tabletItem)).ToArray();
-    }
-
-    public async Task<String> HandWritingRecognition(Item item, String language)
-    {
-        Notebook notebook = await this.tablet.GetNotebook(item.Id).ConfigureAwait(false);
-        IEnumerable<String> myScriptPages = await Task.WhenAll(notebook.Pages.Select(page => this.myScript.Recognize(page, language))).ConfigureAwait(false);
-        return String.Join(Environment.NewLine, myScriptPages);
-    }
-
-    public async Task<Boolean> ProcessItem(Item item)
-    {
-        if (item.Collection != null)
-        {
-            await Task.WhenAll(item.Collection.Select(this.ProcessItem)).ConfigureAwait(false);
-        }
-
-        Boolean backupDone = await this.ItemBackup(item).ConfigureAwait(false);
-        String? syncPath = await this.ItemSync(item).ConfigureAwait(false);
-
-        return this.ItemSave(item.Id, item.Modified, backupDone, syncPath);
-    }
-
-    private async Task<Boolean> ItemBackup(Item item)
+    public async Task<Boolean> BackupItem(Item item)
     {
         if (item.BackupHint is Item.Hint.None) { return false; }
+        if (item.Trashed) { return false; }
 
         IEnumerable<String> directories = Directory.GetDirectories(PATH_BACKUP, $"{item.Id}*");
         foreach (String directory in directories)
@@ -89,49 +58,35 @@ internal sealed class Controller : IDisposable
 
         await this.tablet.Backup(item.Id, PATH_BACKUP).ConfigureAwait(false);
 
+        item.BackupDone();
+
         return true;
     }
 
-    private Boolean ItemSave(String id, DateTime modified, Boolean backupDone, String? syncPath)
+    public async Task<TabletConnectionError?> GetConnectionStatus()
     {
-        using DatabaseContext database = new DatabaseContext(this.dataSource);
-
-        if (backupDone)
-        {
-            Backup? backup = database.Backups.Find(id);
-            if (backup != null)
-            {
-                backup.Modified = modified;
-            }
-            else
-            {
-                database.Backups.Add(new Backup(id, modified));
-            }
-        }
-
-        if (syncPath != null)
-        {
-            Sync? sync = database.Syncs.Find(id);
-            if (sync != null)
-            {
-                sync.Modified = modified;
-                sync.Path = syncPath;
-            }
-            else
-            {
-                database.Syncs.Add(new Sync(id, modified, syncPath));
-            }
-        }
-
-        database.SaveChanges();
-
-        return backupDone || (syncPath != null);
+        return await this.tablet.GetConnectionStatus().ConfigureAwait(false);
     }
 
-    private async Task<String?> ItemSync(Item item)
+    public async Task<IEnumerable<Item>> GetItems()
     {
-        if (item.SyncHint is Item.Hint.None or Item.Hint.ExistsInTarget or Item.Hint.Trashed) { return null; }
-        if (item.SyncPath == null) { return null; }
+        using DatabaseContext database = new DatabaseContext(this.dataSource);
+        IEnumerable<Tablet.Item> tabletItems = await this.tablet.GetItems().ConfigureAwait(false);
+        return tabletItems.Select(tabletItem => this.MapItem(database, tabletItem)).ToArray();
+    }
+
+    public async Task<String> HandWritingRecognition(Item item, String language)
+    {
+        Notebook notebook = await this.tablet.GetNotebook(item.Id).ConfigureAwait(false);
+        IEnumerable<String> myScriptPages = await Task.WhenAll(notebook.Pages.Select(page => this.myScript.Recognize(page, language))).ConfigureAwait(false);
+        return String.Join(Environment.NewLine, myScriptPages);
+    }
+
+    public async Task<Boolean> SyncItem(Item item)
+    {
+        if (item.SyncHint is Item.Hint.None or >= Item.Hint.ExistsInTarget) { return false; }
+        if (item.SyncPath == null) { return false; }
+        if (item.Trashed) { return false; }
 
         if (item.Sync != null && item.SyncHint is Item.Hint.SyncPathChanged)
         {
@@ -142,19 +97,18 @@ internal sealed class Controller : IDisposable
         using Stream targetStream = FileSystem.Create(item.SyncPath);
         await sourceStream.CopyToAsync(targetStream).ConfigureAwait(false);
 
-        return item.SyncPath;
+        item.SyncDone(item.SyncPath);
+
+        return true;
     }
 
-    private static Item MapItem(DatabaseContext database, Tablet.Item tabletItem, String? parentTargetDirectory = null)
+    private Item MapItem(DatabaseContext database, Tablet.Item tabletItem, String? parentTargetDirectory = null)
     {
         String? targetDirectory = MapItemGetTargetDirectory(database, tabletItem, parentTargetDirectory);
-        IEnumerable<Item>? collection = tabletItem.Collection?.Select(childTabletItem => MapItem(database, childTabletItem, targetDirectory)).ToArray();
+        IEnumerable<Item>? collection = tabletItem.Collection?.Select(childTabletItem => this.MapItem(database, childTabletItem, targetDirectory)).ToArray();
         String? syncPath = (targetDirectory != null && collection == null) ? Path.Combine(targetDirectory, tabletItem.Name) : targetDirectory;
 
-        Backup? previousBackup = database.Backups.Find(tabletItem.Id);
-        Sync? previousSync = database.Syncs.Find(tabletItem.Id);
-
-        return new Item(tabletItem, collection, previousBackup, previousSync, syncPath);
+        return new Item(this.dataSource, tabletItem, collection, syncPath);
     }
 
     private static String? MapItemGetTargetDirectory(DatabaseContext database, Tablet.Item tabletItem, String? parentTargetDirectory)

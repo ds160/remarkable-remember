@@ -33,7 +33,7 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 new TextColumn<Item, String>("Modified", item => item.Modified.ToDisplayString()),
                 new TemplateColumn<Item>(null, new TreeDataGridItemHintColumn(item => null, TreeDataGridItemHintColumn.GetHintIncludingCollection)),
                 new TextColumn<Item, String>("Sync Path", item => item.SyncPath),
-                new TemplateColumn<Item>("Sync Information", new TreeDataGridItemHintColumn(item => item.Sync?.Date, item => item.SyncHint)),
+                new TemplateColumn<Item>("Sync Information", new TreeDataGridItemHintColumn(item => item.Sync?.Modified, item => item.SyncHint)),
                 new TemplateColumn<Item>("Backup Information", new TreeDataGridItemHintColumn(item => item.Backup, item => item.BackupHint))
             }
         };
@@ -77,13 +77,24 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         Item? selectedItem = this.TreeSource.RowSelection!.SelectedItem;
         if (selectedItem != null)
         {
+            Boolean refresh = false;
+
             try
             {
-                await this.controller.ProcessItem(selectedItem).ConfigureAwait(true);
+                refresh |= await this.controller.BackupItem(selectedItem).ConfigureAwait(true);
+                refresh |= await this.controller.SyncItem(selectedItem).ConfigureAwait(true);
+            }
+            catch
+            {
+                refresh = true;
+                throw;
             }
             finally
             {
-                await this.Refresh().ConfigureAwait(true);
+                if (refresh)
+                {
+                    await this.Refresh().ConfigureAwait(true);
+                }
             }
         }
     }
@@ -117,7 +128,6 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         catch
         {
             this.TreeSource.Items = new List<Item>();
-
             throw;
         }
     }
