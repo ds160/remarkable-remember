@@ -7,7 +7,6 @@ namespace ReMarkableRemember.Models;
 
 internal sealed class Item
 {
-    [Flags]
     public enum Hint
     {
         None = 0,

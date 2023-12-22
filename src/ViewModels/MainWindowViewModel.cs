@@ -25,16 +25,16 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         this.controller = new Controller(dataSource);
 
         this.ShowDialog = new Interaction<String, Boolean>();
-        this.TreeSource = new HierarchicalTreeDataGridSource<Item>(new List<Item>())
+        this.TreeSource = new HierarchicalTreeDataGridSource<ItemViewModel>(new List<ItemViewModel>())
         {
             Columns =
             {
-                new HierarchicalExpanderColumn<Item>(new TextColumn<Item, String>("Name", item => item.Name), item => item.Collection),
-                new TextColumn<Item, String>("Modified", item => item.Modified.ToDisplayString()),
-                new TemplateColumn<Item>(null, new TreeDataGridItemHintColumn(item => null, TreeDataGridItemHintColumn.GetHintIncludingCollection)),
-                new TextColumn<Item, String>("Sync Path", item => item.SyncPath),
-                new TemplateColumn<Item>("Sync Information", new TreeDataGridItemHintColumn(item => item.Sync?.Modified, item => item.SyncHint)),
-                new TemplateColumn<Item>("Backup Information", new TreeDataGridItemHintColumn(item => item.Backup, item => item.BackupHint))
+                new HierarchicalExpanderColumn<ItemViewModel>(new TextColumn<ItemViewModel, String>("Name", item => item.Name), item => item.Collection),
+                new TextColumn<ItemViewModel, String>("Modified", item => item.Modified.ToDisplayString()),
+                new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(item => null, item => item.CombinedHint)),
+                new TextColumn<ItemViewModel, String>("Sync Path", item => item.SyncPath),
+                new TemplateColumn<ItemViewModel>("Sync Information", new ItemHintColumnTemplate(item => item.Sync, item => item.SyncHint)),
+                new TemplateColumn<ItemViewModel>("Backup Information", new ItemHintColumnTemplate(item => item.Backup, item => item.BackupHint))
             }
         };
 
@@ -56,10 +56,10 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     private async Task HandWritingRecognition()
     {
-        Item? selectedItem = this.TreeSource.RowSelection!.SelectedItem;
+        ItemViewModel? selectedItem = this.TreeSource.RowSelection!.SelectedItem;
         if (selectedItem != null)
         {
-            String text = await this.controller.HandWritingRecognition(selectedItem, "de_DE").ConfigureAwait(true);
+            String text = await this.controller.HandWritingRecognition(selectedItem.Source, "de_DE").ConfigureAwait(true);
             await this.ShowDialog.Handle(text);
         }
     }
@@ -74,37 +74,36 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     private async Task Process()
     {
-        Item? selectedItem = this.TreeSource.RowSelection!.SelectedItem;
-        if (selectedItem != null)
+        List<ItemViewModel> items = this.TreeSource.Items.ToList();
+        foreach (ItemViewModel item in items)
         {
-            Boolean refresh = false;
+            await this.Process(item).ConfigureAwait(true);
+        }
+    }
 
-            try
+    private async Task Process(ItemViewModel item)
+    {
+        if (item.Collection != null)
+        {
+            foreach (ItemViewModel childItem in item.Collection)
             {
-                refresh |= await this.controller.BackupItem(selectedItem).ConfigureAwait(true);
-                refresh |= await this.controller.SyncItem(selectedItem).ConfigureAwait(true);
-            }
-            catch
-            {
-                refresh = true;
-                throw;
-            }
-            finally
-            {
-                if (refresh)
-                {
-                    await this.Refresh().ConfigureAwait(true);
-                }
+                await this.Process(childItem).ConfigureAwait(true);
             }
         }
+
+        Boolean changed = await this.controller.BackupItem(item.Source).ConfigureAwait(true);
+
+        if (this.ConnectionStatus == null)
+        {
+            changed |= await this.controller.SyncItem(item.Source).ConfigureAwait(true);
+        }
+
+        if (changed) { item.RaiseChanged(); }
     }
 
     private IObservable<Boolean> Process_CanExecute()
     {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status is null);
-        IObservable<Boolean> treeSelection = this.TreeSource.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null);
-
-        return Observable.CombineLatest(connectionStatus, treeSelection, (value1, value2) => value1 && value2);
+        return this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
     }
 
     private async Task Refresh()
@@ -112,22 +111,12 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         try
         {
             IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(true);
-            this.TreeSource.Items = items.Where(item => !item.Trashed).ToList();
-
-            this.TreeSource.Sort(new Comparison<Item>((itemA, itemB) =>
-            {
-                Int32 collectionA = (itemA.Collection == null) ? 1 : 0;
-                Int32 collectionB = (itemB.Collection == null) ? 1 : 0;
-                Int32 collectionCompareResult = collectionA - collectionB;
-
-                return (collectionCompareResult != 0)
-                    ? collectionCompareResult
-                    : String.CompareOrdinal(itemA.Name, itemB.Name);
-            }));
+            this.TreeSource.Items = items.Where(item => !item.Trashed).Select(item => new ItemViewModel(item, null)).ToArray();
+            this.TreeSource.Sort(new Comparison<ItemViewModel>(ItemViewModel.Compare));
         }
         catch
         {
-            this.TreeSource.Items = new List<Item>();
+            this.TreeSource.Items = new List<ItemViewModel>();
             throw;
         }
     }
@@ -175,5 +164,5 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     public Interaction<String, Boolean> ShowDialog { get; }
 
-    public HierarchicalTreeDataGridSource<Item> TreeSource { get; }
+    public HierarchicalTreeDataGridSource<ItemViewModel> TreeSource { get; }
 }
