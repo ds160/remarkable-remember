@@ -24,6 +24,7 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         this.connectionStatus = TabletConnectionError.SshNotConnected;
         this.controller = new Controller(dataSource);
 
+        this.ShowDialog = new Interaction<String, Boolean>();
         this.TreeSource = new HierarchicalTreeDataGridSource<Item>(new List<Item>())
         {
             Columns =
@@ -59,7 +60,7 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         if (selectedItem != null)
         {
             String text = await this.controller.HandWritingRecognition(selectedItem, "de_DE").ConfigureAwait(true);
-            throw new MyScriptException(text);
+            await this.ShowDialog.Handle(text);
         }
     }
 
@@ -161,6 +162,8 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
             }
         }
     }
+
+    public Interaction<String, Boolean> ShowDialog { get; }
 
     public HierarchicalTreeDataGridSource<Item> TreeSource { get; }
 }

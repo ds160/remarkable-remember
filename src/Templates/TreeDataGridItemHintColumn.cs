@@ -1,9 +1,11 @@
 using System;
+using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using ReMarkableRemember.Helper;
 using ReMarkableRemember.Models;
 
@@ -11,6 +13,8 @@ namespace ReMarkableRemember.Templates;
 
 internal sealed class TreeDataGridItemHintColumn : IDataTemplate
 {
+    private static readonly String? assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+
     private readonly Func<Item, DateTime?> getDateTime;
     private readonly Func<Item, Item.Hint> getHint;
 
@@ -19,6 +23,7 @@ internal sealed class TreeDataGridItemHintColumn : IDataTemplate
         this.getDateTime = getDateTime;
         this.getHint = getHint;
     }
+
     public Control? Build(Object? param)
     {
         Item item = param as Item ?? throw new ArgumentNullException(nameof(param));
@@ -55,18 +60,19 @@ internal sealed class TreeDataGridItemHintColumn : IDataTemplate
 
     private static Bitmap? GetImage(DateTime? dateTime, Item.Hint hint)
     {
-        if ((hint & Item.Hint.Trashed) != 0) { return new Bitmap("Assets/DotRed.png"); }
-        if ((hint & Item.Hint.ExistsInTarget) != 0) { return new Bitmap("Assets/DotRed.png"); }
+        if ((hint & Item.Hint.Trashed) != 0) { return LoadBitmap("/Assets/DotRed.png"); }
+        if ((hint & Item.Hint.ExistsInTarget) != 0) { return LoadBitmap("/Assets/DotRed.png"); }
 
-        if ((hint & Item.Hint.New) != 0) { return new Bitmap("Assets/DotYellow.png"); }
-        if ((hint & Item.Hint.Modified) != 0) { return new Bitmap("Assets/DotYellow.png"); }
-        if ((hint & Item.Hint.SyncPathChanged) != 0) { return new Bitmap("Assets/DotYellow.png"); }
-        if ((hint & Item.Hint.NotFoundInTarget) != 0) { return new Bitmap("Assets/DotYellow.png"); }
+        if ((hint & Item.Hint.New) != 0) { return LoadBitmap("/Assets/DotYellow.png"); }
+        if ((hint & Item.Hint.Modified) != 0) { return LoadBitmap("/Assets/DotYellow.png"); }
+        if ((hint & Item.Hint.SyncPathChanged) != 0) { return LoadBitmap("/Assets/DotYellow.png"); }
+        if ((hint & Item.Hint.NotFoundInTarget) != 0) { return LoadBitmap("/Assets/DotYellow.png"); }
 
-        if (hint == 0) { return (dateTime != null) ? new Bitmap("Assets/DotGreen.png") : null; }
+        if (hint == 0) { return (dateTime != null) ? LoadBitmap("/Assets/DotGreen.png") : null; }
 
         throw new NotImplementedException();
     }
+
     private static String? GetToolTip(DateTime? dateTime, Item.Hint hint)
     {
         if ((hint & Item.Hint.Trashed) != 0) { return "Trashed"; }
@@ -80,5 +86,10 @@ internal sealed class TreeDataGridItemHintColumn : IDataTemplate
         if (hint == 0) { return (dateTime != null) ? "Up-to-date" : null; }
 
         throw new NotImplementedException();
+    }
+
+    private static Bitmap LoadBitmap(String uri)
+    {
+        return new Bitmap(AssetLoader.Open(new Uri($"avares://{assemblyName}{uri}")));
     }
 }
