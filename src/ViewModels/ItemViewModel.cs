@@ -51,7 +51,7 @@ internal sealed class ItemViewModel : ViewModelBase
 
     public ItemViewModel? Parent { get; }
 
-    public DateTime? Sync { get { return this.Source?.Sync?.Modified; } }
+    public DateTime? Sync { get { return (this.SyncPath != null) ? this.Source?.Sync?.Modified : null; } }
 
     public String? SyncPath { get { return this.Source.SyncPath; } }
 
@@ -97,7 +97,7 @@ internal sealed class ItemViewModel : ViewModelBase
         if ((hint & Hint.SyncPathChanged) != 0) { return Image.Yellow; }
         if ((hint & Hint.NotFoundInTarget) != 0) { return Image.Yellow; }
 
-        if (hint == 0) { return (dateTime != null) ? Image.Green : Image.None; }
+        if (hint == Hint.None) { return (dateTime != null) ? Image.Green : Image.None; }
 
         throw new NotImplementedException();
     }
@@ -110,7 +110,7 @@ internal sealed class ItemViewModel : ViewModelBase
         if ((hint & Hint.SyncPathChanged) != 0) { return "Sync path changed"; }
         if ((hint & Hint.NotFoundInTarget) != 0) { return "Not found in target directory"; }
 
-        if (hint == 0) { return (dateTime != null) ? "Up-to-date" : null; }
+        if (hint == Hint.None) { return (dateTime != null) ? "Up-to-date" : null; }
 
         throw new NotImplementedException();
     }

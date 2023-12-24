@@ -30,6 +30,6 @@ public partial class App : Application
     {
         return args?.Length == 1 && File.Exists(args[0])
             ? args[0]
-            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"{nameof(ReMarkableRemember)}.db");
+            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), nameof(ReMarkableRemember), "database.db");
     }
 }

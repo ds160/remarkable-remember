@@ -58,6 +58,7 @@ internal sealed class Item
         Backup? backup = database.Backups.Find(this.Id);
         if (backup != null)
         {
+            backup.Deleted = null;
             backup.Modified = this.Modified;
         }
         else
