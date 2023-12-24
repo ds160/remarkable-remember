@@ -32,6 +32,6 @@ internal sealed class MainWindowExceptionHandler : IObserver<Exception>
     private async void ShowError(Exception exception)
     {
         IMsBox<ButtonResult> dialog = MessageBoxManager.GetMessageBoxStandard("Error", exception.Message, ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
-        await dialog.ShowWindowDialogAsync(this.owner).ConfigureAwait(false);
+        await dialog.ShowWindowDialogAsync(this.owner).ConfigureAwait(true);
     }
 }

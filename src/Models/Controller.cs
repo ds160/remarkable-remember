@@ -102,6 +102,11 @@ internal sealed class Controller : IDisposable
         return true;
     }
 
+    public async Task UploadTemplate(TabletTemplate template)
+    {
+        await this.tablet.UploadTemplate(template).ConfigureAwait(false);
+    }
+
     private Item MapItem(DatabaseContext database, Tablet.Item tabletItem, String? parentTargetDirectory = null)
     {
         String? targetDirectory = MapItemGetTargetDirectory(database, tabletItem, parentTargetDirectory);

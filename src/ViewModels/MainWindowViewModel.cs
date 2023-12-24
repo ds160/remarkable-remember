@@ -43,6 +43,7 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
         this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process, this.Process_CanExecute());
         this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh);
+        this.CommandUploadTemplate = ReactiveCommand.CreateFromTask(this.UploadTemplate, this.UploadTemplate_CanExecute());
 
         this.WhenAnyValue(vm => vm.ConnectionStatus).Subscribe(status => this.RaisePropertyChanged(nameof(this.ConnectionStatusText)));
 
@@ -154,9 +155,32 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         }
     }
 
+    private async Task UploadTemplate()
+    {
+        TabletTemplate tabletTemplate;
+
+        tabletTemplate = new TabletTemplate("Lines", "Daniel", "\uE9A8", false, "/home/daniel/SynologyDrive/Remarkable/Templates/Daniel Lines.svg");
+        await this.controller.UploadTemplate(tabletTemplate).ConfigureAwait(true);
+
+        tabletTemplate = new TabletTemplate("Alignment", "Daniel", "\uEA00", false, "/home/daniel/SynologyDrive/Remarkable/Templates/Daniel Alignment.svg");
+        await this.controller.UploadTemplate(tabletTemplate).ConfigureAwait(true);
+
+        tabletTemplate = new TabletTemplate("Aufrichtung", "Daniel", "\uEA00", false, "/home/daniel/SynologyDrive/Remarkable/Templates/Daniel Aufrichtung.svg");
+        await this.controller.UploadTemplate(tabletTemplate).ConfigureAwait(true);
+
+        tabletTemplate = new TabletTemplate("Chakras", "Daniel", "\uE98F", false, "/home/daniel/SynologyDrive/Remarkable/Templates/Daniel Chakras.svg");
+        await this.controller.UploadTemplate(tabletTemplate).ConfigureAwait(true);
+    }
+
+    private IObservable<Boolean> UploadTemplate_CanExecute()
+    {
+        return this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
+    }
+
     public ICommand CommandHandWritingRecognition { get; }
     public ICommand CommandProcess { get; }
     public ICommand CommandRefresh { get; }
+    public ICommand CommandUploadTemplate { get; }
 
     public TabletConnectionError? ConnectionStatus
     {

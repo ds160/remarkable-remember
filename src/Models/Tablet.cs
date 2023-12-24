@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Renci.SshNet;
@@ -19,11 +20,13 @@ internal sealed class Tablet : IDisposable
 {
     private const String IP = "10.11.99.1";
     private const String PATH_NOTEBOOKS = "/home/root/.local/share/remarkable/xochitl";
+    private const String PATH_TEMPLATES = "/usr/share/remarkable/templates/";
+    private const String PATH_TEMPLATES_FILE = "templates.json";
     private const Int32 SSH_TIMEOUT = 2;
     private const String SSH_USER = "root";
     private const Int32 USB_TIMEOUT = 1;
 
-    private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true };
 
     private ConnectionInfo sshConnectionInfo;
     private readonly SemaphoreSlim sshSemaphore;
@@ -176,10 +179,43 @@ internal sealed class Tablet : IDisposable
         }
     }
 
-
     public void Setup(String? host, String? password)
     {
         this.sshConnectionInfo = CreateSshConnectionInfo(host, password);
+    }
+
+    public async Task UploadTemplate(TabletTemplate template)
+    {
+        await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
+
+        try
+        {
+            using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
+
+            String templatesFilePath = Path.Combine(PATH_TEMPLATES, PATH_TEMPLATES_FILE);
+            String templatesFileText = await Task.Run(() => client.ReadAllText(templatesFilePath)).ConfigureAwait(false);
+            TemplatesFile templatesFile = JsonSerializer.Deserialize<TemplatesFile>(templatesFileText, jsonSerializerOptions);
+
+            Int32 currentIndex = templatesFile.Templates.FindIndex((item) => String.CompareOrdinal(item.Name, template.Name) == 0);
+            if (currentIndex > -1)
+            {
+                templatesFile.Templates[currentIndex] = TemplatesFile.Template.Convert(template);
+            }
+            else
+            {
+                templatesFile.Templates.Add(TemplatesFile.Template.Convert(template));
+            }
+
+            await Task.Run(() => client.WriteAllBytes(Path.Combine(PATH_TEMPLATES, $"{template.FileName}.png"), template.BytesPng)).ConfigureAwait(false);
+            await Task.Run(() => client.WriteAllBytes(Path.Combine(PATH_TEMPLATES, $"{template.FileName}.svg"), template.BytesSvg)).ConfigureAwait(false);
+            await Task.Run(() => client.WriteAllText(templatesFilePath, JsonSerializer.Serialize(templatesFile, jsonSerializerOptions))).ConfigureAwait(false);
+
+            await this.Restart().ConfigureAwait(false);
+        }
+        finally
+        {
+            this.sshSemaphore.Release();
+        }
     }
 
     private async Task BackupFiles(SftpClient client, String sourceDirectory, String targetDirectory, Func<ISftpFile, Boolean> filter)
@@ -204,11 +240,16 @@ internal sealed class Tablet : IDisposable
 
     private async Task<SftpClient> CreateSftpClient()
     {
+        SftpClient client = new SftpClient(this.sshConnectionInfo);
+        await ConnectClient(client).ConfigureAwait(false);
+        return client;
+    }
+
+    private static async Task ConnectClient(BaseClient client)
+    {
         try
         {
-            SftpClient client = new SftpClient(this.sshConnectionInfo);
             await Task.Run(client.Connect).ConfigureAwait(false);
-            return client;
         }
         catch (ProxyException exception)
         {
@@ -256,6 +297,13 @@ internal sealed class Tablet : IDisposable
         {
             throw new TabletException(TabletConnectionError.UsbNotConnected, "reMarkable is not connected via USB.", exception);
         }
+    }
+
+    private async Task Restart()
+    {
+        using SshClient client = new SshClient(this.sshConnectionInfo);
+        await ConnectClient(client).ConfigureAwait(false);
+        await Task.Run(() => client.RunCommand("systemctl restart xochitl")).ConfigureAwait(false);
     }
 
     private void UpdateItems(Item parentItem, IEnumerable<Item> allItems)
@@ -316,5 +364,31 @@ internal sealed class Tablet : IDisposable
         public String Name { get; }
         public String ParentCollectionId { get; }
         public Boolean Trashed { get; set; }
+    }
+
+    private struct TemplatesFile
+    {
+        public List<Template> Templates { get; set; }
+
+        public struct Template
+        {
+            public IEnumerable<String> Categories { get; set; }
+            public String Filename { get; set; }
+            public String IconCode { get; set; }
+            public Boolean? Landscape { get; set; }
+            public String Name { get; set; }
+
+            public static Template Convert(TabletTemplate template)
+            {
+                return new Template()
+                {
+                    Categories = new List<String>() { template.Category },
+                    Filename = template.FileName,
+                    IconCode = template.IconCode,
+                    Landscape = template.Landscape,
+                    Name = template.Name
+                };
+            }
+        }
     }
 }

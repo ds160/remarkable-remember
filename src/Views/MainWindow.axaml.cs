@@ -22,7 +22,7 @@ internal sealed partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     private async Task ShowDialogHandler(InteractionContext<String, Boolean> interaction)
     {
         IMsBox<ButtonResult> dialog = MessageBoxManager.GetMessageBoxStandard(String.Empty, interaction.Input, ButtonEnum.Ok);
-        ButtonResult result = await dialog.ShowWindowDialogAsync(this).ConfigureAwait(false);
+        ButtonResult result = await dialog.ShowWindowDialogAsync(this).ConfigureAwait(true);
         interaction.SetOutput(result == ButtonResult.Ok);
     }
 }

@@ -22,6 +22,7 @@
             <Button Command="{Binding CommandRefresh}" Content="Refresh"/>
             <Button Command="{Binding CommandProcess}" Content="Process"/>
             <Button Command="{Binding CommandHandWritingRecognition}" Content="Hand Writing Recognition"/>
+            <Button Command="{Binding CommandUploadTemplate}" Content="Upload Template"/>
         </StackPanel>
 
         <TreeDataGrid Grid.Row="1" Source="{Binding TreeSource}" CanUserResizeColumns="True" CanUserSortColumns="False" Margin="6"/>
