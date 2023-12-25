@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 
 namespace ReMarkableRemember;
@@ -14,6 +15,6 @@ internal sealed class Program
                   .WithInterFont()
                   .LogToTrace()
                   .UseReactiveUI()
-                  .StartWithClassicDesktopLifetime(args);
+                  .StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
     }
 }

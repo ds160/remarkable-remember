@@ -1,16 +1,18 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:ReMarkableRemember.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:converter="using:ReMarkableRemember.Views.Converter"
+        xmlns:vm="using:ReMarkableRemember.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ReMarkableRemember.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/Logo.ico" Title="reMarkable Remember" WindowStartupLocation="CenterScreen">
+        x:DataType="vm:MainWindowModel"
+        Icon="/Assets/Logo.ico"
+        Title="reMarkable Remember"
+        WindowStartupLocation="CenterScreen">
 
     <Design.DataContext>
-        <vm:MainWindowViewModel/>
+        <vm:MainWindowModel/>
     </Design.DataContext>
 
     <Window.Resources>

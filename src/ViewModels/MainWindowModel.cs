@@ -14,19 +14,19 @@ using ReMarkableRemember.Templates;
 
 namespace ReMarkableRemember.ViewModels;
 
-internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
+internal sealed class MainWindowModel : ViewModelBase, IDisposable
 {
     private TabletConnectionError? connectionStatus;
     private readonly Controller controller;
     private Boolean hasItems;
 
-    public MainWindowViewModel(String dataSource)
+    public MainWindowModel(String dataSource)
     {
         this.connectionStatus = TabletConnectionError.SshNotConnected;
         this.controller = new Controller(dataSource);
         this.hasItems = false;
 
-        this.ShowDialog = new Interaction<String, Boolean>();
+        this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
         this.TreeSource = new HierarchicalTreeDataGridSource<ItemViewModel>(new List<ItemViewModel>())
         {
             Columns =
@@ -63,7 +63,7 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         if (selectedItem != null)
         {
             String text = await this.controller.HandWritingRecognition(selectedItem.Source, "de_DE").ConfigureAwait(true);
-            await this.ShowDialog.Handle(text);
+            await this.ShowDialog.Handle(new DialogWindowModel("Hand Writing Recognition", new HandWritingRecognitionViewModel(text)));
         }
     }
 
@@ -211,7 +211,7 @@ internal sealed class MainWindowViewModel : ViewModelBase, IDisposable
         private set { this.RaiseAndSetIfChanged(ref this.hasItems, value); }
     }
 
-    public Interaction<String, Boolean> ShowDialog { get; }
+    public Interaction<DialogWindowModel, Boolean> ShowDialog { get; }
 
     public HierarchicalTreeDataGridSource<ItemViewModel> TreeSource { get; }
 }

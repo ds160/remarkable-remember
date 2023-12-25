@@ -1,15 +1,12 @@
 using System;
 using System.Threading.Tasks;
 using Avalonia.ReactiveUI;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Base;
-using MsBox.Avalonia.Enums;
 using ReactiveUI;
 using ReMarkableRemember.ViewModels;
 
 namespace ReMarkableRemember.Views;
 
-internal sealed partial class MainWindow : ReactiveWindow<MainWindowViewModel>
+internal sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
 {
     public MainWindow()
     {
@@ -19,10 +16,10 @@ internal sealed partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         RxApp.DefaultExceptionHandler = new MainWindowExceptionHandler(this);
     }
 
-    private async Task ShowDialogHandler(InteractionContext<String, Boolean> interaction)
+    private async Task ShowDialogHandler(InteractionContext<DialogWindowModel, Boolean> interaction)
     {
-        IMsBox<ButtonResult> dialog = MessageBoxManager.GetMessageBoxStandard(String.Empty, interaction.Input, ButtonEnum.Ok);
-        ButtonResult result = await dialog.ShowWindowDialogAsync(this).ConfigureAwait(true);
-        interaction.SetOutput(result == ButtonResult.Ok);
+        DialogWindow dialog = new DialogWindow() { DataContext = interaction.Input };
+        Boolean? result = await dialog.ShowDialog<Boolean?>(this).ConfigureAwait(true);
+        interaction.SetOutput(result == true);
     }
 }

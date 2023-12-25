@@ -20,7 +20,7 @@ public partial class App : Application
         if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             String dataSource = GetDataSource(desktop.Args);
-            desktop.MainWindow = new MainWindow() { DataContext = new MainWindowViewModel(dataSource) };
+            desktop.MainWindow = new MainWindow() { DataContext = new MainWindowModel(dataSource) };
         }
 
         base.OnFrameworkInitializationCompleted();
