@@ -5,10 +5,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ReMarkableRemember.Entities;
+using ReMarkableRemember.Models.Interfaces;
 
 namespace ReMarkableRemember.Models;
 
-internal sealed class Controller : IDisposable
+internal sealed class Controller : IController
 {
     private const String PATH_BACKUP = "/home/daniel/SynologyDrive/Remarkable/Backups";
 
@@ -32,7 +33,7 @@ internal sealed class Controller : IDisposable
         this.tablet = new Tablet(tabletIp, tabletPassword);
     }
 
-    public void Dispose()
+    void IDisposable.Dispose()
     {
         this.tablet.Dispose();
 

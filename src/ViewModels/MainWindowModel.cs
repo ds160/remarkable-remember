@@ -10,6 +10,8 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using ReactiveUI;
 using ReMarkableRemember.Helper;
 using ReMarkableRemember.Models;
+using ReMarkableRemember.Models.Interfaces;
+using ReMarkableRemember.Models.Stubs;
 using ReMarkableRemember.Templates;
 
 namespace ReMarkableRemember.ViewModels;
@@ -17,13 +19,13 @@ namespace ReMarkableRemember.ViewModels;
 internal sealed class MainWindowModel : ViewModelBase, IDisposable
 {
     private TabletConnectionError? connectionStatus;
-    private readonly Controller controller;
+    private readonly IController controller;
     private Boolean hasItems;
 
-    public MainWindowModel(String dataSource)
+    public MainWindowModel(String dataSource, Boolean noHardware)
     {
         this.connectionStatus = TabletConnectionError.SshNotConnected;
-        this.controller = new Controller(dataSource);
+        this.controller = noHardware ? new ControllerStub(dataSource) : new Controller(dataSource);
         this.hasItems = false;
 
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
