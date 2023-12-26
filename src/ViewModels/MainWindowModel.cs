@@ -45,6 +45,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
         this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process, this.Process_CanExecute());
         this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh);
+        this.CommandSettings = ReactiveCommand.CreateFromTask(this.ShowSettings);
         this.CommandUploadTemplate = ReactiveCommand.CreateFromTask(this.UploadTemplate, this.UploadTemplate_CanExecute());
 
         this.WhenAnyValue(vm => vm.ConnectionStatus).Subscribe(status => this.RaisePropertyChanged(nameof(this.ConnectionStatusText)));
@@ -148,6 +149,11 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         }
     }
 
+    private async Task ShowSettings()
+    {
+        await this.ShowDialog.Handle(new SettingsViewModel(this.controller.Settings));
+    }
+
     private async Task UpdateConnectionStatus()
     {
         while (true)
@@ -182,6 +188,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
     public ICommand CommandHandWritingRecognition { get; }
     public ICommand CommandProcess { get; }
     public ICommand CommandRefresh { get; }
+    public ICommand CommandSettings { get; }
     public ICommand CommandUploadTemplate { get; }
 
     public TabletConnectionError? ConnectionStatus

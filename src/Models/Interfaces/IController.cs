@@ -6,6 +6,8 @@ namespace ReMarkableRemember.Models.Interfaces;
 
 internal interface IController : IDisposable
 {
+    Settings Settings { get; }
+
     Task<Boolean> BackupItem(Item item);
 
     Task<TabletConnectionError?> GetConnectionStatus();

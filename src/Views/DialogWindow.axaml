@@ -8,7 +8,6 @@
         x:DataType="vm:DialogWindowModel"
         CanResize="False"
         Icon="/Assets/Logo.ico"
-        MinWidth="480"
         SizeToContent="WidthAndHeight"
         Title="{Binding Title}"
         WindowStartupLocation="CenterOwner">
@@ -21,7 +20,7 @@
         <ContentControl Grid.Row="0" Content="{Binding Content}" Margin="16, 16, 16, 8"/>
 
         <StackPanel Grid.Row="1" HorizontalAlignment="Right" Margin="16, 8, 16, 16" Orientation="Horizontal">
-            <Button Command="{Binding CommandClose}" Content="Close"/>
+            <Button Command="{Binding CommandClose}" Content="{Binding TextClose}" HorizontalContentAlignment="Center" IsDefault="True" MinWidth="64"/>
         </StackPanel>
     </Grid>
 </Window>

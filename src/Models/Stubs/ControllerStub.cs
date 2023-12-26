@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using ReMarkableRemember.Entities;
 using ReMarkableRemember.Models.Interfaces;
 
 namespace ReMarkableRemember.Models.Stubs;
@@ -11,6 +13,11 @@ internal sealed class ControllerStub : IController
 
     public ControllerStub(String dataSource)
     {
+        using DatabaseContext database = new DatabaseContext(dataSource);
+        database.Database.Migrate();
+
+        this.Settings = new Settings(dataSource);
+
         this.dataSource = dataSource;
     }
 
@@ -18,60 +25,51 @@ internal sealed class ControllerStub : IController
     {
     }
 
+    public Settings Settings { get; }
+
     public async Task<Boolean> BackupItem(Item item)
     {
-        return await Task.Run(() =>
-        {
-            item.BackupDone();
-            return true;
-        }).ConfigureAwait(false);
+        await Task.Delay(500).ConfigureAwait(false);
+        item.BackupDone();
+        return true;
     }
 
     public async Task<TabletConnectionError?> GetConnectionStatus()
     {
-        return await Task.Run(() =>
-        {
-            TabletConnectionError? status = null;
-            return status;
-        }).ConfigureAwait(false);
+        await Task.Delay(500).ConfigureAwait(false);
+        return null;
     }
 
     public async Task<IEnumerable<Item>> GetItems()
     {
-        return await Task.Run(() =>
-        {
-            Int64 time = (DateTime.UtcNow.Ticks - DateTime.UnixEpoch.Ticks) / 10000;
-            List<Item> items = new List<Item>() { new Item(this.dataSource, new Tablet.Item("1", $"{time}", String.Empty, "DocumentType", "Test"), null, null) };
-            return items;
-        }).ConfigureAwait(false);
+        await Task.Delay(500).ConfigureAwait(false);
+        Int64 time = (DateTime.UtcNow.Ticks - DateTime.UnixEpoch.Ticks) / 10000;
+        List<Item> items = new List<Item>() { new Item(this.dataSource, new Tablet.Item("1", $"{time}", String.Empty, "DocumentType", "Test"), null, null) };
+        return items;
     }
 
     public async Task<String> HandWritingRecognition(Item item, String language)
     {
-        return await Task.Run(() =>
-        {
-            return "Hand Writing Recognition via MyScript done :)";
-        }).ConfigureAwait(false);
+        await Task.Delay(500).ConfigureAwait(false);
+        return "Hand Writing Recognition via MyScript done :)";
     }
 
     public async Task<Boolean> SyncItem(Item item)
     {
-        return await Task.Run(() =>
+        await Task.Delay(500).ConfigureAwait(false);
+        if (item.SyncPath != null)
         {
-            if (item.SyncPath != null)
-            {
-                item.SyncDone(item.SyncPath);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }).ConfigureAwait(false);
+            item.SyncDone(item.SyncPath);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public async Task UploadTemplate(TabletTemplate template)
     {
-        await Task.Delay(1).ConfigureAwait(false);
+        await Task.Delay(500).ConfigureAwait(false);
     }
 }

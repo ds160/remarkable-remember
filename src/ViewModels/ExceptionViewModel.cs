@@ -4,12 +4,10 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class ExceptionViewModel : DialogWindowModel
 {
-    public ExceptionViewModel(String message)
+    public ExceptionViewModel(String message) : base("Error", "OK")
     {
         this.Message = message;
     }
 
     public String Message { get; }
-
-    public override String Title { get { return "Error"; } }
 }

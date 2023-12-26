@@ -16,13 +16,11 @@ internal sealed class MyScript
 {
     private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-    private String? applicationKey;
-    private String? hmacKey;
+    private readonly Settings settings;
 
-    public MyScript(String? applicationKey, String? hmacKey)
+    public MyScript(Settings settings)
     {
-        this.applicationKey = applicationKey;
-        this.hmacKey = hmacKey;
+        this.settings = settings;
     }
 
     public async Task<String> Recognize(Notebook.Page page, String language)
@@ -31,7 +29,7 @@ internal sealed class MyScript
         String hmac = this.CalculateHmac(requestBody);
 
         using HttpClient client = new HttpClient();
-        client.DefaultRequestHeaders.Add("applicationKey", this.applicationKey);
+        client.DefaultRequestHeaders.Add("applicationKey", this.settings.MyScriptApplicationKey);
         client.DefaultRequestHeaders.Add("hmac", hmac);
         client.DefaultRequestHeaders.Add("accept", "text/plain, application/json");
 
@@ -43,12 +41,6 @@ internal sealed class MyScript
         }
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-    }
-
-    public void Setup(String applicationKey, String hmacKey)
-    {
-        this.applicationKey = applicationKey;
-        this.hmacKey = hmacKey;
     }
 
     private static String BuildRequestBody(Notebook.Page page, String language)
@@ -79,7 +71,7 @@ internal sealed class MyScript
 
     private String CalculateHmac(String requestBody)
     {
-        using HMACSHA512 hmac = new HMACSHA512(Encoding.UTF8.GetBytes(this.applicationKey + this.hmacKey));
+        using HMACSHA512 hmac = new HMACSHA512(Encoding.UTF8.GetBytes(this.settings.MyScriptApplicationKey + this.settings.MyScriptHmacKey));
         Byte[] hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(requestBody));
         return String.Join(String.Empty, hashBytes.Select(hashByte => hashByte.ToString("x2", CultureInfo.InvariantCulture)));
     }

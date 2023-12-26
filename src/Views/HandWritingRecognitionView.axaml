@@ -5,7 +5,8 @@
              xmlns:vm="using:ReMarkableRemember.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ReMarkableRemember.Views.HandWritingRecognitionView"
-             x:DataType="vm:HandWritingRecognitionViewModel">
+             x:DataType="vm:HandWritingRecognitionViewModel"
+             MinWidth="480">
 
     <Design.DataContext>
         <vm:HandWritingRecognitionViewModel/>

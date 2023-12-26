@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ReMarkableRemember.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ReMarkableRemember.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel"
+             MinWidth="480">
+
+    <Design.DataContext>
+        <vm:SettingsViewModel/>
+    </Design.DataContext>
+
+    <StackPanel>
+        <TextBlock>reMarkable IP</TextBlock>
+        <TextBox Text="{Binding TabletIp}" Margin="0, 8, 0, 16"/>
+
+        <TextBlock>reMarkable Passord</TextBlock>
+        <TextBox Text="{Binding TabletPassword}" Margin="0, 8, 0, 48"/>
+
+        <TextBlock>MyScript Application Key</TextBlock>
+        <TextBox Text="{Binding MyScriptApplicationKey}" Margin="0, 8, 0, 16"/>
+
+        <TextBlock>MyScript HMAC Key</TextBlock>
+        <TextBox Text="{Binding MyScriptHmacKey}" Margin="0, 8, 0, 48"/>
+
+        <TextBlock>Backup Directory</TextBlock>
+        <TextBox Text="{Binding Backup}" Margin="0, 8, 0, 16"/>
+    </StackPanel>
+</UserControl>

@@ -11,26 +11,20 @@ namespace ReMarkableRemember.Models;
 
 internal sealed class Controller : IController
 {
-    private const String PATH_BACKUP = "/home/daniel/SynologyDrive/Remarkable/Backups";
-
     private readonly String dataSource;
     private readonly MyScript myScript;
     private readonly Tablet tablet;
 
     public Controller(String dataSource)
     {
-        this.dataSource = dataSource;
-
-        using DatabaseContext database = new DatabaseContext(this.dataSource);
+        using DatabaseContext database = new DatabaseContext(dataSource);
         database.Database.Migrate();
 
-        String? myScriptApplicationKey = database.Settings.Find(Setting.Keys.MyScriptApplicationKey)?.Value;
-        String? myScriptHmacKey = database.Settings.Find(Setting.Keys.MyScriptHmacKey)?.Value;
-        this.myScript = new MyScript(myScriptApplicationKey, myScriptHmacKey);
+        this.Settings = new Settings(dataSource);
 
-        String? tabletIp = database.Settings.Find(Setting.Keys.TabletIp)?.Value;
-        String? tabletPassword = database.Settings.Find(Setting.Keys.TabletPassword)?.Value;
-        this.tablet = new Tablet(tabletIp, tabletPassword);
+        this.dataSource = dataSource;
+        this.myScript = new MyScript(this.Settings);
+        this.tablet = new Tablet(this.Settings);
     }
 
     void IDisposable.Dispose()
@@ -40,24 +34,28 @@ internal sealed class Controller : IController
         GC.SuppressFinalize(this);
     }
 
+    public Settings Settings { get; }
+
     public async Task<Boolean> BackupItem(Item item)
     {
         if (item.BackupHint is Item.Hint.None) { return false; }
         if (item.Trashed) { return false; }
 
-        IEnumerable<String> directories = Directory.GetDirectories(PATH_BACKUP, $"{item.Id}*");
+        if (!Directory.Exists(this.Settings.Backup)) { throw new SettingsException("Backup directory not set or not found."); }
+
+        IEnumerable<String> directories = Directory.GetDirectories(this.Settings.Backup, $"{item.Id}*");
         foreach (String directory in directories)
         {
             FileSystem.Delete(directory);
         }
 
-        IEnumerable<String> files = Directory.GetFiles(PATH_BACKUP).Where(file => file.StartsWith(Path.Combine(PATH_BACKUP, item.Id), StringComparison.OrdinalIgnoreCase));
+        IEnumerable<String> files = Directory.GetFiles(this.Settings.Backup).Where(file => file.StartsWith(Path.Combine(this.Settings.Backup, item.Id), StringComparison.OrdinalIgnoreCase));
         foreach (String file in files)
         {
             FileSystem.Delete(file);
         }
 
-        await this.tablet.Backup(item.Id, PATH_BACKUP).ConfigureAwait(false);
+        await this.tablet.Backup(item.Id, this.Settings.Backup).ConfigureAwait(false);
 
         item.BackupDone();
 

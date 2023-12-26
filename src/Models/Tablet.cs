@@ -28,15 +28,15 @@ internal sealed class Tablet : IDisposable
 
     private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true };
 
-    private ConnectionInfo sshConnectionInfo;
+    private readonly Settings settings;
     private readonly SemaphoreSlim sshSemaphore;
     private readonly HttpClient usbClientDocument;
     private readonly HttpClient usbClientDownload;
     private readonly SemaphoreSlim usbSemaphore;
 
-    public Tablet(String? host, String? password)
+    public Tablet(Settings settings)
     {
-        this.sshConnectionInfo = CreateSshConnectionInfo(host, password);
+        this.settings = settings;
         this.sshSemaphore = new SemaphoreSlim(1, 1);
         this.usbClientDocument = new HttpClient() { Timeout = TimeSpan.FromSeconds(USB_TIMEOUT) };
         this.usbClientDownload = new HttpClient();
@@ -179,11 +179,6 @@ internal sealed class Tablet : IDisposable
         }
     }
 
-    public void Setup(String? host, String? password)
-    {
-        this.sshConnectionInfo = CreateSshConnectionInfo(host, password);
-    }
-
     public async Task UploadTemplate(TabletTemplate template)
     {
         await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
@@ -240,9 +235,15 @@ internal sealed class Tablet : IDisposable
 
     private async Task<SftpClient> CreateSftpClient()
     {
-        SftpClient client = new SftpClient(this.sshConnectionInfo);
+        SftpClient client = new SftpClient(this.CreateSshConnectionInfo());
         await ConnectClient(client).ConfigureAwait(false);
         return client;
+    }
+
+    private ConnectionInfo CreateSshConnectionInfo()
+    {
+        AuthenticationMethod authenticationMethod = new PasswordAuthenticationMethod(SSH_USER, this.settings.TabletPassword ?? "");
+        return new ConnectionInfo(this.settings.TabletIp ?? IP, SSH_USER, authenticationMethod) { Timeout = TimeSpan.FromSeconds(SSH_TIMEOUT) };
     }
 
     private static async Task ConnectClient(BaseClient client)
@@ -267,12 +268,6 @@ internal sealed class Tablet : IDisposable
         {
             throw new TabletException(TabletConnectionError.SshNotConnected, "reMarkable is not connected via WiFi or USB.", exception);
         }
-    }
-
-    private static ConnectionInfo CreateSshConnectionInfo(String? host, String? password)
-    {
-        AuthenticationMethod authenticationMethod = new PasswordAuthenticationMethod(SSH_USER, password ?? "");
-        return new ConnectionInfo(host ?? IP, SSH_USER, authenticationMethod) { Timeout = TimeSpan.FromSeconds(SSH_TIMEOUT) };
     }
 
     private static async Task<T> ExecuteHttp<T>(Func<Task<T>> httpClientRequest)
@@ -301,7 +296,7 @@ internal sealed class Tablet : IDisposable
 
     private async Task Restart()
     {
-        using SshClient client = new SshClient(this.sshConnectionInfo);
+        using SshClient client = new SshClient(this.CreateSshConnectionInfo());
         await ConnectClient(client).ConfigureAwait(false);
         await Task.Run(() => client.RunCommand("systemctl restart xochitl")).ConfigureAwait(false);
     }
