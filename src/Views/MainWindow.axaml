@@ -8,6 +8,8 @@
         x:Class="ReMarkableRemember.Views.MainWindow"
         x:DataType="vm:MainWindowModel"
         Icon="/Assets/Logo.ico"
+        MinHeight="480"
+        MinWidth="640"
         Title="reMarkable Remember"
         WindowStartupLocation="CenterScreen">
 
@@ -31,10 +33,15 @@
 
         <TreeDataGrid Grid.Row="1" Source="{Binding TreeSource}" CanUserResizeColumns="True" CanUserSortColumns="False" Margin="8"/>
 
-        <StackPanel Grid.Row="2" Margin="8" Orientation="Horizontal">
-            <Image Source="/Assets/Connected.png" IsVisible="{Binding ConnectionStatus, Converter={StaticResource NullableBooleanConverter}, ConverterParameter=True}"/>
-            <Image Source="/Assets/Disconnected.png" IsVisible="{Binding ConnectionStatus, Converter={StaticResource NullableBooleanConverter}, ConverterParameter=False}"/>
-            <Label Content="{Binding ConnectionStatusText}"/>
-        </StackPanel>
+        <DockPanel Grid.Row="2" Margin="8">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Label Content="{Binding Jobs}" IsVisible="False"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Image Source="/Assets/Connected.png" IsVisible="{Binding ConnectionStatus, Converter={StaticResource NullableBooleanConverter}, ConverterParameter=True}"/>
+                <Image Source="/Assets/Disconnected.png" IsVisible="{Binding ConnectionStatus, Converter={StaticResource NullableBooleanConverter}, ConverterParameter=False}"/>
+                <Label Content="{Binding ConnectionStatusText}"/>
+            </StackPanel>
+        </DockPanel>
     </Grid>
 </Window>

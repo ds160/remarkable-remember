@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using ReactiveUI;
@@ -21,12 +21,14 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
     private TabletConnectionError? connectionStatus;
     private readonly IController controller;
     private Boolean hasItems;
+    private Int32 jobs;
 
     public MainWindowModel(String dataSource, Boolean noHardware)
     {
         this.connectionStatus = TabletConnectionError.SshNotConnected;
         this.controller = noHardware ? new ControllerStub(dataSource) : new Controller(dataSource);
         this.hasItems = false;
+        this.jobs = 0;
 
         this.OpenFolderPicker = new Interaction<String, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
@@ -45,8 +47,8 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
         this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
         this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process, this.Process_CanExecute());
-        this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh);
-        this.CommandSettings = ReactiveCommand.CreateFromTask(this.ShowSettings);
+        this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh, this.Refresh_CanExecute());
+        this.CommandSettings = ReactiveCommand.CreateFromTask(this.ShowSettings, this.ShowSettings_CanExecute());
         this.CommandSetSyncTargetDirectory = ReactiveCommand.CreateFromTask(this.SetSyncTargetDirectory, this.SetSyncTargetDirectory_CanExecute());
         this.CommandUploadTemplate = ReactiveCommand.CreateFromTask(this.UploadTemplate, this.UploadTemplate_CanExecute());
 
@@ -67,6 +69,8 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         ItemViewModel? selectedItem = this.TreeSource.RowSelection!.SelectedItem;
         if (selectedItem != null)
         {
+            using Job job = new Job(this);
+
             String text = await this.controller.HandWritingRecognition(selectedItem.Source, "de_DE").ConfigureAwait(true);
             await this.ShowDialog.Handle(new HandWritingRecognitionViewModel(text));
         }
@@ -84,6 +88,8 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
     {
         try
         {
+            using Job job = new Job(this);
+
             List<ItemViewModel> items = this.TreeSource.Items.ToList();
             foreach (ItemViewModel item in items)
             {
@@ -118,21 +124,24 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             changed |= await this.controller.SyncItem(item.Source).ConfigureAwait(true);
         }
 
-        if (changed) { item.RaiseChanged(true, false); }
+        if (changed) { item.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Parent); }
     }
 
     private IObservable<Boolean> Process_CanExecute()
     {
         IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
         IObservable<Boolean> items = this.WhenAnyValue(vm => vm.HasItems);
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs == 0);
 
-        return Observable.CombineLatest(connectionStatus, items, (value1, value2) => value1 && value2);
+        return Observable.CombineLatest(connectionStatus, items, jobs, (value1, value2, value3) => value1 && value2 && value3);
     }
 
     private async Task Refresh()
     {
         try
         {
+            using Job job = new Job(this);
+
             IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(true);
 
             List<ItemViewModel> list = items.Where(item => !item.Trashed).Select(item => new ItemViewModel(item, null)).ToList();
@@ -151,25 +160,42 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         }
     }
 
+    private IObservable<Boolean> Refresh_CanExecute()
+    {
+        return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs == 0);
+    }
+
     private async Task SetSyncTargetDirectory()
     {
         ItemViewModel? selectedItem = this.TreeSource.RowSelection!.SelectedItem;
         if (selectedItem != null)
         {
+            using Job job = new Job(this);
+
             String? targetDirectory = await this.OpenFolderPicker.Handle("Sync Target Folder");
             selectedItem.Source.SetSyncTargetDirectory(targetDirectory);
-            selectedItem.RaiseChanged(false, true);
+            selectedItem.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Collection);
         }
     }
 
     private IObservable<Boolean> SetSyncTargetDirectory_CanExecute()
     {
-        return this.TreeSource.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Parent == null);
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs == 0);
+        IObservable<Boolean> treeSelection = this.TreeSource.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Parent == null);
+
+        return Observable.CombineLatest(jobs, treeSelection, (value1, value2) => value1 && value2);
     }
 
     private async Task ShowSettings()
     {
+        using Job job = new Job(this);
+
         await this.ShowDialog.Handle(new SettingsViewModel(this.controller.Settings));
+    }
+
+    private IObservable<Boolean> ShowSettings_CanExecute()
+    {
+        return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs == 0);
     }
 
     private async Task UpdateConnectionStatus()
@@ -183,6 +209,8 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     private async Task UploadTemplate()
     {
+        using Job job = new Job(this);
+
         TabletTemplate tabletTemplate;
 
         tabletTemplate = new TabletTemplate("Lines", "Daniel", "\uE9A8", false, "/home/daniel/SynologyDrive/Remarkable/Templates/Daniel Lines.svg");
@@ -200,20 +228,23 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     private IObservable<Boolean> UploadTemplate_CanExecute()
     {
-        return this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs == 0);
+
+        return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
     }
 
-    public ICommand CommandHandWritingRecognition { get; }
+    public ReactiveCommand<Unit, Unit> CommandHandWritingRecognition { get; }
 
-    public ICommand CommandProcess { get; }
+    public ReactiveCommand<Unit, Unit> CommandProcess { get; }
 
-    public ICommand CommandRefresh { get; }
+    public ReactiveCommand<Unit, Unit> CommandRefresh { get; }
 
-    public ICommand CommandSetSyncTargetDirectory { get; }
+    public ReactiveCommand<Unit, Unit> CommandSetSyncTargetDirectory { get; }
 
-    public ICommand CommandSettings { get; }
+    public ReactiveCommand<Unit, Unit> CommandSettings { get; }
 
-    public ICommand CommandUploadTemplate { get; }
+    public ReactiveCommand<Unit, Unit> CommandUploadTemplate { get; }
 
     public TabletConnectionError? ConnectionStatus
     {
@@ -244,9 +275,31 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         private set { this.RaiseAndSetIfChanged(ref this.hasItems, value); }
     }
 
+    public Int32 Jobs
+    {
+        get { return this.jobs; }
+        private set { this.RaiseAndSetIfChanged(ref this.jobs, value); }
+    }
+
     public Interaction<String, String?> OpenFolderPicker { get; }
 
     public Interaction<DialogWindowModel, Boolean> ShowDialog { get; }
 
     public HierarchicalTreeDataGridSource<ItemViewModel> TreeSource { get; }
+
+    private sealed class Job : IDisposable
+    {
+        private readonly MainWindowModel owner;
+
+        public Job(MainWindowModel owner)
+        {
+            this.owner = owner;
+            this.owner.Jobs++;
+        }
+
+        void IDisposable.Dispose()
+        {
+            this.owner.Jobs--;
+        }
+    }
 }

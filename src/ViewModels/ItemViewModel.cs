@@ -27,6 +27,13 @@ public sealed class ItemViewModel : ViewModelBase
         Red
     }
 
+    public enum RaiseChangedAdditional
+    {
+        None,
+        Collection,
+        Parent
+    }
+
     internal ItemViewModel(Item source, ItemViewModel? parent)
     {
         List<ItemViewModel>? collection = source.Collection?.Select(childItem => new ItemViewModel(childItem, this)).ToList();
@@ -59,12 +66,12 @@ public sealed class ItemViewModel : ViewModelBase
 
     internal Item Source { get; }
 
-    internal void RaiseChanged(Boolean parent, Boolean collection)
+    internal void RaiseChanged(RaiseChangedAdditional additional)
     {
         this.RaisePropertyChanged();
 
-        if (collection) { this.Collection?.ToList()?.ForEach(item => item.RaiseChanged(false, collection)); }
-        if (parent) { this.Parent?.RaiseChanged(parent, false); }
+        if (additional == RaiseChangedAdditional.Collection) { this.Collection?.ToList()?.ForEach(item => item.RaiseChanged(additional)); }
+        if (additional == RaiseChangedAdditional.Parent) { this.Parent?.RaiseChanged(additional); }
     }
 
     internal static Int32 Compare(ItemViewModel itemA, ItemViewModel itemB)

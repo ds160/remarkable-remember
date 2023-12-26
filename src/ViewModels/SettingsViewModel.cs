@@ -1,7 +1,7 @@
 using System;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using ReactiveUI;
 using ReMarkableRemember.Models;
 
@@ -24,7 +24,7 @@ public sealed class SettingsViewModel : DialogWindowModel
         this.CommandSetBackup = ReactiveCommand.CreateFromTask(this.SetBackup);
     }
 
-    public ICommand CommandSetBackup { get; }
+    public ReactiveCommand<Unit, Unit> CommandSetBackup { get; }
 
     public String? Backup { get; private set; }
 
