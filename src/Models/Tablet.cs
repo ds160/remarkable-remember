@@ -171,7 +171,7 @@ internal sealed class Tablet : IDisposable
                 Byte[] pageBuffer = await Task.Run(() => client.ReadAllBytes(Path.Combine(PATH_NOTEBOOKS, id, $"{page}.rm"))).ConfigureAwait(false);
                 pageBuffers.Add(pageBuffer);
             }
-            return new Notebook(pageBuffers);
+            return new Notebook(pageBuffers, contentFile.Orientation == "portrait");
         }
         finally
         {
@@ -242,8 +242,9 @@ internal sealed class Tablet : IDisposable
 
     private ConnectionInfo CreateSshConnectionInfo()
     {
+        String host = String.IsNullOrEmpty(this.settings.TabletIp) ? IP : this.settings.TabletIp;
         AuthenticationMethod authenticationMethod = new PasswordAuthenticationMethod(SSH_USER, this.settings.TabletPassword ?? "");
-        return new ConnectionInfo(this.settings.TabletIp ?? IP, SSH_USER, authenticationMethod) { Timeout = TimeSpan.FromSeconds(SSH_TIMEOUT) };
+        return new ConnectionInfo(host, SSH_USER, authenticationMethod) { Timeout = TimeSpan.FromSeconds(SSH_TIMEOUT) };
     }
 
     private static async Task ConnectClient(BaseClient client)
@@ -258,6 +259,11 @@ internal sealed class Tablet : IDisposable
         }
         catch (SocketException exception)
         {
+            if (exception.SocketErrorCode == SocketError.ConnectionRefused)
+            {
+                throw new TabletException(TabletConnectionError.SshNotConfigured, "SSH protocol information are not configured or wrong.", exception);
+            }
+
             throw new TabletException(exception.Message, exception);
         }
         catch (SshAuthenticationException exception)
@@ -315,9 +321,10 @@ internal sealed class Tablet : IDisposable
 
     private struct ContentFile
     {
+        public PagesContainer CPages { get; set; }
         public String FileType { get; set; }
         public Int32 FormatVersion { get; set; }
-        public PagesContainer CPages { get; set; }
+        public String Orientation { get; set; }
         public IEnumerable<String> Pages { get; set; }
 
         public struct PagesContainer

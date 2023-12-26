@@ -6,21 +6,34 @@ namespace ReMarkableRemember.ViewModels;
 
 public abstract class DialogWindowModel : ViewModelBase
 {
-    protected DialogWindowModel(String title, String textClose = "Close")
+    protected DialogWindowModel(String title, String textClose = "Close", Boolean showCancel = false)
     {
-        this.CommandClose = ReactiveCommand.Create(this.Close);
+        this.CommandCancel = ReactiveCommand.Create(() => { return false; });
+        this.CommandClose = ReactiveCommand.Create(() => { this.Close(); return true; });
+
+        this.OpenFilePicker = new Interaction<String, String?>();
+        this.OpenFolderPicker = new Interaction<String, String?>();
+
+        this.ShowCancel = showCancel;
         this.TextClose = textClose;
         this.Title = title;
     }
 
-    protected virtual Boolean Close()
+    protected virtual void Close()
     {
-        return true;
     }
+
+    public ReactiveCommand<Unit, Boolean> CommandCancel { get; }
 
     public ReactiveCommand<Unit, Boolean> CommandClose { get; }
 
     public Object Content { get { return this; } }
+
+    public Interaction<String, String?> OpenFilePicker { get; }
+
+    public Interaction<String, String?> OpenFolderPicker { get; }
+
+    public Boolean ShowCancel { get; }
 
     public String TextClose { get; }
 

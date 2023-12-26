@@ -19,8 +19,9 @@
     <Grid RowDefinitions="*,Auto">
         <ContentControl Grid.Row="0" Content="{Binding Content}" Margin="16, 16, 16, 8"/>
 
-        <StackPanel Grid.Row="1" HorizontalAlignment="Right" Margin="16, 8, 16, 16" Orientation="Horizontal">
-            <Button Command="{Binding CommandClose}" Content="{Binding TextClose}" HorizontalContentAlignment="Center" IsDefault="True" MinWidth="64"/>
+        <StackPanel Grid.Row="1" HorizontalAlignment="Right" Margin="16, 8, 16, 16" Orientation="Horizontal" Spacing="8">
+            <Button Command="{Binding CommandCancel}" Content="Cancel" HorizontalContentAlignment="Center" IsCancel="True" IsVisible="{Binding ShowCancel}" Width="80"/>
+            <Button Command="{Binding CommandClose}" Content="{Binding TextClose}" HorizontalContentAlignment="Center" IsDefault="True" Width="80"/>
         </StackPanel>
     </Grid>
 </Window>

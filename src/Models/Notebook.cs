@@ -8,19 +8,20 @@ namespace ReMarkableRemember.Models;
 
 internal sealed class Notebook
 {
-    public Notebook(IEnumerable<Byte[]> pageBuffers)
+    public Notebook(IEnumerable<Byte[]> pageBuffers, Boolean portraitMode)
     {
-        this.Pages = pageBuffers.Select(pageBuffer => new Page(pageBuffer)).ToArray();
+        this.Pages = pageBuffers.Select(pageBuffer => new Page(pageBuffer, portraitMode)).ToArray();
     }
 
     public IEnumerable<Page> Pages { get; }
 
     internal sealed class Page
     {
-        public Page(Byte[] buffer)
+        public Page(Byte[] buffer, Boolean portraitMode)
         {
-            PageBuffer pageBuffer = new PageBuffer(buffer);
+            this.PortraitMode = portraitMode;
 
+            PageBuffer pageBuffer = new PageBuffer(buffer);
             String header = pageBuffer.ReadString(43);
             switch (header)
             {
@@ -36,6 +37,8 @@ internal sealed class Notebook
         }
 
         public IEnumerable<Line> Lines { get; }
+
+        public Boolean PortraitMode { get; }
 
         private static List<Line> V5Parse(PageBuffer buffer)
         {

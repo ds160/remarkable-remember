@@ -25,7 +25,10 @@
         <TextBlock>MyScript HMAC Key</TextBlock>
         <TextBox Text="{Binding MyScriptHmacKey}" Margin="0, 8, 0, 48"/>
 
-        <TextBlock>Backup Directory</TextBlock>
-        <TextBox Text="{Binding Backup}" Margin="0, 8, 0, 16"/>
+        <TextBlock>Backup Folder</TextBlock>
+        <DockPanel Margin="0, 8, 0, 16">
+            <Button DockPanel.Dock="Right" Command="{Binding CommandSetBackup}" Content="..." />
+            <TextBox Text="{Binding Backup}" Margin="0, 0, 8, 0" IsReadOnly="True"/>
+        </DockPanel>
     </StackPanel>
 </UserControl>

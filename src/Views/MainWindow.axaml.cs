@@ -17,11 +17,11 @@ public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
         RxApp.DefaultExceptionHandler = Observer.Create<Exception>(this.ShowExceptionDialog, this.ShowExceptionDialog);
     }
 
-    private async Task ShowDialogHandler(InteractionContext<DialogWindowModel, Boolean> interaction)
+    private async Task ShowDialogHandler(InteractionContext<DialogWindowModel, Boolean> context)
     {
-        DialogWindow dialog = new DialogWindow() { DataContext = interaction.Input };
+        DialogWindow dialog = new DialogWindow() { DataContext = context.Input };
         Boolean? result = await dialog.ShowDialog<Boolean?>(this).ConfigureAwait(true);
-        interaction.SetOutput(result == true);
+        context.SetOutput(result == true);
     }
 
     private async void ShowExceptionDialog(Exception exception)

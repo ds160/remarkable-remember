@@ -1,4 +1,8 @@
 using System;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using ReactiveUI;
 using ReMarkableRemember.Models;
 
 namespace ReMarkableRemember.ViewModels;
@@ -7,7 +11,7 @@ public sealed class SettingsViewModel : DialogWindowModel
 {
     private readonly Settings settings;
 
-    internal SettingsViewModel(Settings settings) : base("Settings", "Save")
+    internal SettingsViewModel(Settings settings) : base("Settings", "Save", true)
     {
         this.settings = settings;
 
@@ -16,9 +20,13 @@ public sealed class SettingsViewModel : DialogWindowModel
         this.MyScriptHmacKey = this.settings.MyScriptHmacKey;
         this.TabletIp = this.settings.TabletIp;
         this.TabletPassword = this.settings.TabletPassword;
+
+        this.CommandSetBackup = ReactiveCommand.CreateFromTask(this.SetBackup);
     }
 
-    public String? Backup { get; set; }
+    public ICommand CommandSetBackup { get; }
+
+    public String? Backup { get; private set; }
 
     public String? MyScriptApplicationKey { get; set; }
 
@@ -28,7 +36,7 @@ public sealed class SettingsViewModel : DialogWindowModel
 
     public String? TabletPassword { get; set; }
 
-    protected override Boolean Close()
+    protected override void Close()
     {
         this.settings.Backup = this.Backup;
         this.settings.MyScriptApplicationKey = this.MyScriptApplicationKey;
@@ -36,7 +44,15 @@ public sealed class SettingsViewModel : DialogWindowModel
         this.settings.TabletIp = this.TabletIp;
         this.settings.TabletPassword = this.TabletPassword;
         this.settings.SaveChanges();
+    }
 
-        return base.Close();
+    private async Task SetBackup()
+    {
+        String? backupFolder = await this.OpenFolderPicker.Handle("Backup Folder");
+        if (backupFolder != null)
+        {
+            this.Backup = backupFolder;
+            this.RaisePropertyChanged(nameof(this.Backup));
+        }
     }
 }
