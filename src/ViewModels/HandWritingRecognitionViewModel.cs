@@ -2,7 +2,7 @@ using System;
 
 namespace ReMarkableRemember.ViewModels;
 
-internal sealed class HandWritingRecognitionViewModel : ViewModelBase
+public sealed class HandWritingRecognitionViewModel : DialogWindowModel
 {
     public HandWritingRecognitionViewModel(String text)
     {
@@ -10,4 +10,6 @@ internal sealed class HandWritingRecognitionViewModel : ViewModelBase
     }
 
     public String Text { get; }
+
+    public override String Title { get { return "Hand Writing Recognition"; } }
 }

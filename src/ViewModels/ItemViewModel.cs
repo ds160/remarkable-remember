@@ -6,7 +6,7 @@ using ReMarkableRemember.Models;
 
 namespace ReMarkableRemember.ViewModels;
 
-internal sealed class ItemViewModel : ViewModelBase
+public sealed class ItemViewModel : ViewModelBase
 {
     [Flags]
     public enum Hint
@@ -27,7 +27,7 @@ internal sealed class ItemViewModel : ViewModelBase
         Red
     }
 
-    public ItemViewModel(Item source, ItemViewModel? parent)
+    internal ItemViewModel(Item source, ItemViewModel? parent)
     {
         List<ItemViewModel>? collection = source.Collection?.Select(childItem => new ItemViewModel(childItem, this)).ToList();
         collection?.Sort(new Comparison<ItemViewModel>(Compare));
@@ -59,13 +59,13 @@ internal sealed class ItemViewModel : ViewModelBase
 
     internal Item Source { get; }
 
-    public void RaiseChanged()
+    internal void RaiseChanged()
     {
         this.RaisePropertyChanged();
         this.Parent?.RaiseChanged();
     }
 
-    public static Int32 Compare(ItemViewModel itemA, ItemViewModel itemB)
+    internal static Int32 Compare(ItemViewModel itemA, ItemViewModel itemB)
     {
         Int32 collectionA = (itemA.Collection == null) ? 1 : 0;
         Int32 collectionB = (itemB.Collection == null) ? 1 : 0;

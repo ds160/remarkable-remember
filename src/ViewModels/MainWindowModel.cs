@@ -16,7 +16,7 @@ using ReMarkableRemember.Templates;
 
 namespace ReMarkableRemember.ViewModels;
 
-internal sealed class MainWindowModel : ViewModelBase, IDisposable
+public sealed class MainWindowModel : ViewModelBase, IDisposable
 {
     private TabletConnectionError? connectionStatus;
     private readonly IController controller;
@@ -65,7 +65,7 @@ internal sealed class MainWindowModel : ViewModelBase, IDisposable
         if (selectedItem != null)
         {
             String text = await this.controller.HandWritingRecognition(selectedItem.Source, "de_DE").ConfigureAwait(true);
-            await this.ShowDialog.Handle(new DialogWindowModel("Hand Writing Recognition", new HandWritingRecognitionViewModel(text)));
+            await this.ShowDialog.Handle(new HandWritingRecognitionViewModel(text));
         }
     }
 
@@ -202,7 +202,7 @@ internal sealed class MainWindowModel : ViewModelBase, IDisposable
                 case TabletConnectionError.SshNotConnected: return "Not connected via WiFi or USB";
                 case TabletConnectionError.UsbNotActived: return "USB web interface is not activated";
                 case TabletConnectionError.UsbNotConnected: return "Not connected via USB";
-                default: throw new NotImplementedException();
+                default: return "Unknown connection error";
             }
         }
     }

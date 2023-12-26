@@ -3,9 +3,9 @@ using ReMarkableRemember.ViewModels;
 
 namespace ReMarkableRemember.Views;
 
-public sealed partial class HandWritingRecognitionView : ReactiveUserControl<HandWritingRecognitionViewModel>
+public sealed partial class ExceptionView : ReactiveUserControl<ExceptionViewModel>
 {
-    public HandWritingRecognitionView()
+    public ExceptionView()
     {
         this.InitializeComponent();
     }

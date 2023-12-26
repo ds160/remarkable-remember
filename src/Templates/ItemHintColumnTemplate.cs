@@ -6,7 +6,7 @@ using ReMarkableRemember.Views;
 
 namespace ReMarkableRemember.Templates;
 
-internal sealed class ItemHintColumnTemplate : IDataTemplate
+public sealed class ItemHintColumnTemplate : IDataTemplate
 {
     private readonly Func<ItemViewModel, DateTime?> dateTime;
     private readonly Func<ItemViewModel, ItemViewModel.Hint> hint;

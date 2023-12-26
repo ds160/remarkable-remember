@@ -6,7 +6,7 @@ using ReMarkableRemember.ViewModels;
 
 namespace ReMarkableRemember.Views;
 
-internal sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
+public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
 {
     public MainWindow()
     {

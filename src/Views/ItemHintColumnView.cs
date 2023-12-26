@@ -10,7 +10,7 @@ using ReMarkableRemember.ViewModels;
 
 namespace ReMarkableRemember.Views;
 
-internal sealed class ItemHintColumnView : StackPanel
+public sealed class ItemHintColumnView : StackPanel
 {
     private static readonly String? assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
 
@@ -19,7 +19,7 @@ internal sealed class ItemHintColumnView : StackPanel
     private readonly Image image;
     private readonly TextBlock textBlock;
 
-    public ItemHintColumnView(ItemViewModel item, Func<ItemViewModel, DateTime?> dateTime, Func<ItemViewModel, ItemViewModel.Hint> hint)
+    internal ItemHintColumnView(ItemViewModel item, Func<ItemViewModel, DateTime?> dateTime, Func<ItemViewModel, ItemViewModel.Hint> hint)
     {
         this.dateTime = () => dateTime(item);
         this.hint = () => hint(item);

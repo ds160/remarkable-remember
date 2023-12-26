@@ -1,8 +1,5 @@
 using System;
-using Avalonia.Controls;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Base;
-using MsBox.Avalonia.Enums;
+using ReMarkableRemember.ViewModels;
 
 namespace ReMarkableRemember.Views;
 
@@ -31,7 +28,7 @@ internal sealed class MainWindowExceptionHandler : IObserver<Exception>
 
     private async void ShowError(Exception exception)
     {
-        IMsBox<ButtonResult> dialog = MessageBoxManager.GetMessageBoxStandard("Error", exception.Message, ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
-        await dialog.ShowWindowDialogAsync(this.owner).ConfigureAwait(true);
+        DialogWindow dialog = new DialogWindow() { DataContext = new ExceptionViewModel(exception.Message) };
+        await dialog.ShowDialog<Boolean?>(this.owner).ConfigureAwait(true);
     }
 }

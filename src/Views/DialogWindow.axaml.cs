@@ -5,7 +5,7 @@ using ReMarkableRemember.ViewModels;
 
 namespace ReMarkableRemember.Views;
 
-internal sealed partial class DialogWindow : ReactiveWindow<DialogWindowModel>
+public sealed partial class DialogWindow : ReactiveWindow<DialogWindowModel>
 {
     public DialogWindow()
     {
