@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
 using ReMarkableRemember.ViewModels;
@@ -12,9 +15,16 @@ public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
     public MainWindow()
     {
         this.InitializeComponent();
-        this.WhenActivated(action => { if (this.ViewModel != null) { action(this.ViewModel.ShowDialog.RegisterHandler(this.ShowDialogHandler)); } });
+        this.WhenActivated(this.Subscribe);
 
         RxApp.DefaultExceptionHandler = Observer.Create<Exception>(this.ShowExceptionDialog, this.ShowExceptionDialog);
+    }
+
+    private async Task OpenFolderPickerHandler(InteractionContext<String, String?> context)
+    {
+        FolderPickerOpenOptions options = new FolderPickerOpenOptions() { AllowMultiple = false, Title = context.Input };
+        IReadOnlyList<IStorageFolder> folders = await this.StorageProvider.OpenFolderPickerAsync(options).ConfigureAwait(true);
+        context.SetOutput(folders?.Select(folder => folder.Path.AbsolutePath).SingleOrDefault());
     }
 
     private async Task ShowDialogHandler(InteractionContext<DialogWindowModel, Boolean> context)
@@ -28,5 +38,13 @@ public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
     {
         DialogWindow dialog = new DialogWindow() { DataContext = new ExceptionViewModel(exception.Message) };
         await dialog.ShowDialog<Boolean?>(this).ConfigureAwait(true);
+    }
+
+    private void Subscribe(Action<IDisposable> action)
+    {
+        if (this.ViewModel == null) { return; }
+
+        action(this.ViewModel.ShowDialog.RegisterHandler(this.ShowDialogHandler));
+        action(this.ViewModel.OpenFolderPicker.RegisterHandler(this.OpenFolderPickerHandler));
     }
 }

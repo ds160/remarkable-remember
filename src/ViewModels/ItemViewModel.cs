@@ -59,10 +59,12 @@ public sealed class ItemViewModel : ViewModelBase
 
     internal Item Source { get; }
 
-    internal void RaiseChanged()
+    internal void RaiseChanged(Boolean parent, Boolean collection)
     {
         this.RaisePropertyChanged();
-        this.Parent?.RaiseChanged();
+
+        if (collection) { this.Collection?.ToList()?.ForEach(item => item.RaiseChanged(false, collection)); }
+        if (parent) { this.Parent?.RaiseChanged(parent, false); }
     }
 
     internal static Int32 Compare(ItemViewModel itemA, ItemViewModel itemB)

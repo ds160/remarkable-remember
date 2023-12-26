@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using ReMarkableRemember.Entities;
 
@@ -19,25 +20,19 @@ internal sealed class Item
 
     private readonly String dataSource;
 
-    public Item(String dataSource, Tablet.Item tabletItem, IEnumerable<Item>? collection, String? syncPath)
+    public Item(String dataSource, Tablet.Item tabletItem, Item? parent)
     {
         this.dataSource = dataSource;
 
-        using DatabaseContext database = new DatabaseContext(this.dataSource);
-        Backup? backup = database.Backups.Find(tabletItem.Id);
-        Sync? sync = database.Syncs.Find(tabletItem.Id);
-
-        this.Backup = backup?.Modified;
-        this.Collection = collection;
+        this.Collection = tabletItem.Collection?.Select(childTabletItem => new Item(dataSource, childTabletItem, this)).ToArray();
         this.Id = tabletItem.Id;
         this.Modified = tabletItem.Modified;
         this.Name = tabletItem.Name;
-        this.Sync = (sync != null) ? new SyncDetail(sync.Modified, sync.Path) : null;
-        this.SyncPath = syncPath;
+        this.Parent = parent;
         this.Trashed = tabletItem.Trashed;
 
-        this.BackupHint = this.GetBackupHint();
-        this.SyncHint = this.GetSyncHint();
+        using DatabaseContext database = new DatabaseContext(dataSource);
+        this.Update(database);
     }
 
     public DateTime? Backup { get; private set; }
@@ -46,15 +41,15 @@ internal sealed class Item
     public String Id { get; }
     public DateTime Modified { get; }
     public String Name { get; }
+    internal Item? Parent { get; }
     public SyncDetail? Sync { get; private set; }
-    public String? SyncPath { get; }
     public Hint SyncHint { get; private set; }
+    public String? SyncPath { get; private set; }
     public Boolean Trashed { get; }
 
     internal void BackupDone()
     {
         using DatabaseContext database = new DatabaseContext(this.dataSource);
-
         Backup? backup = database.Backups.Find(this.Id);
         if (backup != null)
         {
@@ -65,17 +60,42 @@ internal sealed class Item
         {
             database.Backups.Add(new Backup(this.Id, this.Modified));
         }
-
         database.SaveChanges();
 
         this.Backup = this.Modified;
         this.BackupHint = this.GetBackupHint();
     }
 
+    public void SetSyncTargetDirectory(String? targetDirectory)
+    {
+        using DatabaseContext database = new DatabaseContext(this.dataSource);
+        SyncConfiguration? syncConfiguration = database.SyncConfigurations.Find(this.Id);
+        if (targetDirectory != null)
+        {
+            if (syncConfiguration != null)
+            {
+                syncConfiguration.TargetDirectory = targetDirectory;
+            }
+            else
+            {
+                database.SyncConfigurations.Add(new SyncConfiguration(this.Id, targetDirectory));
+            }
+        }
+        else
+        {
+            if (syncConfiguration != null)
+            {
+                database.SyncConfigurations.Remove(syncConfiguration);
+            }
+        }
+        database.SaveChanges();
+
+        this.Update(database);
+    }
+
     internal void SyncDone(String path)
     {
         using DatabaseContext database = new DatabaseContext(this.dataSource);
-
         Sync? sync = database.Syncs.Find(this.Id);
         if (sync != null)
         {
@@ -86,7 +106,6 @@ internal sealed class Item
         {
             database.Syncs.Add(new Sync(this.Id, this.Modified, path));
         }
-
         database.SaveChanges();
 
         this.Sync = new SyncDetail(this.Modified, path);
@@ -113,6 +132,38 @@ internal sealed class Item
         if (!Path.Exists(this.SyncPath)) { return Hint.NotFoundInTarget; }
 
         return Hint.None;
+    }
+
+    private String? GetSyncPath(SyncConfiguration? syncConfiguration)
+    {
+        String? targetDirectory = null;
+
+        if (syncConfiguration != null)
+        {
+            targetDirectory = syncConfiguration.TargetDirectory;
+        }
+        else if (this.Parent != null && this.Parent.SyncPath != null)
+        {
+            targetDirectory = (this.Collection != null) ? Path.Combine(this.Parent.SyncPath, this.Name) : this.Parent.SyncPath;
+        }
+
+        return (targetDirectory != null && this.Collection == null) ? Path.Combine(targetDirectory, this.Name) : targetDirectory;
+    }
+
+    private void Update(DatabaseContext database)
+    {
+        SyncConfiguration? syncConfiguration = database.SyncConfigurations.Find(this.Id);
+        this.SyncPath = this.GetSyncPath(syncConfiguration);
+
+        Backup? backup = database.Backups.Find(this.Id);
+        this.Backup = backup?.Modified;
+        this.BackupHint = this.GetBackupHint();
+
+        Sync? sync = database.Syncs.Find(this.Id);
+        this.Sync = (sync != null) ? new SyncDetail(sync.Modified, sync.Path) : null;
+        this.SyncHint = this.GetSyncHint();
+
+        this.Collection?.ToList()?.ForEach(childItem => childItem.Update(database));
     }
 
     internal sealed class SyncDetail

@@ -44,7 +44,7 @@ internal sealed class ControllerStub : IController
     {
         await Task.Delay(500).ConfigureAwait(false);
         Int64 time = (DateTime.UtcNow.Ticks - DateTime.UnixEpoch.Ticks) / 10000;
-        List<Item> items = new List<Item>() { new Item(this.dataSource, new Tablet.Item("1", $"{time}", String.Empty, "DocumentType", "Test"), null, null) };
+        List<Item> items = new List<Item>() { new Item(this.dataSource, new Tablet.Item("1", $"{time}", String.Empty, "DocumentType", "Test"), null) };
         return items;
     }
 

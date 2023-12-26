@@ -352,7 +352,7 @@ internal sealed class Tablet : IDisposable
     {
         public Item(String id, String lastModified, String parent, String type, String visibleName)
         {
-            this.Collection = (type == "CollectionType") ? new Collection<Item>() : null;
+            this.Collection = (type == "CollectionType") ? new List<Item>() : null;
             this.Id = id;
             this.Modified = DateTime.UnixEpoch.AddMilliseconds(Double.Parse(lastModified, CultureInfo.InvariantCulture));
             this.Name = (type == "DocumentType") ? $"{visibleName}.pdf" : visibleName;
@@ -360,7 +360,7 @@ internal sealed class Tablet : IDisposable
             this.Trashed = parent == "trash";
         }
 
-        public Collection<Item>? Collection { get; }
+        public List<Item>? Collection { get; }
         public String Id { get; }
         public DateTime Modified { get; }
         public String Name { get; }

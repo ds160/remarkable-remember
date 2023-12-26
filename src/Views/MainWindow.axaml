@@ -26,6 +26,7 @@
             <Button Command="{Binding CommandHandWritingRecognition}" Content="Hand Writing Recognition"/>
             <Button Command="{Binding CommandUploadTemplate}" Content="Upload Template"/>
             <Button Command="{Binding CommandSettings}" Content="Settings"/>
+            <Button Command="{Binding CommandSetSyncTargetDirectory}" Content="Set Sync Target Directory"/>
         </StackPanel>
 
         <TreeDataGrid Grid.Row="1" Source="{Binding TreeSource}" CanUserResizeColumns="True" CanUserSortColumns="False" Margin="8"/>

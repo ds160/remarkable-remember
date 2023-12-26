@@ -69,9 +69,8 @@ internal sealed class Controller : IController
 
     public async Task<IEnumerable<Item>> GetItems()
     {
-        using DatabaseContext database = new DatabaseContext(this.dataSource);
         IEnumerable<Tablet.Item> tabletItems = await this.tablet.GetItems().ConfigureAwait(false);
-        return tabletItems.Select(tabletItem => this.MapItem(database, tabletItem)).ToArray();
+        return tabletItems.Select(tabletItem => new Item(this.dataSource, tabletItem, null)).ToArray();
     }
 
     public async Task<String> HandWritingRecognition(Item item, String language)
@@ -104,22 +103,5 @@ internal sealed class Controller : IController
     public async Task UploadTemplate(TabletTemplate template)
     {
         await this.tablet.UploadTemplate(template).ConfigureAwait(false);
-    }
-
-    private Item MapItem(DatabaseContext database, Tablet.Item tabletItem, String? parentTargetDirectory = null)
-    {
-        String? targetDirectory = MapItemGetTargetDirectory(database, tabletItem, parentTargetDirectory);
-        IEnumerable<Item>? collection = tabletItem.Collection?.Select(childTabletItem => this.MapItem(database, childTabletItem, targetDirectory)).ToArray();
-        String? syncPath = (targetDirectory != null && collection == null) ? Path.Combine(targetDirectory, tabletItem.Name) : targetDirectory;
-
-        return new Item(this.dataSource, tabletItem, collection, syncPath);
-    }
-
-    private static String? MapItemGetTargetDirectory(DatabaseContext database, Tablet.Item tabletItem, String? parentTargetDirectory)
-    {
-        SyncConfiguration? syncConfiguration = database.SyncConfigurations.Find(tabletItem.Id);
-        if (syncConfiguration != null) { return syncConfiguration.TargetDirectory; }
-
-        return (parentTargetDirectory != null && tabletItem.Collection != null) ? Path.Combine(parentTargetDirectory, tabletItem.Name) : parentTargetDirectory;
     }
 }

@@ -28,6 +28,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.controller = noHardware ? new ControllerStub(dataSource) : new Controller(dataSource);
         this.hasItems = false;
 
+        this.OpenFolderPicker = new Interaction<String, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
         this.TreeSource = new HierarchicalTreeDataGridSource<ItemViewModel>(new List<ItemViewModel>())
         {
@@ -46,6 +47,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process, this.Process_CanExecute());
         this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh);
         this.CommandSettings = ReactiveCommand.CreateFromTask(this.ShowSettings);
+        this.CommandSetSyncTargetDirectory = ReactiveCommand.CreateFromTask(this.SetSyncTargetDirectory, this.SetSyncTargetDirectory_CanExecute());
         this.CommandUploadTemplate = ReactiveCommand.CreateFromTask(this.UploadTemplate, this.UploadTemplate_CanExecute());
 
         this.WhenAnyValue(vm => vm.ConnectionStatus).Subscribe(status => this.RaisePropertyChanged(nameof(this.ConnectionStatusText)));
@@ -116,7 +118,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             changed |= await this.controller.SyncItem(item.Source).ConfigureAwait(true);
         }
 
-        if (changed) { item.RaiseChanged(); }
+        if (changed) { item.RaiseChanged(true, false); }
     }
 
     private IObservable<Boolean> Process_CanExecute()
@@ -147,6 +149,22 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         {
             this.HasItems = this.TreeSource.Items.Any();
         }
+    }
+
+    private async Task SetSyncTargetDirectory()
+    {
+        ItemViewModel? selectedItem = this.TreeSource.RowSelection!.SelectedItem;
+        if (selectedItem != null)
+        {
+            String? targetDirectory = await this.OpenFolderPicker.Handle("Sync Target Folder");
+            selectedItem.Source.SetSyncTargetDirectory(targetDirectory);
+            selectedItem.RaiseChanged(false, true);
+        }
+    }
+
+    private IObservable<Boolean> SetSyncTargetDirectory_CanExecute()
+    {
+        return this.TreeSource.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Parent == null);
     }
 
     private async Task ShowSettings()
@@ -186,9 +204,15 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
     }
 
     public ICommand CommandHandWritingRecognition { get; }
+
     public ICommand CommandProcess { get; }
+
     public ICommand CommandRefresh { get; }
+
+    public ICommand CommandSetSyncTargetDirectory { get; }
+
     public ICommand CommandSettings { get; }
+
     public ICommand CommandUploadTemplate { get; }
 
     public TabletConnectionError? ConnectionStatus
@@ -219,6 +243,8 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         get { return this.hasItems; }
         private set { this.RaiseAndSetIfChanged(ref this.hasItems, value); }
     }
+
+    public Interaction<String, String?> OpenFolderPicker { get; }
 
     public Interaction<DialogWindowModel, Boolean> ShowDialog { get; }
 
