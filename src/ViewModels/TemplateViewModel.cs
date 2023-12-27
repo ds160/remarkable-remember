@@ -12,18 +12,16 @@ namespace ReMarkableRemember.ViewModels;
 public sealed partial class TemplateViewModel : DialogWindowModel
 {
     private String category;
-    private TemplateIconCodeViewModel iconCode;
-    private Boolean landscape;
+    private TemplateIconViewModel icon;
     private String name;
     private String sourceFilePath;
 
     public TemplateViewModel() : base("Template", "Upload", true)
     {
-        this.IconCodes = TemplateIconCodeViewModel.GetIconCodes();
+        this.Icons = TemplateIconViewModel.GetIcons();
 
         this.category = String.Empty;
-        this.iconCode = this.IconCodes.First();
-        this.landscape = false;
+        this.icon = this.Icons.First();
         this.name = String.Empty;
         this.sourceFilePath = String.Empty;
 
@@ -38,11 +36,9 @@ public sealed partial class TemplateViewModel : DialogWindowModel
 
     public String Category { get { return this.category; } set { this.RaiseAndSetIfChanged(ref this.category, value); } }
 
-    public TemplateIconCodeViewModel IconCode { get { return this.iconCode; } set { this.RaiseAndSetIfChanged(ref this.iconCode, value); } }
+    public TemplateIconViewModel Icon { get { return this.icon; } set { this.RaiseAndSetIfChanged(ref this.icon, value); } }
 
-    public IEnumerable<TemplateIconCodeViewModel> IconCodes { get; }
-
-    public Boolean Landscape { get { return this.landscape; } set { this.RaiseAndSetIfChanged(ref this.landscape, value); } }
+    public IEnumerable<TemplateIconViewModel> Icons { get; }
 
     public String Name { get { return this.name; } set { this.RaiseAndSetIfChanged(ref this.name, value); } }
 

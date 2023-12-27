@@ -23,20 +23,20 @@
         <TextBox Text="{Binding Name}" Margin="0, 8, 0, 16"/>
 
         <TextBlock>Category</TextBlock>
-        <TextBox Text="{Binding Category}" Margin="0, 8, 0, 16"/>
+        <TextBox Text="{Binding Category}" Margin="0, 8, 0, 48"/>
 
         <TextBlock>IconCode</TextBlock>
-        <ComboBox ItemsSource="{Binding IconCodes}" SelectedItem="{Binding IconCode}" HorizontalAlignment="Stretch" Margin="0, 8, 0, 16">
+        <ComboBox ItemsSource="{Binding Icons}" SelectedItem="{Binding Icon}" HorizontalAlignment="Stretch" Margin="0, 8, 0, 16">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="{Binding Image}" Height="32" Margin="0, 0, 8, 0"/>
-                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                        <Image Source="{Binding Image}" Height="48"/>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="8, 0, 0, 0"/>
+                        <TextBlock Text=" (Landscape)" VerticalAlignment="Center" IsVisible="{Binding Landscape}"/>
+                        <TextBlock Text=" (Portrait)" VerticalAlignment="Center" IsVisible="{Binding !Landscape}"/>
                     </StackPanel>
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
-
-        <CheckBox IsChecked="{Binding Landscape}" Margin="0, 8, 0, 16">Landscape</CheckBox>
     </StackPanel>
 </UserControl>

@@ -222,7 +222,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         TemplateViewModel template = new TemplateViewModel();
         if (await this.ShowDialog.Handle(template))
         {
-            TabletTemplate tabletTemplate = new TabletTemplate(template.Name, template.Category, template.IconCode.Code, template.Landscape, template.SourceFilePath);
+            TabletTemplate tabletTemplate = new TabletTemplate(template.Name, template.Category, template.Icon.Code, template.Icon.Landscape, template.SourceFilePath);
             await this.controller.UploadTemplate(tabletTemplate).ConfigureAwait(true);
         }
     }
