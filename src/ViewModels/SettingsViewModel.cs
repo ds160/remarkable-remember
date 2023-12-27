@@ -1,40 +1,59 @@
 using System;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ReactiveUI;
 using ReMarkableRemember.Models;
 
 namespace ReMarkableRemember.ViewModels;
 
-public sealed class SettingsViewModel : DialogWindowModel
+public sealed partial class SettingsViewModel : DialogWindowModel
 {
+    private String? backup;
+    private String? myScriptApplicationKey;
+    private String? myScriptHmacKey;
+    private String? tabletIp;
+    private String? tabletPassword;
+
     private readonly Settings settings;
 
     internal SettingsViewModel(Settings settings) : base("Settings", "Save", true)
     {
         this.settings = settings;
 
-        this.Backup = this.settings.Backup;
-        this.MyScriptApplicationKey = this.settings.MyScriptApplicationKey;
-        this.MyScriptHmacKey = this.settings.MyScriptHmacKey;
-        this.TabletIp = this.settings.TabletIp;
-        this.TabletPassword = this.settings.TabletPassword;
+        this.backup = this.settings.Backup;
+        this.myScriptApplicationKey = this.settings.MyScriptApplicationKey;
+        this.myScriptHmacKey = this.settings.MyScriptHmacKey;
+        this.tabletIp = this.settings.TabletIp;
+        this.tabletPassword = this.settings.TabletPassword;
 
         this.CommandSetBackup = ReactiveCommand.CreateFromTask(this.SetBackup);
+
+        this.WhenAnyValue(vm => vm.TabletIp).Subscribe(this.CheckTabletIp);
     }
 
     public ReactiveCommand<Unit, Unit> CommandSetBackup { get; }
 
-    public String? Backup { get; private set; }
+    public String? Backup { get { return this.backup; } private set { this.RaiseAndSetIfChanged(ref this.backup, value); } }
 
-    public String? MyScriptApplicationKey { get; set; }
+    public String? MyScriptApplicationKey { get { return this.myScriptApplicationKey; } set { this.RaiseAndSetIfChanged(ref this.myScriptApplicationKey, value); } }
 
-    public String? MyScriptHmacKey { get; set; }
+    public String? MyScriptHmacKey { get { return this.myScriptHmacKey; } set { this.RaiseAndSetIfChanged(ref this.myScriptHmacKey, value); } }
 
-    public String? TabletIp { get; set; }
+    public String? TabletIp { get { return this.tabletIp; } set { this.RaiseAndSetIfChanged(ref this.tabletIp, value); } }
 
-    public String? TabletPassword { get; set; }
+    public String? TabletPassword { get { return this.tabletPassword; } set { this.RaiseAndSetIfChanged(ref this.tabletPassword, value); } }
+
+    private void CheckTabletIp(String? host)
+    {
+        this.ClearErrors(nameof(this.TabletIp));
+
+        if (String.IsNullOrEmpty(host)) { return; }
+        if (IpRegex().Match(host).Success) { return; }
+
+        this.AddError(nameof(this.TabletIp), "Invalid IP address");
+    }
 
     protected override void Close()
     {
@@ -46,13 +65,15 @@ public sealed class SettingsViewModel : DialogWindowModel
         this.settings.SaveChanges();
     }
 
+    [GeneratedRegex("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$")]
+    private static partial Regex IpRegex();
+
     private async Task SetBackup()
     {
         String? backupFolder = await this.OpenFolderPicker.Handle("Backup Folder");
         if (backupFolder != null)
         {
             this.Backup = backupFolder;
-            this.RaisePropertyChanged(nameof(this.Backup));
         }
     }
 }

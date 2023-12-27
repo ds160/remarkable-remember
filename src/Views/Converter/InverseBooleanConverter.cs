@@ -5,15 +5,13 @@ using Avalonia.Data.Converters;
 
 namespace ReMarkableRemember.Views.Converter;
 
-public sealed class NullableBooleanConverter : IValueConverter
+public sealed class InverseBooleanConverter : IValueConverter
 {
     public Object? Convert(Object? value, Type targetType, Object? parameter, CultureInfo culture)
     {
-        if (targetType == typeof(Boolean))
+        if (value is Boolean valueBoolean && targetType == typeof(Boolean))
         {
-            Boolean parameterValue;
-            Boolean resultIfNull = !Boolean.TryParse(parameter as String, out parameterValue) || parameterValue;
-            return (value == null) ? resultIfNull : !resultIfNull;
+            return !valueBoolean;
         }
 
         return new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
