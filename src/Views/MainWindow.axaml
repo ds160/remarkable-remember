@@ -9,9 +9,9 @@
         x:DataType="vm:MainWindowModel"
         Icon="/Assets/Logo.ico"
         MinHeight="600"
-        MinWidth="1090"
+        MinWidth="1200"
         Title="reMarkable Remember"
-        Width="1090"
+        Width="1200"
         WindowStartupLocation="CenterScreen">
 
     <Design.DataContext>
@@ -30,11 +30,19 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Width" Value="120"/>
         </Style>
+        <Style Selector="ComboBox.Menu">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Margin" Value="4"/>
+        </Style>
         <Style Selector="Label.Menu">
             <Setter Property="FontWeight" Value="DemiBold"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="Margin" Value="4"/>
+        </Style>
+        <Style Selector="StackPanel.Menu">
+            <Setter Property="Height" Value="120"/>
+            <Setter Property="Width" Value="120"/>
         </Style>
         <Style Selector="TextBlock.Menu">
             <Setter Property="TextAlignment" Value="Center"/>
@@ -59,9 +67,16 @@
             <Button Classes="Menu" Grid.Row="1" Grid.Column="4" Command="{Binding CommandHandWritingRecognition}">
                 <TextBlock Classes="Menu" Text="Hand Writing Recognition"/>
             </Button>
-            <Button Classes="Menu" Grid.Row="1" Grid.Column="5">
-                <TextBlock Classes="Menu" Text="Language"/>
-            </Button>
+            <StackPanel Classes="Menu" Grid.Row="1" Grid.Column="5" Width="240">
+                <Label Classes="Menu" Content="Language" FontWeight="Normal"/>
+                <ComboBox Classes="Menu" ItemsSource="{Binding HandWritingRecognitionLanguages}" SelectedIndex="{Binding HandWritingRecognitionLanguage}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
 
             <Label Classes="Menu" Grid.Row="0" Grid.Column="7" Grid.ColumnSpan="2" Content="Sync Target Directory"/>
             <Button Classes="Menu" Grid.Row="1" Grid.Column="7" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="True">

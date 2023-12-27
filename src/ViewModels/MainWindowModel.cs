@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Avalonia.Controls;
-using Avalonia.Controls.Models.TreeDataGrid;
 using ReactiveUI;
-using ReMarkableRemember.Helper;
 using ReMarkableRemember.Models;
 using ReMarkableRemember.Models.Interfaces;
 using ReMarkableRemember.Models.Stubs;
-using ReMarkableRemember.Templates;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -20,6 +17,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 {
     private TabletConnectionError? connectionStatus;
     private readonly IController controller;
+    private Int32 handWritingRecognitionLanguage;
     private Boolean hasItems;
     private Job.Description jobs;
 
@@ -27,23 +25,14 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
     {
         this.connectionStatus = TabletConnectionError.SshNotConnected;
         this.controller = noHardware ? new ControllerStub(dataSource) : new Controller(dataSource);
+        this.handWritingRecognitionLanguage = 0;
         this.hasItems = false;
         this.jobs = Job.Description.None;
 
+        this.HandWritingRecognitionLanguages = LanguageViewModel.GetLanguages();
         this.OpenFolderPicker = new Interaction<String, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
-        this.TreeSource = new HierarchicalTreeDataGridSource<ItemViewModel>(new List<ItemViewModel>())
-        {
-            Columns =
-            {
-                new HierarchicalExpanderColumn<ItemViewModel>(new TextColumn<ItemViewModel, String>("Name", item => item.Name), item => item.Collection),
-                new TextColumn<ItemViewModel, String>("Modified", item => item.Modified.ToDisplayString()),
-                new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(item => null, item => item.CombinedHint)),
-                new TextColumn<ItemViewModel, String>("Sync Path", item => item.SyncPath),
-                new TemplateColumn<ItemViewModel>("Sync Information", new ItemHintColumnTemplate(item => item.Sync, item => item.SyncHint)),
-                new TemplateColumn<ItemViewModel>("Backup Information", new ItemHintColumnTemplate(item => item.Backup, item => item.BackupHint))
-            }
-        };
+        this.TreeSource = new ItemViewModelTreeSource();
 
         this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
         this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process, this.Process_CanExecute());
@@ -72,7 +61,8 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         {
             using Job job = new Job(Job.Description.HandWritingRecognition, this);
 
-            String text = await this.controller.HandWritingRecognition(selectedItem.Source, "de_DE").ConfigureAwait(true);
+            LanguageViewModel language = this.HandWritingRecognitionLanguages[this.HandWritingRecognitionLanguage];
+            String text = await this.controller.HandWritingRecognition(selectedItem.Source, language.Code).ConfigureAwait(true);
 
             job.Done();
 
@@ -285,6 +275,14 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         }
     }
 
+    public Int32 HandWritingRecognitionLanguage
+    {
+        get { return this.handWritingRecognitionLanguage; }
+        private set { this.RaiseAndSetIfChanged(ref this.handWritingRecognitionLanguage, value); }
+    }
+
+    public Collection<LanguageViewModel> HandWritingRecognitionLanguages { get; }
+
     public Boolean HasItems
     {
         get { return this.hasItems; }
@@ -316,7 +314,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     public Interaction<DialogWindowModel, Boolean> ShowDialog { get; }
 
-    public HierarchicalTreeDataGridSource<ItemViewModel> TreeSource { get; }
+    public ItemViewModelTreeSource TreeSource { get; }
 
     private sealed class Job : IDisposable
     {
