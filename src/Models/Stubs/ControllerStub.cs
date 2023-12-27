@@ -36,13 +36,13 @@ internal sealed class ControllerStub : IController
 
     public async Task<TabletConnectionError?> GetConnectionStatus()
     {
-        await Task.Delay(500).ConfigureAwait(false);
+        await Task.Delay(100).ConfigureAwait(false);
         return null;
     }
 
     public async Task<IEnumerable<Item>> GetItems()
     {
-        await Task.Delay(500).ConfigureAwait(false);
+        await Task.Delay(1000).ConfigureAwait(false);
         Int64 time = (DateTime.UtcNow.Ticks - DateTime.UnixEpoch.Ticks) / 10000;
         List<Item> items = new List<Item>() { new Item(this.dataSource, new Tablet.Item("1", $"{time}", String.Empty, "DocumentType", "Test"), null) };
         return items;
@@ -50,7 +50,7 @@ internal sealed class ControllerStub : IController
 
     public async Task<String> HandWritingRecognition(Item item, String language)
     {
-        await Task.Delay(500).ConfigureAwait(false);
+        await Task.Delay(5000).ConfigureAwait(false);
         return "Hand Writing Recognition via MyScript done :)";
     }
 
@@ -70,6 +70,6 @@ internal sealed class ControllerStub : IController
 
     public async Task UploadTemplate(TabletTemplate template)
     {
-        await Task.Delay(500).ConfigureAwait(false);
+        await Task.Delay(1000).ConfigureAwait(false);
     }
 }

@@ -35,7 +35,7 @@
 
         <DockPanel Grid.Row="2" Margin="8">
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                <Label Content="{Binding Jobs}" IsVisible="False"/>
+                <Label Content="{Binding JobsText}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Image Source="/Assets/Connected.png" IsVisible="{Binding ConnectionStatus, Converter={StaticResource NullableBooleanConverter}, ConverterParameter=True}"/>

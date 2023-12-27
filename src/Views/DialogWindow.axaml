@@ -34,6 +34,7 @@
             <Button Command="{Binding CommandClose}"
                     Content="{Binding TextClose}"
                     HorizontalContentAlignment="Center"
+                    IsCancel="{Binding ShowCancel, Converter={StaticResource InverseBooleanConverter}}"
                     IsDefault="True"
                     IsEnabled="{Binding HasErrors, Converter={StaticResource InverseBooleanConverter}}"
                     Width="80"/>
