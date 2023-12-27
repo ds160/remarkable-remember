@@ -49,7 +49,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process, this.Process_CanExecute());
         this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh, this.Refresh_CanExecute());
         this.CommandSettings = ReactiveCommand.CreateFromTask(this.ShowSettings, this.ShowSettings_CanExecute());
-        this.CommandSetSyncTargetDirectory = ReactiveCommand.CreateFromTask(this.SetSyncTargetDirectory, this.SetSyncTargetDirectory_CanExecute());
+        this.CommandSyncTargetDirectory = ReactiveCommand.CreateFromTask<String>(this.SyncTargetDirectory, this.SyncTargetDirectory_CanExecute());
         this.CommandUploadTemplate = ReactiveCommand.CreateFromTask(this.UploadTemplate, this.UploadTemplate_CanExecute());
 
         this.WhenAnyValue(vm => vm.ConnectionStatus).Subscribe(status => this.RaisePropertyChanged(nameof(this.ConnectionStatusText)));
@@ -169,20 +169,32 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
     }
 
-    private async Task SetSyncTargetDirectory()
+    private async Task SyncTargetDirectory(String setString)
     {
         ItemViewModel? selectedItem = this.TreeSource.RowSelection!.SelectedItem;
         if (selectedItem != null)
         {
             using Job job = new Job(Job.Description.SetSyncTargetDirectory, this);
 
-            String? targetDirectory = await this.OpenFolderPicker.Handle("Sync Target Folder");
-            selectedItem.Source.SetSyncTargetDirectory(targetDirectory);
-            selectedItem.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Collection);
+            Boolean set;
+            if (Boolean.TryParse(setString, out set) && set)
+            {
+                String? targetDirectory = await this.OpenFolderPicker.Handle("Sync Target Folder");
+                if (targetDirectory != null)
+                {
+                    selectedItem.Source.SetSyncTargetDirectory(targetDirectory);
+                    selectedItem.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Collection);
+                }
+            }
+            else
+            {
+                selectedItem.Source.SetSyncTargetDirectory(null);
+                selectedItem.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Collection);
+            }
         }
     }
 
-    private IObservable<Boolean> SetSyncTargetDirectory_CanExecute()
+    private IObservable<Boolean> SyncTargetDirectory_CanExecute()
     {
         IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
         IObservable<Boolean> treeSelection = this.TreeSource.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Parent == null);
@@ -244,9 +256,9 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     public ReactiveCommand<Unit, Unit> CommandRefresh { get; }
 
-    public ReactiveCommand<Unit, Unit> CommandSetSyncTargetDirectory { get; }
-
     public ReactiveCommand<Unit, Unit> CommandSettings { get; }
+
+    public ReactiveCommand<String, Unit> CommandSyncTargetDirectory { get; }
 
     public ReactiveCommand<Unit, Unit> CommandUploadTemplate { get; }
 
@@ -291,10 +303,10 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         {
             List<String> jobs = new List<String>();
 
-            if ((this.Jobs & Job.Description.Refresh) != 0) { jobs.Add("Refreshing"); }
-            if ((this.Jobs & Job.Description.Process) != 0) { jobs.Add("Backup & Syncing"); }
-            if ((this.Jobs & Job.Description.HandWritingRecognition) != 0) { jobs.Add("Hand Writing Recognition"); }
-            if ((this.Jobs & Job.Description.UploadTemplate) != 0) { jobs.Add("Uploading Template"); }
+            if (this.Jobs.HasFlag(Job.Description.Refresh)) { jobs.Add("Refreshing"); }
+            if (this.Jobs.HasFlag(Job.Description.Process)) { jobs.Add("Backup & Syncing"); }
+            if (this.Jobs.HasFlag(Job.Description.HandWritingRecognition)) { jobs.Add("Hand Writing Recognition"); }
+            if (this.Jobs.HasFlag(Job.Description.UploadTemplate)) { jobs.Add("Uploading Template"); }
 
             return (jobs.Count > 0) ? String.Join(" and ", jobs) : "Ready";
         }

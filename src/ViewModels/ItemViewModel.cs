@@ -100,11 +100,11 @@ public sealed class ItemViewModel : ViewModelBase
 
     public static Image GetImage(DateTime? dateTime, Hint hint)
     {
-        if ((hint & Hint.ExistsInTarget) != 0) { return Image.Red; }
-        if ((hint & Hint.New) != 0) { return Image.Yellow; }
-        if ((hint & Hint.Modified) != 0) { return Image.Yellow; }
-        if ((hint & Hint.SyncPathChanged) != 0) { return Image.Yellow; }
-        if ((hint & Hint.NotFoundInTarget) != 0) { return Image.Yellow; }
+        if (hint.HasFlag(Hint.ExistsInTarget)) { return Image.Red; }
+        if (hint.HasFlag(Hint.New)) { return Image.Yellow; }
+        if (hint.HasFlag(Hint.Modified)) { return Image.Yellow; }
+        if (hint.HasFlag(Hint.SyncPathChanged)) { return Image.Yellow; }
+        if (hint.HasFlag(Hint.NotFoundInTarget)) { return Image.Yellow; }
 
         if (hint == Hint.None) { return (dateTime != null) ? Image.Green : Image.None; }
 
@@ -113,11 +113,11 @@ public sealed class ItemViewModel : ViewModelBase
 
     public static String? GetToolTip(DateTime? dateTime, Hint hint)
     {
-        if ((hint & Hint.ExistsInTarget) != 0) { return "Exists already in target directory"; }
-        if ((hint & Hint.New) != 0) { return "New"; }
-        if ((hint & Hint.Modified) != 0) { return "Modified"; }
-        if ((hint & Hint.SyncPathChanged) != 0) { return "Sync path changed"; }
-        if ((hint & Hint.NotFoundInTarget) != 0) { return "Not found in target directory"; }
+        if (hint.HasFlag(Hint.ExistsInTarget)) { return "Exists already in target directory"; }
+        if (hint.HasFlag(Hint.New)) { return "New"; }
+        if (hint.HasFlag(Hint.Modified)) { return "Modified"; }
+        if (hint.HasFlag(Hint.SyncPathChanged)) { return "Sync path changed"; }
+        if (hint.HasFlag(Hint.NotFoundInTarget)) { return "Not found in target directory"; }
 
         if (hint == Hint.None) { return (dateTime != null) ? "Up-to-date" : null; }
 

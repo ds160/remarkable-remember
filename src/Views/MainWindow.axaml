@@ -8,9 +8,10 @@
         x:Class="ReMarkableRemember.Views.MainWindow"
         x:DataType="vm:MainWindowModel"
         Icon="/Assets/Logo.ico"
-        MinHeight="480"
-        MinWidth="640"
+        MinHeight="600"
+        MinWidth="1090"
         Title="reMarkable Remember"
+        Width="1090"
         WindowStartupLocation="CenterScreen">
 
     <Design.DataContext>
@@ -21,17 +22,71 @@
         <converter:NullableBooleanConverter x:Key="NullableBooleanConverter"/>
     </Window.Resources>
 
-    <Grid RowDefinitions="Auto,*,Auto">
-        <StackPanel Grid.Row="0" Margin="8" Orientation="Horizontal" Spacing="8">
-            <Button Command="{Binding CommandRefresh}" Content="Refresh"/>
-            <Button Command="{Binding CommandProcess}" Content="Process"/>
-            <Button Command="{Binding CommandHandWritingRecognition}" Content="Hand Writing Recognition"/>
-            <Button Command="{Binding CommandUploadTemplate}" Content="Upload Template"/>
-            <Button Command="{Binding CommandSettings}" Content="Settings"/>
-            <Button Command="{Binding CommandSetSyncTargetDirectory}" Content="Set Sync Target Directory"/>
-        </StackPanel>
+    <Window.Styles>
+        <Style Selector="Button.Menu">
+            <Setter Property="Height" Value="120"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Width" Value="120"/>
+        </Style>
+        <Style Selector="Label.Menu">
+            <Setter Property="FontWeight" Value="DemiBold"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="4"/>
+        </Style>
+        <Style Selector="TextBlock.Menu">
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+    </Window.Styles>
 
-        <TreeDataGrid Grid.Row="1" Source="{Binding TreeSource}" CanUserResizeColumns="True" CanUserSortColumns="False" Margin="8"/>
+    <Grid RowDefinitions="Auto, *, Auto">
+        <Grid Classes="Menu" Grid.Row="0" ColumnDefinitions="Auto, Auto, Auto, 16, Auto, Auto, 16, Auto, Auto, 16, Auto" RowDefinitions="Auto, Auto" Margin="4">
+            <Label Classes="Menu" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Content="reMarkable"/>
+            <Button Classes="Menu" Grid.Row="1" Grid.Column="0" Command="{Binding CommandRefresh}">
+                <TextBlock Classes="Menu" Text="Refresh"/>
+            </Button>
+            <Button Classes="Menu" Grid.Row="1" Grid.Column="1" Command="{Binding CommandProcess}">
+                <TextBlock Classes="Menu" Text="Backup &amp; Sync"/>
+            </Button>
+            <Button Classes="Menu" Grid.Row="1" Grid.Column="2" Command="{Binding CommandUploadTemplate}">
+                <TextBlock Classes="Menu" Text="Upload Template"/>
+            </Button>
+
+            <Label Classes="Menu" Grid.Row="0" Grid.Column="4" Grid.ColumnSpan="2" Content="Document"/>
+            <Button Classes="Menu" Grid.Row="1" Grid.Column="4" Command="{Binding CommandHandWritingRecognition}">
+                <TextBlock Classes="Menu" Text="Hand Writing Recognition"/>
+            </Button>
+            <Button Classes="Menu" Grid.Row="1" Grid.Column="5">
+                <TextBlock Classes="Menu" Text="Language"/>
+            </Button>
+
+            <Label Classes="Menu" Grid.Row="0" Grid.Column="7" Grid.ColumnSpan="2" Content="Sync Target Directory"/>
+            <Button Classes="Menu" Grid.Row="1" Grid.Column="7" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="True">
+                <TextBlock Classes="Menu" Text="Set"/>
+            </Button>
+            <Button Classes="Menu" Grid.Row="1" Grid.Column="8" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="False">
+                <TextBlock Classes="Menu" Text="Reset"/>
+            </Button>
+
+            <Label Classes="Menu" Grid.Row="0" Grid.Column="10" Grid.ColumnSpan="1" Content="Preferences"/>
+            <Button Classes="Menu" Grid.Row="1" Grid.Column="10" Command="{Binding CommandSettings}">
+                <TextBlock Classes="Menu" Text="Settings"/>
+            </Button>
+        </Grid>
+
+        <TreeDataGrid Grid.Row="1" Source="{Binding TreeSource}" CanUserResizeColumns="True" CanUserSortColumns="False" Margin="8, 24, 8, 8">
+            <TreeDataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Hand Writing Recognition" Command="{Binding CommandHandWritingRecognition}"/>
+                    <Separator/>
+                    <MenuItem Header="Sync Target Directory Set" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="True"/>
+                    <MenuItem Header="Sync Target Directory Reset" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="False"/>
+                </ContextMenu>
+            </TreeDataGrid.ContextMenu>
+        </TreeDataGrid>
 
         <DockPanel Grid.Row="2" Margin="8">
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">

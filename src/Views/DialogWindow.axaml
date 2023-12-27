@@ -2,7 +2,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:converter="using:ReMarkableRemember.Views.Converter"
         xmlns:vm="using:ReMarkableRemember.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ReMarkableRemember.Views.DialogWindow"
@@ -17,11 +16,7 @@
         <vm:DialogWindowModel/>
     </Design.DataContext>
 
-    <Window.Resources>
-        <converter:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
-    </Window.Resources>
-
-    <Grid RowDefinitions="*,Auto">
+    <Grid RowDefinitions="*, Auto">
         <ContentControl Grid.Row="0" Content="{Binding Content}" Margin="16, 16, 16, 8"/>
 
         <StackPanel Grid.Row="1" HorizontalAlignment="Right" Margin="16, 8, 16, 16" Orientation="Horizontal" Spacing="8">
@@ -34,9 +29,9 @@
             <Button Command="{Binding CommandClose}"
                     Content="{Binding TextClose}"
                     HorizontalContentAlignment="Center"
-                    IsCancel="{Binding ShowCancel, Converter={StaticResource InverseBooleanConverter}}"
+                    IsCancel="{Binding !ShowCancel}"
                     IsDefault="True"
-                    IsEnabled="{Binding HasErrors, Converter={StaticResource InverseBooleanConverter}}"
+                    IsEnabled="{Binding !HasErrors}"
                     Width="80"/>
         </StackPanel>
     </Grid>
