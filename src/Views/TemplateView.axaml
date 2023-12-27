@@ -30,7 +30,7 @@
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="{Binding Image}" Height="48"/>
+                        <Image Source="{Binding Image}" Height="120"/>
                         <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="8, 0, 0, 0"/>
                         <TextBlock Text=" (Landscape)" VerticalAlignment="Center" IsVisible="{Binding Landscape}"/>
                         <TextBlock Text=" (Portrait)" VerticalAlignment="Center" IsVisible="{Binding !Landscape}"/>

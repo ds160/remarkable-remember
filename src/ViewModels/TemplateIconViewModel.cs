@@ -11,12 +11,25 @@ public sealed class TemplateIconViewModel
 {
     private static readonly String? assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
 
-    private TemplateIconViewModel(String code, String name, String image, Boolean landscape)
+    private TemplateIconViewModel(String code, String key)
     {
         this.Code = code;
-        this.Image = new Bitmap(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/Templates/{image}.png")));
-        this.Landscape = landscape;
-        this.Name = name;
+        this.Image = new Bitmap(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/Templates/{key}.png")));
+
+        if (key.StartsWith("LS ", StringComparison.OrdinalIgnoreCase))
+        {
+            this.Landscape = true;
+            this.Name = key[3..];
+        }
+        else if (key.StartsWith("P ", StringComparison.OrdinalIgnoreCase))
+        {
+            this.Landscape = false;
+            this.Name = key[2..];
+        }
+        else
+        {
+            throw new ArgumentException("Invalid icon key defined.", nameof(key));
+        }
     }
 
     public String Code { get; }
@@ -29,14 +42,16 @@ public sealed class TemplateIconViewModel
 
     internal static IEnumerable<TemplateIconViewModel> GetIcons()
     {
-        List<TemplateIconViewModel> iconCodes = new List<TemplateIconViewModel>()
+        List<TemplateIconViewModel> icons = new List<TemplateIconViewModel>()
         {
-            new TemplateIconViewModel("\uE9FE", "Blank", "E9FE", false),
-            new TemplateIconViewModel("\uE98F", "Checklist", "E98F", false),
-            new TemplateIconViewModel("\uEA00", "Isometric", "EA00", false),
-            new TemplateIconViewModel("\uE9A8", "Lined small", "E9A8", false),
+            new TemplateIconViewModel("\uE970", "LS Piano sheet large"),
+            new TemplateIconViewModel("\uE975", "LS Piano sheet medium"),
+            new TemplateIconViewModel("\uE976", "LS Piano sheet small"),
+            new TemplateIconViewModel("\uE977", "P Piano sheet large"),
+            new TemplateIconViewModel("\uE978", "P Piano sheet medium"),
+            new TemplateIconViewModel("\uE979", "P Piano sheet small"),
         };
 
-        return iconCodes.OrderBy(iconCode => iconCode.Name);
+        return icons.OrderBy(icon => icon.Landscape ? 1 : 0).ThenBy(icon => icon.Name);
     }
 }
