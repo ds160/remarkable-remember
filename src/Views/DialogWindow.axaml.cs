@@ -19,16 +19,16 @@ public sealed partial class DialogWindow : ReactiveWindow<DialogWindowModel>
 
     private async Task OpenFilePickerHandler(InteractionContext<String, String?> context)
     {
-        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = false, Title = context.Input };
+        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = false, Title = context.Input, FileTypeFilter = new[] { FilePickerFileTypes.ImagePng } };
         IReadOnlyList<IStorageFile> files = await this.StorageProvider.OpenFilePickerAsync(options).ConfigureAwait(true);
-        context.SetOutput(files?.Select(file => file.Path.AbsolutePath).SingleOrDefault());
+        context.SetOutput(files?.Select(file => file.Path.LocalPath).SingleOrDefault());
     }
 
     private async Task OpenFolderPickerHandler(InteractionContext<String, String?> context)
     {
         FolderPickerOpenOptions options = new FolderPickerOpenOptions() { AllowMultiple = false, Title = context.Input };
         IReadOnlyList<IStorageFolder> folders = await this.StorageProvider.OpenFolderPickerAsync(options).ConfigureAwait(true);
-        context.SetOutput(folders?.Select(folder => folder.Path.AbsolutePath).SingleOrDefault());
+        context.SetOutput(folders?.Select(folder => folder.Path.LocalPath).SingleOrDefault());
     }
 
     private void Subscribe(Action<IDisposable> action)

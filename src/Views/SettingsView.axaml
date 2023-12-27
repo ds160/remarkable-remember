@@ -27,7 +27,7 @@
 
         <TextBlock>Backup Folder</TextBlock>
         <DockPanel Margin="0, 8, 0, 16">
-            <Button DockPanel.Dock="Right" Command="{Binding CommandSetBackup}" Content="..." />
+            <Button DockPanel.Dock="Right" Command="{Binding CommandSetBackup}" Content="..."  VerticalAlignment="Top"/>
             <TextBox Text="{Binding Backup}" Margin="0, 0, 8, 0" IsReadOnly="True"/>
         </DockPanel>
     </StackPanel>

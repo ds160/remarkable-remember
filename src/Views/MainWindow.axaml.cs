@@ -24,7 +24,7 @@ public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
     {
         FolderPickerOpenOptions options = new FolderPickerOpenOptions() { AllowMultiple = false, Title = context.Input };
         IReadOnlyList<IStorageFolder> folders = await this.StorageProvider.OpenFolderPickerAsync(options).ConfigureAwait(true);
-        context.SetOutput(folders?.Select(folder => folder.Path.AbsolutePath).SingleOrDefault());
+        context.SetOutput(folders?.Select(folder => folder.Path.LocalPath).SingleOrDefault());
     }
 
     private async Task ShowDialogHandler(InteractionContext<DialogWindowModel, Boolean> context)

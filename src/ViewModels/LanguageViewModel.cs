@@ -1,12 +1,12 @@
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace ReMarkableRemember.ViewModels;
 
-public sealed class LanguageViewModel : ViewModelBase
+public sealed class LanguageViewModel
 {
-    public LanguageViewModel(String code)
+    private LanguageViewModel(String code)
     {
         this.Code = code;
         this.DisplayName = CultureInfo.GetCultureInfo(code).DisplayName;
@@ -16,9 +16,9 @@ public sealed class LanguageViewModel : ViewModelBase
 
     public String DisplayName { get; }
 
-    internal static Collection<LanguageViewModel> GetLanguages()
+    internal static IEnumerable<LanguageViewModel> GetLanguages()
     {
-        return new Collection<LanguageViewModel>()
+        return new List<LanguageViewModel>()
         {
             new LanguageViewModel("de_DE"),
             new LanguageViewModel("en_US")

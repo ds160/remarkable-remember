@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Reactive;
@@ -17,27 +16,27 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 {
     private TabletConnectionError? connectionStatus;
     private readonly IController controller;
-    private Int32 handWritingRecognitionLanguage;
+    private LanguageViewModel handWritingRecognitionLanguage;
     private Boolean hasItems;
     private Job.Description jobs;
 
     public MainWindowModel(String dataSource, Boolean noHardware)
     {
-        this.connectionStatus = TabletConnectionError.SshNotConnected;
-        this.controller = noHardware ? new ControllerStub(dataSource) : new Controller(dataSource);
-        this.handWritingRecognitionLanguage = 0;
-        this.hasItems = false;
-        this.jobs = Job.Description.None;
-
         this.HandWritingRecognitionLanguages = LanguageViewModel.GetLanguages();
         this.OpenFolderPicker = new Interaction<String, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
         this.TreeSource = new ItemViewModelTreeSource();
 
+        this.connectionStatus = TabletConnectionError.SshNotConnected;
+        this.controller = noHardware ? new ControllerStub(dataSource) : new Controller(dataSource);
+        this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.First();
+        this.hasItems = false;
+        this.jobs = Job.Description.None;
+
         this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
         this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process, this.Process_CanExecute());
         this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh, this.Refresh_CanExecute());
-        this.CommandSettings = ReactiveCommand.CreateFromTask(this.ShowSettings, this.ShowSettings_CanExecute());
+        this.CommandSettings = ReactiveCommand.CreateFromTask(this.Settings, this.Settings_CanExecute());
         this.CommandSyncTargetDirectory = ReactiveCommand.CreateFromTask<String>(this.SyncTargetDirectory, this.SyncTargetDirectory_CanExecute());
         this.CommandUploadTemplate = ReactiveCommand.CreateFromTask(this.UploadTemplate, this.UploadTemplate_CanExecute());
 
@@ -61,8 +60,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         {
             using Job job = new Job(Job.Description.HandWritingRecognition, this);
 
-            LanguageViewModel language = this.HandWritingRecognitionLanguages[this.HandWritingRecognitionLanguage];
-            String text = await this.controller.HandWritingRecognition(selectedItem.Source, language.Code).ConfigureAwait(true);
+            String text = await this.controller.HandWritingRecognition(selectedItem.Source, this.HandWritingRecognitionLanguage.Code).ConfigureAwait(true);
 
             job.Done();
 
@@ -159,6 +157,22 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
     }
 
+    private async Task Settings()
+    {
+        using Job job = new Job(Job.Description.Settings, this);
+
+        SettingsViewModel settings = new SettingsViewModel(this.controller.Settings);
+        if (await this.ShowDialog.Handle(settings))
+        {
+            settings.SaveChanges();
+        }
+    }
+
+    private IObservable<Boolean> Settings_CanExecute()
+    {
+        return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
+    }
+
     private async Task SyncTargetDirectory(String setString)
     {
         ItemViewModel? selectedItem = this.TreeSource.RowSelection!.SelectedItem;
@@ -192,18 +206,6 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         return Observable.CombineLatest(jobs, treeSelection, (value1, value2) => value1 && value2);
     }
 
-    private async Task ShowSettings()
-    {
-        using Job job = new Job(Job.Description.Settings, this);
-
-        await this.ShowDialog.Handle(new SettingsViewModel(this.controller.Settings));
-    }
-
-    private IObservable<Boolean> ShowSettings_CanExecute()
-    {
-        return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
-    }
-
     private async Task UpdateConnectionStatus()
     {
         while (true)
@@ -217,19 +219,12 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
     {
         using Job job = new Job(Job.Description.UploadTemplate, this);
 
-        TabletTemplate tabletTemplate;
-
-        tabletTemplate = new TabletTemplate("Lines", "Daniel", "\uE9A8", false, "/home/daniel/SynologyDrive/Remarkable/Templates/Daniel Lines.svg");
-        await this.controller.UploadTemplate(tabletTemplate).ConfigureAwait(true);
-
-        tabletTemplate = new TabletTemplate("Alignment", "Daniel", "\uEA00", false, "/home/daniel/SynologyDrive/Remarkable/Templates/Daniel Alignment.svg");
-        await this.controller.UploadTemplate(tabletTemplate).ConfigureAwait(true);
-
-        tabletTemplate = new TabletTemplate("Aufrichtung", "Daniel", "\uEA00", false, "/home/daniel/SynologyDrive/Remarkable/Templates/Daniel Aufrichtung.svg");
-        await this.controller.UploadTemplate(tabletTemplate).ConfigureAwait(true);
-
-        tabletTemplate = new TabletTemplate("Chakras", "Daniel", "\uE98F", false, "/home/daniel/SynologyDrive/Remarkable/Templates/Daniel Chakras.svg");
-        await this.controller.UploadTemplate(tabletTemplate).ConfigureAwait(true);
+        TemplateViewModel template = new TemplateViewModel();
+        if (await this.ShowDialog.Handle(template))
+        {
+            TabletTemplate tabletTemplate = new TabletTemplate(template.Name, template.Category, template.IconCode.Code, template.Landscape, template.SourceFilePath);
+            await this.controller.UploadTemplate(tabletTemplate).ConfigureAwait(true);
+        }
     }
 
     private IObservable<Boolean> UploadTemplate_CanExecute()
@@ -275,13 +270,13 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         }
     }
 
-    public Int32 HandWritingRecognitionLanguage
+    public LanguageViewModel HandWritingRecognitionLanguage
     {
         get { return this.handWritingRecognitionLanguage; }
-        private set { this.RaiseAndSetIfChanged(ref this.handWritingRecognitionLanguage, value); }
+        set { this.RaiseAndSetIfChanged(ref this.handWritingRecognitionLanguage, value); }
     }
 
-    public Collection<LanguageViewModel> HandWritingRecognitionLanguages { get; }
+    public IEnumerable<LanguageViewModel> HandWritingRecognitionLanguages { get; }
 
     public Boolean HasItems
     {

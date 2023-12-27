@@ -55,13 +55,14 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         this.AddError(nameof(this.TabletIp), "Invalid IP address");
     }
 
-    protected override void Close()
+    public void SaveChanges()
     {
         this.settings.Backup = this.Backup;
         this.settings.MyScriptApplicationKey = this.MyScriptApplicationKey;
         this.settings.MyScriptHmacKey = this.MyScriptHmacKey;
         this.settings.TabletIp = this.TabletIp;
         this.settings.TabletPassword = this.TabletPassword;
+
         this.settings.SaveChanges();
     }
 

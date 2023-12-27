@@ -9,7 +9,7 @@ public abstract class DialogWindowModel : ViewModelBase
     protected DialogWindowModel(String title, String textClose = "Close", Boolean showCancel = false)
     {
         this.CommandCancel = ReactiveCommand.Create(() => { return false; });
-        this.CommandClose = ReactiveCommand.Create(() => { this.Close(); return true; });
+        this.CommandClose = ReactiveCommand.Create(() => { return true; });
 
         this.OpenFilePicker = new Interaction<String, String?>();
         this.OpenFolderPicker = new Interaction<String, String?>();
@@ -17,10 +17,6 @@ public abstract class DialogWindowModel : ViewModelBase
         this.ShowCancel = showCancel;
         this.TextClose = textClose;
         this.Title = title;
-    }
-
-    protected virtual void Close()
-    {
     }
 
     public ReactiveCommand<Unit, Boolean> CommandCancel { get; }

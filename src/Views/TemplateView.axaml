@@ -1,0 +1,39 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ReMarkableRemember.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ReMarkableRemember.Views.TemplateView"
+             x:DataType="vm:TemplateViewModel"
+             MinWidth="480">
+
+    <Design.DataContext>
+        <vm:TemplateViewModel/>
+    </Design.DataContext>
+
+    <StackPanel>
+        <TextBlock>Source File Path</TextBlock>
+        <DockPanel Margin="0, 8, 0, 48">
+            <Button DockPanel.Dock="Right" Command="{Binding CommandSetSourceFilePath}" Content="..." VerticalAlignment="Top" />
+            <TextBox Text="{Binding SourceFilePath}" Margin="0, 0, 8, 0" IsReadOnly="True"/>
+        </DockPanel>
+
+        <TextBlock>Name</TextBlock>
+        <TextBox Text="{Binding Name}" Margin="0, 8, 0, 16"/>
+
+        <TextBlock>Category</TextBlock>
+        <TextBox Text="{Binding Category}" Margin="0, 8, 0, 16"/>
+
+        <TextBlock>IconCode</TextBlock>
+        <ComboBox ItemsSource="{Binding IconCodes}" SelectedItem="{Binding IconCode}" HorizontalAlignment="Stretch" Margin="0, 8, 0, 16">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" />
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <CheckBox IsChecked="{Binding Landscape}" Margin="0, 8, 0, 16">Landscape</CheckBox>
+    </StackPanel>
+</UserControl>
