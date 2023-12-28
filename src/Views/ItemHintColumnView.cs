@@ -51,6 +51,6 @@ public sealed class ItemHintColumnView : StackPanel
     private static Bitmap? GetImage(DateTime? dateTime, ItemViewModel.Hint hint)
     {
         ItemViewModel.Image image = ItemViewModel.GetImage(dateTime, hint);
-        return (image != ItemViewModel.Image.None) ? new Bitmap(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/Dot{image}.png"))) : null;
+        return (image != ItemViewModel.Image.None) ? new Bitmap(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/Dots/{image}.png"))) : null;
     }
 }

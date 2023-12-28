@@ -40,32 +40,57 @@
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="Margin" Value="4"/>
         </Style>
+        <Style Selector="Image.Button">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Width" Value="32"/>
+        </Style>
+        <Style Selector="StackPanel.Button">
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Spacing" Value="8"/>
+        </Style>
         <Style Selector="StackPanel.Menu">
             <Setter Property="Height" Value="120"/>
             <Setter Property="Width" Value="120"/>
         </Style>
-        <Style Selector="TextBlock.Menu">
+        <Style Selector="TextBlock.Button">
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
     </Window.Styles>
 
     <Grid RowDefinitions="Auto, *, Auto">
-        <Grid Classes="Menu" Grid.Row="0" ColumnDefinitions="Auto, Auto, Auto, 16, Auto, Auto, 16, Auto, Auto, 16, Auto" RowDefinitions="Auto, Auto" Margin="4">
+        <Grid Classes="Menu"
+              Grid.Row="0"
+              ColumnDefinitions="Auto, Auto, Auto, 16, Auto, Auto, 16, Auto, Auto, 16, Auto"
+              RowDefinitions="Auto, Auto"
+              Margin="4">
+
             <Label Classes="Menu" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Content="reMarkable"/>
             <Button Classes="Menu" Grid.Row="1" Grid.Column="0" Command="{Binding CommandRefresh}">
-                <TextBlock Classes="Menu" Text="Refresh"/>
+                <StackPanel Classes="Button">
+                    <Image Classes="Button" Source="/Assets/Menu/Refresh.png"/>
+                    <TextBlock Classes="Button" Text="Refresh&#x0a;Items"/>
+                </StackPanel>
             </Button>
             <Button Classes="Menu" Grid.Row="1" Grid.Column="1" Command="{Binding CommandProcess}">
-                <TextBlock Classes="Menu" Text="Backup &amp; Sync"/>
+                <StackPanel Classes="Button">
+                    <Image Classes="Button" Source="/Assets/Menu/Process.png"/>
+                    <TextBlock Classes="Button" Text="Backup &amp; Sync"/>
+                </StackPanel>
             </Button>
             <Button Classes="Menu" Grid.Row="1" Grid.Column="2" Command="{Binding CommandUploadTemplate}">
-                <TextBlock Classes="Menu" Text="Upload Template"/>
+                <StackPanel Classes="Button">
+                    <Image Classes="Button" Source="/Assets/Menu/UploadTemplate.png"/>
+                    <TextBlock Classes="Button" Text="Upload Template"/>
+                </StackPanel>
             </Button>
 
             <Label Classes="Menu" Grid.Row="0" Grid.Column="4" Grid.ColumnSpan="2" Content="Document"/>
             <Button Classes="Menu" Grid.Row="1" Grid.Column="4" Command="{Binding CommandHandWritingRecognition}">
-                <TextBlock Classes="Menu" Text="Hand Writing Recognition"/>
+                <StackPanel Classes="Button">
+                    <Image Classes="Button" Source="/Assets/Menu/HandWritingRecognition.png"/>
+                    <TextBlock Classes="Button" Text="Hand Writing Recognition"/>
+                </StackPanel>
             </Button>
             <StackPanel Classes="Menu" Grid.Row="1" Grid.Column="5" Width="240">
                 <Label Classes="Menu" Content="Language" FontWeight="Normal"/>
@@ -80,15 +105,24 @@
 
             <Label Classes="Menu" Grid.Row="0" Grid.Column="7" Grid.ColumnSpan="2" Content="Sync Target Directory"/>
             <Button Classes="Menu" Grid.Row="1" Grid.Column="7" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="True">
-                <TextBlock Classes="Menu" Text="Set"/>
+                <StackPanel Classes="Button">
+                    <Image Classes="Button" Source="/Assets/Menu/SyncTargetDirectorySet.png"/>
+                    <TextBlock Classes="Button" Text="Set"/>
+                </StackPanel>
             </Button>
             <Button Classes="Menu" Grid.Row="1" Grid.Column="8" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="False">
-                <TextBlock Classes="Menu" Text="Reset"/>
+                <StackPanel Classes="Button">
+                    <Image Classes="Button" Source="/Assets/Menu/SyncTargetDirectoryReset.png"/>
+                    <TextBlock Classes="Button" Text="Reset"/>
+                </StackPanel>
             </Button>
 
             <Label Classes="Menu" Grid.Row="0" Grid.Column="10" Grid.ColumnSpan="1" Content="Preferences"/>
             <Button Classes="Menu" Grid.Row="1" Grid.Column="10" Command="{Binding CommandSettings}">
-                <TextBlock Classes="Menu" Text="Settings"/>
+                <StackPanel Classes="Button">
+                    <Image Classes="Button" Source="/Assets/Menu/Settings.png"/>
+                    <TextBlock Classes="Button" Text="Settings"/>
+                </StackPanel>
             </Button>
         </Grid>
 
