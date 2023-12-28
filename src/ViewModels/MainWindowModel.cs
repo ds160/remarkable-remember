@@ -290,7 +290,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         set { this.RaiseAndSetIfChanged(ref this.jobs, value); }
     }
 
-    public String JobsText
+    public String? JobsText
     {
         get
         {
@@ -301,7 +301,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             if (this.Jobs.HasFlag(Job.Description.HandWritingRecognition)) { jobs.Add("Hand Writing Recognition"); }
             if (this.Jobs.HasFlag(Job.Description.UploadTemplate)) { jobs.Add("Uploading Template"); }
 
-            return (jobs.Count > 0) ? String.Join(" and ", jobs) : "Ready";
+            return (jobs.Count > 0) ? String.Join(" and ", jobs) : null;
         }
     }
 

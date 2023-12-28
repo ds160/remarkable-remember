@@ -2,7 +2,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:converter="using:ReMarkableRemember.Views.Converter"
         xmlns:vm="using:ReMarkableRemember.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ReMarkableRemember.Views.MainWindow"
@@ -17,10 +16,6 @@
     <Design.DataContext>
         <vm:MainWindowModel/>
     </Design.DataContext>
-
-    <Window.Resources>
-        <converter:NullableBooleanConverter x:Key="NullableBooleanConverter"/>
-    </Window.Resources>
 
     <Window.Styles>
         <Style Selector="Button.Menu">
@@ -138,12 +133,32 @@
         </TreeDataGrid>
 
         <DockPanel Grid.Row="2" Margin="8">
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
+                <PathIcon Data="M288 39.1v16.7c0 10.8 7.3 20.2 17.7 23.1C383.2 100.4 440 171.5 440 256c0 101.7-82.3 184-184 184-101.7 0-184-82.3-184-184 0-84.5 56.8-155.6 134.3-177.2C216.7 75.9 224 66.5 224 55.7V39.1c0-15.7-14.8-27.2-30-23.2C86.6 43.5 7.4 141.2 8 257.3c.7 137.1 111.5 247 248.5 246.7C393.3 503.7 504 392.8 504 256c0-115.6-79.1-212.8-186.2-240.2C302.7 11.9 288 23.5 288 39.1z"
+                          Height="16"
+                          IsVisible="{Binding JobsText, Converter={x:Static ObjectConverters.IsNotNull}}"
+                          Width="16">
+                    <PathIcon.Styles>
+                        <Style Selector="PathIcon">
+                            <Style.Animations>
+                                <Animation Duration="0:0:3" IterationCount="INFINITE">
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="RotateTransform.Angle" Value="0.0"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="RotateTransform.Angle" Value="360.0"/>
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                    </PathIcon.Styles>
+                </PathIcon>
                 <Label Content="{Binding JobsText}"/>
             </StackPanel>
+
             <StackPanel Orientation="Horizontal">
-                <Image Source="/Assets/Connected.png" IsVisible="{Binding ConnectionStatus, Converter={StaticResource NullableBooleanConverter}, ConverterParameter=True}"/>
-                <Image Source="/Assets/Disconnected.png" IsVisible="{Binding ConnectionStatus, Converter={StaticResource NullableBooleanConverter}, ConverterParameter=False}"/>
+                <Image Source="/Assets/Connected.png" IsVisible="{Binding ConnectionStatus, Converter={x:Static ObjectConverters.IsNull}}"/>
+                <Image Source="/Assets/Disconnected.png" IsVisible="{Binding ConnectionStatus, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                 <Label Content="{Binding ConnectionStatusText}"/>
             </StackPanel>
         </DockPanel>
