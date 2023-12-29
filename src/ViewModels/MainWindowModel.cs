@@ -53,6 +53,26 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         GC.SuppressFinalize(this);
     }
 
+    private static Boolean CheckConnectionStatusForJob(TabletConnectionError? status, Job.Description job)
+    {
+        switch (job)
+        {
+            case Job.Description.None:
+            case Job.Description.Refresh:
+            case Job.Description.SetSyncTargetDirectory:
+            case Job.Description.Settings:
+                return true;
+
+            case Job.Description.Process:
+            case Job.Description.HandWritingRecognition:
+            case Job.Description.UploadTemplate:
+                return status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected);
+
+            default:
+                throw new NotImplementedException();
+        }
+    }
+
     private async Task HandWritingRecognition()
     {
         ItemViewModel? selectedItem = this.TreeSource.RowSelection!.SelectedItem;
@@ -70,7 +90,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     private IObservable<Boolean> HandWritingRecognition_CanExecute()
     {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.HandWritingRecognition));
         IObservable<Boolean> treeSelection = this.TreeSource.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
 
         return Observable.CombineLatest(connectionStatus, treeSelection, (value1, value2) => value1 && value2);
@@ -109,7 +129,12 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             }
         }
 
-        Boolean changed = await this.controller.BackupItem(item.Source).ConfigureAwait(true);
+        Boolean changed = false;
+
+        if (!String.IsNullOrEmpty(this.controller.Settings.Backup))
+        {
+            await this.controller.BackupItem(item.Source).ConfigureAwait(true);
+        }
 
         if (this.ConnectionStatus == null)
         {
@@ -121,7 +146,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     private IObservable<Boolean> Process_CanExecute()
     {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.Process));
         IObservable<Boolean> items = this.WhenAnyValue(vm => vm.HasItems);
         IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
 
@@ -229,7 +254,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     private IObservable<Boolean> UploadTemplate_CanExecute()
     {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected));
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.UploadTemplate));
         IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
 
         return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
