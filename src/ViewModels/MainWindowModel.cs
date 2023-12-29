@@ -29,7 +29,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
         this.connectionStatus = TabletConnectionError.SshNotConnected;
         this.controller = noHardware ? new ControllerStub(dataSource) : new Controller(dataSource);
-        this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.First();
+        this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(lang => lang.Code is "de_DE");
         this.hasItems = false;
         this.jobs = Job.Description.None;
 

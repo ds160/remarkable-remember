@@ -62,7 +62,7 @@ internal sealed class Tablet : IDisposable
         {
             using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
 
-            await this.BackupFiles(client, PATH_NOTEBOOKS, targetDirectory, file => file.Name.StartsWith(id, StringComparison.OrdinalIgnoreCase)).ConfigureAwait(false);
+            await this.BackupFiles(client, PATH_NOTEBOOKS, targetDirectory, file => file.Name.StartsWith(id, StringComparison.Ordinal)).ConfigureAwait(false);
         }
         finally
         {
@@ -130,7 +130,7 @@ internal sealed class Tablet : IDisposable
             IEnumerable<ISftpFile> files = await Task.Run(() => client.ListDirectory(PATH_NOTEBOOKS)).ConfigureAwait(false);
 
             List<Item> allItems = new List<Item>();
-            foreach (ISftpFile file in files.Where(file => file.IsRegularFile && file.Name.EndsWith(".metadata", StringComparison.OrdinalIgnoreCase)))
+            foreach (ISftpFile file in files.Where(file => file.IsRegularFile && file.Name.EndsWith(".metadata", StringComparison.Ordinal)))
             {
                 String metaDataFileText = await Task.Run(() => client.ReadAllText(file.FullName)).ConfigureAwait(false);
                 MetaDataFile metaDataFile = JsonSerializer.Deserialize<MetaDataFile>(metaDataFileText, jsonSerializerOptions);

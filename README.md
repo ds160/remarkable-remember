@@ -40,7 +40,7 @@ Use VS code to run or debug the project, it should work out of the box.
 
 ## To-Do
 - [ ] Build for Windows, Linux and OSX
-- [ ] Add all supported languages for MyScript
+- [ ] Save selected languages for MyScript on application closing
 - [ ] Automatic refresh of items
 - [ ] Update to .NET 8
 

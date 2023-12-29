@@ -50,7 +50,7 @@ internal sealed class Controller : IController
             FileSystem.Delete(directory);
         }
 
-        IEnumerable<String> files = Directory.GetFiles(this.Settings.Backup).Where(file => file.StartsWith(Path.Combine(this.Settings.Backup, item.Id), StringComparison.OrdinalIgnoreCase));
+        IEnumerable<String> files = Directory.GetFiles(this.Settings.Backup).Where(file => file.StartsWith(Path.Combine(this.Settings.Backup, item.Id), StringComparison.Ordinal));
         foreach (String file in files)
         {
             FileSystem.Delete(file);
