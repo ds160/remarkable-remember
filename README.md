@@ -50,7 +50,7 @@ I'm using [Avalonia](https://github.com/AvaloniaUI/Avalonia) for the UI and [SSH
 Thanks to the developers for their beautiful work.
 
 ## License
-This project is licensed under the MIT. See the [LICENSE](https://github.com/ds160/remarkable-remember/LICENSE.txt) file for details.
+This project is licensed under the MIT. See the [LICENSE](https://github.com/ds160/remarkable-remember/blob/main/LICENSE.txt) file for details.
 
 ## Links
 - [Awesome reMarkable](https://github.com/reHackable/awesome-reMarkable/blob/master/README.md)

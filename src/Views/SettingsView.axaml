@@ -16,7 +16,7 @@
         <TextBlock>reMarkable IP</TextBlock>
         <TextBox Text="{Binding TabletIp}" Margin="0, 8, 0, 16"/>
 
-        <TextBlock>reMarkable Passord</TextBlock>
+        <TextBlock>reMarkable Password</TextBlock>
         <TextBox Text="{Binding TabletPassword}" Margin="0, 8, 0, 48"/>
 
         <TextBlock>MyScript Application Key</TextBlock>
