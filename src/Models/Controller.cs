@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ReMarkableRemember.Entities;
+using ReMarkableRemember.Helper;
 using ReMarkableRemember.Models.Interfaces;
 
 namespace ReMarkableRemember.Models;

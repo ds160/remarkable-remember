@@ -1,19 +1,24 @@
 using System;
 using System.IO;
 
-namespace ReMarkableRemember.Models;
+namespace ReMarkableRemember.Helper;
 
 internal static class FileSystem
 {
     public static FileStream Create(String path)
+    {
+        CreateDirectory(path);
+
+        return File.Create(path);
+    }
+
+    public static void CreateDirectory(String path)
     {
         String? directory = Path.GetDirectoryName(path);
         if (!String.IsNullOrEmpty(directory))
         {
             Directory.CreateDirectory(directory);
         }
-
-        return File.Create(path);
     }
 
     public static void Delete(String path)

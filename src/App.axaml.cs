@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using ReMarkableRemember.Helper;
 using ReMarkableRemember.ViewModels;
 using ReMarkableRemember.Views;
 
@@ -20,7 +21,7 @@ public partial class App : Application
     {
         if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            String dataSource = GetDataSource(desktop.Args);
+            String dataSource = GetDataSource(desktop.Args?.FirstOrDefault());
             Boolean noHardware = GetNoHardwareOption(desktop.Args);
             desktop.MainWindow = new MainWindow() { DataContext = new MainWindowModel(dataSource, noHardware) };
         }
@@ -28,11 +29,13 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    private static String GetDataSource(String[]? args)
+    private static String GetDataSource(String? arg)
     {
-        return args?.Length >= 1 && File.Exists(args[0])
-            ? args[0]
-            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), nameof(ReMarkableRemember), "database.db");
+        if (File.Exists(arg)) { return arg; }
+
+        String dataSource = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), nameof(ReMarkableRemember), "database.db");
+        FileSystem.CreateDirectory(dataSource);
+        return dataSource;
     }
 
     private static Boolean GetNoHardwareOption(String[]? args)
