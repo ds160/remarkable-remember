@@ -16,13 +16,13 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 {
     private TabletConnectionError? connectionStatus;
     private readonly IController controller;
-    private LanguageViewModel handWritingRecognitionLanguage;
+    private HandWritingRecognitionLanguageViewModel handWritingRecognitionLanguage;
     private Boolean hasItems;
     private Job.Description jobs;
 
     public MainWindowModel(String dataSource, Boolean noHardware)
     {
-        this.HandWritingRecognitionLanguages = LanguageViewModel.GetLanguages();
+        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages();
         this.OpenFolderPicker = new Interaction<String, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
         this.TreeSource = new ItemViewModelTreeSource();
@@ -222,7 +222,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         TemplateViewModel template = new TemplateViewModel();
         if (await this.ShowDialog.Handle(template))
         {
-            TabletTemplate tabletTemplate = new TabletTemplate(template.Name, template.Category, template.Icon.Code, template.Icon.Landscape, template.SourceFilePath);
+            TabletTemplate tabletTemplate = new TabletTemplate(template.Name, template.Category, template.Icon.Code, template.SourceFilePath);
             await this.controller.UploadTemplate(tabletTemplate).ConfigureAwait(true);
         }
     }
@@ -270,13 +270,13 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         }
     }
 
-    public LanguageViewModel HandWritingRecognitionLanguage
+    public HandWritingRecognitionLanguageViewModel HandWritingRecognitionLanguage
     {
         get { return this.handWritingRecognitionLanguage; }
         set { this.RaiseAndSetIfChanged(ref this.handWritingRecognitionLanguage, value); }
     }
 
-    public IEnumerable<LanguageViewModel> HandWritingRecognitionLanguages { get; }
+    public IEnumerable<HandWritingRecognitionLanguageViewModel> HandWritingRecognitionLanguages { get; }
 
     public Boolean HasItems
     {

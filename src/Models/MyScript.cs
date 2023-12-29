@@ -15,6 +15,11 @@ namespace ReMarkableRemember.Models;
 internal sealed class MyScript
 {
     private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private static readonly List<String> supportedLanguages = new List<String>()
+    {
+        "de_DE",
+        "en_US"
+    };
 
     private readonly Settings settings;
 
@@ -23,8 +28,12 @@ internal sealed class MyScript
         this.settings = settings;
     }
 
+    public static IEnumerable<String> SupportedLanguages { get { return supportedLanguages; } }
+
     public async Task<String> Recognize(Notebook.Page page, String language)
     {
+        if (!supportedLanguages.Contains(language)) { throw new MyScriptException($"Language is not supported by MyScript: {language}"); }
+
         String requestBody = BuildRequestBody(page, language);
         String hmac = this.CalculateHmac(requestBody);
 

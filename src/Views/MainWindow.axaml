@@ -39,6 +39,12 @@
             <Setter Property="Height" Value="32"/>
             <Setter Property="Width" Value="32"/>
         </Style>
+        <Style Selector="Rectangle.Menu">
+            <Setter Property="Fill" Value="Gainsboro"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="Width" Value="1.1"/>
+        </Style>
         <Style Selector="StackPanel.Button">
             <Setter Property="Margin" Value="4"/>
             <Setter Property="Spacing" Value="8"/>
@@ -80,6 +86,8 @@
                 </StackPanel>
             </Button>
 
+            <Rectangle Classes="Menu" Grid.Row="0" Grid.Column="3" Grid.RowSpan="2"/>
+
             <Label Classes="Menu" Grid.Row="0" Grid.Column="4" Grid.ColumnSpan="2" Content="Document"/>
             <Button Classes="Menu" Grid.Row="1" Grid.Column="4" Command="{Binding CommandHandWritingRecognition}">
                 <StackPanel Classes="Button">
@@ -98,6 +106,8 @@
                 </ComboBox>
             </StackPanel>
 
+            <Rectangle Classes="Menu" Grid.Row="0" Grid.Column="6" Grid.RowSpan="2"/>
+
             <Label Classes="Menu" Grid.Row="0" Grid.Column="7" Grid.ColumnSpan="2" Content="Sync Target Directory"/>
             <Button Classes="Menu" Grid.Row="1" Grid.Column="7" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="True">
                 <StackPanel Classes="Button">
@@ -111,6 +121,8 @@
                     <TextBlock Classes="Button" Text="Reset"/>
                 </StackPanel>
             </Button>
+
+            <Rectangle Classes="Menu" Grid.Row="0" Grid.Column="9" Grid.RowSpan="2"/>
 
             <Label Classes="Menu" Grid.Row="0" Grid.Column="10" Grid.ColumnSpan="1" Content="Preferences"/>
             <Button Classes="Menu" Grid.Row="1" Grid.Column="10" Command="{Binding CommandSettings}">

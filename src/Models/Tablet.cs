@@ -191,10 +191,10 @@ internal sealed class Tablet : IDisposable
             String templatesFileText = await Task.Run(() => client.ReadAllText(templatesFilePath)).ConfigureAwait(false);
             TemplatesFile templatesFile = JsonSerializer.Deserialize<TemplatesFile>(templatesFileText, jsonSerializerOptions);
 
-            Int32 currentIndex = templatesFile.Templates.FindIndex((item) => String.CompareOrdinal(item.Name, template.Name) == 0);
-            if (currentIndex > -1)
+            Int32 index = templatesFile.Templates.FindIndex((item) => String.CompareOrdinal(item.Filename, template.FileName) == 0);
+            if (index > -1)
             {
-                templatesFile.Templates[currentIndex] = TemplatesFile.Template.Convert(template);
+                templatesFile.Templates[index] = TemplatesFile.Template.Convert(template);
             }
             else
             {
