@@ -5,12 +5,25 @@
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>App.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\Logo.ico</ApplicationIcon>
+    <Version>1.0.0.0</Version>
+    <PackageDescription>A cross-platform managenment application for your reMarkable tablet</PackageDescription>
+	<RuntimeIdentifiers>win-x64;linux-x64;osx-x64;osx.12-arm64</RuntimeIdentifiers>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
+
+  <!-- <ItemGroup>
+    <Content Include="Assets\Logo.png" CopyToPublishDirectory="PreserveNewest">
+      <LinuxPath>/usr/share/icons/hicolor/48x48/apps/ReMarkableRemember.png</LinuxPath>
+    </Content>
+	<Content Include="Assets\Linux.desktop" CopyToPublishDirectory="PreserveNewest">
+      <LinuxPath>/usr/share/applications/ReMarkableRemember.desktop</LinuxPath>
+	</Content>
+  </ItemGroup> -->
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.0.6" />
