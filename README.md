@@ -16,7 +16,7 @@ For the initial setup, enter your reMarkable SSH protocol information. You find 
 
 You need a [MyScript](https://developer.myscript.com/getting-started/web) account for hand writing recognition. Register to receive your keys and enter your keys.
 
-![Settings](/assets/settings.png)
+<img src="./assets/settings.png" alt="Settings" style="border: 1px solid black;">
 
 Set the folder if you want to back up your notebooks and folders.
 
@@ -25,13 +25,13 @@ Connect your reMarkable tablet via USB for full functionality and activate the `
 
 If you connect your reMarkable tablet via WiFi almost everything is supported, but downloading PDF documents is not working.
 
-![Application](/assets/application.png)
+<img src="./assets/application.png" alt="Application" style="border: 1px solid black;">
 
 Refresh items when your tablet is connected. Select an item and configure the target directory for downloading and syncing folders and documents.
 
 You can upload custom templates to your reMarkable. Buy, download, or design your own template (see [here](https://github.com/reHackable/awesome-reMarkable/blob/master/README.md#custom-templates)). To upload a template, select the file, define the name and category and select the desired icon. The application will restart your reMarkable tablet automatically to enable the template.
 
-![Upload Template](/assets/template.png)
+<img src="./assets/template.png" alt="Upload Template" style="border: 1px solid black;">
 
 ## Build and Run
 Clone the repository, install .NET Core SDK 7 or higher, and build the project with `dotnet build`.
