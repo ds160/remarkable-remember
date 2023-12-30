@@ -14,7 +14,7 @@ internal interface IController : IDisposable
 
     Task<IEnumerable<Item>> GetItems();
 
-    Task<String> HandWritingRecognition(Item item, String language);
+    Task<String> HandWritingRecognition(Item item);
 
     Task<Boolean> SyncItem(Item item);
 

@@ -48,7 +48,7 @@ internal sealed class ControllerStub : IController
         return items;
     }
 
-    public async Task<String> HandWritingRecognition(Item item, String language)
+    public async Task<String> HandWritingRecognition(Item item)
     {
         await Task.Delay(5000).ConfigureAwait(false);
         return "Hand Writing Recognition via MyScript done :)";

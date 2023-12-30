@@ -81,7 +81,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         {
             using Job job = new Job(Job.Description.HandWritingRecognition, this);
 
-            String text = await this.controller.HandWritingRecognition(selectedItem.Source, this.HandWritingRecognitionLanguage.Code).ConfigureAwait(true);
+            String text = await this.controller.HandWritingRecognition(selectedItem.Source).ConfigureAwait(true);
 
             job.Done();
 

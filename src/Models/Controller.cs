@@ -74,10 +74,10 @@ internal sealed class Controller : IController
         return tabletItems.Select(tabletItem => new Item(this.dataSource, tabletItem, null)).ToArray();
     }
 
-    public async Task<String> HandWritingRecognition(Item item, String language)
+    public async Task<String> HandWritingRecognition(Item item)
     {
         Notebook notebook = await this.tablet.GetNotebook(item.Id).ConfigureAwait(false);
-        IEnumerable<String> myScriptPages = await Task.WhenAll(notebook.Pages.Select(page => this.myScript.Recognize(page, language))).ConfigureAwait(false);
+        IEnumerable<String> myScriptPages = await Task.WhenAll(notebook.Pages.Select(this.myScript.Recognize)).ConfigureAwait(false);
         return String.Join(Environment.NewLine, myScriptPages);
     }
 
