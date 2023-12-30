@@ -40,9 +40,9 @@ Use VS code to run or debug the project, it should work out of the box.
 
 ## To-Do
 - [ ] Build for Windows, Linux and OSX
-- [ ] Save selected languages for MyScript on application closing
 - [ ] Automatic refresh of items
 - [ ] Update to .NET 8
+- [ ] ...
 
 ## Dependencies and Acknowledgment
 I'm using [Avalonia](https://github.com/AvaloniaUI/Avalonia) for the UI and [SSH.NET](https://github.com/sshnet/SSH.NET) for the SFTP and SSH communication.

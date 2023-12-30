@@ -29,7 +29,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
         this.connectionStatus = TabletConnectionError.SshNotConnected;
         this.controller = noHardware ? new ControllerStub(dataSource) : new Controller(dataSource);
-        this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(lang => lang.Code is "de_DE");
+        this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.CompareOrdinal(language.Code, this.controller.Settings.MyScriptLanguage) == 0);
         this.hasItems = false;
         this.jobs = Job.Description.None;
 
@@ -41,6 +41,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.CommandUploadTemplate = ReactiveCommand.CreateFromTask(this.UploadTemplate, this.UploadTemplate_CanExecute());
 
         this.WhenAnyValue(vm => vm.ConnectionStatus).Subscribe(status => this.RaisePropertyChanged(nameof(this.ConnectionStatusText)));
+        this.WhenAnyValue(vm => vm.HandWritingRecognitionLanguage).Subscribe(language => this.SaveHandWritingRecognitionLanguage(language.Code));
         this.WhenAnyValue(vm => vm.Jobs).Subscribe(jobs => this.RaisePropertyChanged(nameof(this.JobsText)));
 
         _ = this.UpdateConnectionStatus();
@@ -182,6 +183,12 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
     }
 
+    private void SaveHandWritingRecognitionLanguage(String language)
+    {
+        this.controller.Settings.MyScriptLanguage = language;
+        this.controller.Settings.SaveChanges();
+    }
+
     private async Task Settings()
     {
         using Job job = new Job(Job.Description.Settings, this);
@@ -226,7 +233,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
     private IObservable<Boolean> SyncTargetDirectory_CanExecute()
     {
         IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
-        IObservable<Boolean> treeSelection = this.TreeSource.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Parent == null);
+        IObservable<Boolean> treeSelection = this.TreeSource.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null);
 
         return Observable.CombineLatest(jobs, treeSelection, (value1, value2) => value1 && value2);
     }

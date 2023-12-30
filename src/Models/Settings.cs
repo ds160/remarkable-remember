@@ -8,6 +8,7 @@ internal sealed class Settings
     private const String BACKUP = "Backup";
     private const String MYSCRIPT_APPLICATION_KEY = "MyScript ApplicationKey";
     private const String MYSCRIPT_HMAC_KEY = "MyScript HmacKey";
+    private const String MYSCRIPT_LANGUAGE = "MyScript Language";
     private const String TABLET_IP = "Tablet IP";
     private const String TABLET_PASSWORD = "Tablet Password";
 
@@ -21,6 +22,7 @@ internal sealed class Settings
         this.Backup = database.Settings.Find(BACKUP)?.Value;
         this.MyScriptApplicationKey = database.Settings.Find(MYSCRIPT_APPLICATION_KEY)?.Value;
         this.MyScriptHmacKey = database.Settings.Find(MYSCRIPT_HMAC_KEY)?.Value;
+        this.MyScriptLanguage = database.Settings.Find(MYSCRIPT_LANGUAGE)?.Value ?? "en_US";
         this.TabletIp = database.Settings.Find(TABLET_IP)?.Value;
         this.TabletPassword = database.Settings.Find(TABLET_PASSWORD)?.Value;
     }
@@ -30,6 +32,8 @@ internal sealed class Settings
     public String? MyScriptApplicationKey { get; set; }
 
     public String? MyScriptHmacKey { get; set; }
+
+    public String MyScriptLanguage { get; set; }
 
     public String? TabletIp { get; set; }
 
@@ -42,6 +46,7 @@ internal sealed class Settings
         SetValue(database, BACKUP, this.Backup);
         SetValue(database, MYSCRIPT_APPLICATION_KEY, this.MyScriptApplicationKey);
         SetValue(database, MYSCRIPT_HMAC_KEY, this.MyScriptHmacKey);
+        SetValue(database, MYSCRIPT_LANGUAGE, this.MyScriptLanguage);
         SetValue(database, TABLET_IP, this.TabletIp);
         SetValue(database, TABLET_PASSWORD, this.TabletPassword);
 
