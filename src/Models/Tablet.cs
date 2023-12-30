@@ -244,7 +244,7 @@ internal sealed class Tablet : IDisposable
     private ConnectionInfo CreateSshConnectionInfo()
     {
         String host = String.IsNullOrEmpty(this.settings.TabletIp) ? IP : this.settings.TabletIp;
-        AuthenticationMethod authenticationMethod = new PasswordAuthenticationMethod(SSH_USER, this.settings.TabletPassword ?? "");
+        AuthenticationMethod authenticationMethod = new PasswordAuthenticationMethod(SSH_USER, this.settings.TabletPassword);
         return new ConnectionInfo(host, SSH_USER, authenticationMethod) { Timeout = TimeSpan.FromSeconds(SSH_TIMEOUT) };
     }
 

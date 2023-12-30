@@ -10,11 +10,11 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed partial class SettingsViewModel : DialogWindowModel
 {
-    private String? backup;
-    private String? myScriptApplicationKey;
-    private String? myScriptHmacKey;
-    private String? tabletIp;
-    private String? tabletPassword;
+    private String backup;
+    private String myScriptApplicationKey;
+    private String myScriptHmacKey;
+    private String tabletIp;
+    private String tabletPassword;
 
     private readonly Settings settings;
 
@@ -36,17 +36,17 @@ public sealed partial class SettingsViewModel : DialogWindowModel
 
     public ReactiveCommand<Unit, Unit> CommandSetBackup { get; }
 
-    public String? Backup { get { return this.backup; } private set { this.RaiseAndSetIfChanged(ref this.backup, value); } }
+    public String Backup { get { return this.backup; } private set { this.RaiseAndSetIfChanged(ref this.backup, value); } }
 
-    public String? MyScriptApplicationKey { get { return this.myScriptApplicationKey; } set { this.RaiseAndSetIfChanged(ref this.myScriptApplicationKey, value); } }
+    public String MyScriptApplicationKey { get { return this.myScriptApplicationKey; } set { this.RaiseAndSetIfChanged(ref this.myScriptApplicationKey, value); } }
 
-    public String? MyScriptHmacKey { get { return this.myScriptHmacKey; } set { this.RaiseAndSetIfChanged(ref this.myScriptHmacKey, value); } }
+    public String MyScriptHmacKey { get { return this.myScriptHmacKey; } set { this.RaiseAndSetIfChanged(ref this.myScriptHmacKey, value); } }
 
-    public String? TabletIp { get { return this.tabletIp; } set { this.RaiseAndSetIfChanged(ref this.tabletIp, value); } }
+    public String TabletIp { get { return this.tabletIp; } set { this.RaiseAndSetIfChanged(ref this.tabletIp, value); } }
 
-    public String? TabletPassword { get { return this.tabletPassword; } set { this.RaiseAndSetIfChanged(ref this.tabletPassword, value); } }
+    public String TabletPassword { get { return this.tabletPassword; } set { this.RaiseAndSetIfChanged(ref this.tabletPassword, value); } }
 
-    private void CheckTabletIp(String? host)
+    private void CheckTabletIp(String host)
     {
         this.ClearErrors(nameof(this.TabletIp));
 
@@ -56,11 +56,11 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         this.AddError(nameof(this.TabletIp), "Invalid IP address");
     }
 
-    private void CheckTabletPassword(String? value)
+    private void CheckTabletPassword(String password)
     {
         this.ClearErrors(nameof(this.TabletPassword));
 
-        if (String.IsNullOrEmpty(value))
+        if (String.IsNullOrEmpty(password))
         {
             this.AddError(nameof(this.TabletPassword), "Password is required");
         }

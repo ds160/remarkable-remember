@@ -19,25 +19,25 @@ internal sealed class Settings
         this.dataSource = dataSource;
 
         using DatabaseContext database = new DatabaseContext(this.dataSource);
-        this.Backup = database.Settings.Find(BACKUP)?.Value;
-        this.MyScriptApplicationKey = database.Settings.Find(MYSCRIPT_APPLICATION_KEY)?.Value;
-        this.MyScriptHmacKey = database.Settings.Find(MYSCRIPT_HMAC_KEY)?.Value;
+        this.Backup = database.Settings.Find(BACKUP)?.Value ?? String.Empty;
+        this.MyScriptApplicationKey = database.Settings.Find(MYSCRIPT_APPLICATION_KEY)?.Value ?? String.Empty;
+        this.MyScriptHmacKey = database.Settings.Find(MYSCRIPT_HMAC_KEY)?.Value ?? String.Empty;
         this.MyScriptLanguage = database.Settings.Find(MYSCRIPT_LANGUAGE)?.Value ?? "en_US";
-        this.TabletIp = database.Settings.Find(TABLET_IP)?.Value;
-        this.TabletPassword = database.Settings.Find(TABLET_PASSWORD)?.Value;
+        this.TabletIp = database.Settings.Find(TABLET_IP)?.Value ?? String.Empty;
+        this.TabletPassword = database.Settings.Find(TABLET_PASSWORD)?.Value ?? String.Empty;
     }
 
-    public String? Backup { get; set; }
+    public String Backup { get; set; }
 
-    public String? MyScriptApplicationKey { get; set; }
+    public String MyScriptApplicationKey { get; set; }
 
-    public String? MyScriptHmacKey { get; set; }
+    public String MyScriptHmacKey { get; set; }
 
     public String MyScriptLanguage { get; set; }
 
-    public String? TabletIp { get; set; }
+    public String TabletIp { get; set; }
 
-    public String? TabletPassword { get; set; }
+    public String TabletPassword { get; set; }
 
     public void SaveChanges()
     {
@@ -53,16 +53,16 @@ internal sealed class Settings
         database.SaveChanges();
     }
 
-    private static void SetValue(DatabaseContext database, String key, String? value)
+    private static void SetValue(DatabaseContext database, String key, String value)
     {
         Setting? setting = database.Settings.Find(key);
         if (setting != null)
         {
-            setting.Value = value ?? String.Empty;
+            setting.Value = value;
         }
         else
         {
-            database.Settings.Add(new Setting(key, value ?? String.Empty));
+            database.Settings.Add(new Setting(key, value));
         }
     }
 }
