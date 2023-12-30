@@ -97,7 +97,7 @@
             </Button>
             <StackPanel Classes="Menu" Grid.Row="1" Grid.Column="5" Width="240">
                 <Label Classes="Menu" Content="Language" FontWeight="Normal"/>
-                <ComboBox Classes="Menu" ItemsSource="{Binding HandWritingRecognitionLanguages}" SelectedItem="{Binding HandWritingRecognitionLanguage}">
+                <ComboBox Classes="Menu" ItemsSource="{Binding MyScriptLanguages}" SelectedItem="{Binding MyScriptLanguage}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding DisplayName}" />

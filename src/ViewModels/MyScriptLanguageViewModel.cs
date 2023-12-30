@@ -6,9 +6,9 @@ using ReMarkableRemember.Models;
 
 namespace ReMarkableRemember.ViewModels;
 
-public sealed class HandWritingRecognitionLanguageViewModel
+public sealed class MyScriptLanguageViewModel
 {
-    private HandWritingRecognitionLanguageViewModel(String code)
+    private MyScriptLanguageViewModel(String code)
     {
         this.Code = code;
         this.DisplayName = CultureInfo.GetCultureInfo(code).DisplayName;
@@ -18,10 +18,10 @@ public sealed class HandWritingRecognitionLanguageViewModel
 
     public String DisplayName { get; }
 
-    internal static IEnumerable<HandWritingRecognitionLanguageViewModel> GetLanguages()
+    internal static IEnumerable<MyScriptLanguageViewModel> GetLanguages()
     {
         return MyScript.SupportedLanguages
-            .Select(code => new HandWritingRecognitionLanguageViewModel(code))
+            .Select(code => new MyScriptLanguageViewModel(code))
             .OrderBy(language => language.DisplayName)
             .ToArray();
     }

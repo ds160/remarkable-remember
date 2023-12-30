@@ -16,22 +16,22 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 {
     private TabletConnectionError? connectionStatus;
     private readonly IController controller;
-    private HandWritingRecognitionLanguageViewModel handWritingRecognitionLanguage;
     private Boolean hasItems;
     private Job.Description jobs;
+    private MyScriptLanguageViewModel myScriptLanguage;
 
     public MainWindowModel(String dataSource, Boolean noHardware)
     {
-        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages();
+        this.MyScriptLanguages = MyScriptLanguageViewModel.GetLanguages();
         this.OpenFolderPicker = new Interaction<String, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
         this.TreeSource = new ItemViewModelTreeSource();
 
         this.connectionStatus = TabletConnectionError.SshNotConnected;
         this.controller = noHardware ? new ControllerStub(dataSource) : new Controller(dataSource);
-        this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.CompareOrdinal(language.Code, this.controller.Settings.MyScriptLanguage) == 0);
         this.hasItems = false;
         this.jobs = Job.Description.None;
+        this.myScriptLanguage = this.MyScriptLanguages.Single(language => String.CompareOrdinal(language.Code, this.controller.Settings.MyScriptLanguage) == 0);
 
         this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
         this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process, this.Process_CanExecute());
@@ -41,8 +41,8 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.CommandUploadTemplate = ReactiveCommand.CreateFromTask(this.UploadTemplate, this.UploadTemplate_CanExecute());
 
         this.WhenAnyValue(vm => vm.ConnectionStatus).Subscribe(status => this.RaisePropertyChanged(nameof(this.ConnectionStatusText)));
-        this.WhenAnyValue(vm => vm.HandWritingRecognitionLanguage).Subscribe(language => this.SaveHandWritingRecognitionLanguage(language.Code));
         this.WhenAnyValue(vm => vm.Jobs).Subscribe(jobs => this.RaisePropertyChanged(nameof(this.JobsText)));
+        this.WhenAnyValue(vm => vm.MyScriptLanguage).Subscribe(this.SaveMyScriptLanguage);
 
         _ = this.UpdateConnectionStatus();
     }
@@ -183,9 +183,9 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
     }
 
-    private void SaveHandWritingRecognitionLanguage(String language)
+    private void SaveMyScriptLanguage(MyScriptLanguageViewModel language)
     {
-        this.controller.Settings.MyScriptLanguage = language;
+        this.controller.Settings.MyScriptLanguage = language.Code;
         this.controller.Settings.SaveChanges();
     }
 
@@ -302,14 +302,6 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         }
     }
 
-    public HandWritingRecognitionLanguageViewModel HandWritingRecognitionLanguage
-    {
-        get { return this.handWritingRecognitionLanguage; }
-        set { this.RaiseAndSetIfChanged(ref this.handWritingRecognitionLanguage, value); }
-    }
-
-    public IEnumerable<HandWritingRecognitionLanguageViewModel> HandWritingRecognitionLanguages { get; }
-
     public Boolean HasItems
     {
         get { return this.hasItems; }
@@ -336,6 +328,14 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             return (jobs.Count > 0) ? String.Join(" and ", jobs) : null;
         }
     }
+
+    public MyScriptLanguageViewModel MyScriptLanguage
+    {
+        get { return this.myScriptLanguage; }
+        set { this.RaiseAndSetIfChanged(ref this.myScriptLanguage, value); }
+    }
+
+    public IEnumerable<MyScriptLanguageViewModel> MyScriptLanguages { get; }
 
     public Interaction<String, String?> OpenFolderPicker { get; }
 
