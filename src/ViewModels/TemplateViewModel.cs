@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 using ReactiveUI;
 
 namespace ReMarkableRemember.ViewModels;
@@ -29,7 +29,7 @@ public sealed partial class TemplateViewModel : DialogWindowModel
 
         this.WhenAnyValue(vm => vm.Category).Subscribe(value => this.CheckProperty(value, nameof(this.Category)));
         this.WhenAnyValue(vm => vm.Name).Subscribe(value => this.CheckProperty(value, nameof(this.Name)));
-        this.WhenAnyValue(vm => vm.SourceFilePath).Subscribe(this.CheckSourceFilePath);
+        this.WhenAnyValue(vm => vm.SourceFilePath).Subscribe(value => this.CheckProperty(value, nameof(this.SourceFilePath), "Source File Path"));
     }
 
     public ReactiveCommand<Unit, Unit> CommandSetSourceFilePath { get; }
@@ -44,36 +44,24 @@ public sealed partial class TemplateViewModel : DialogWindowModel
 
     public String SourceFilePath { get { return this.sourceFilePath; } private set { this.RaiseAndSetIfChanged(ref this.sourceFilePath, value); } }
 
-    private void CheckProperty(String value, String propertyName)
+    private void CheckProperty(String value, String propertyName, String? displayName = null)
     {
         this.ClearErrors(propertyName);
 
         if (String.IsNullOrEmpty(value))
         {
-            this.AddError(propertyName, $"{propertyName} is required");
-        }
-    }
-
-    private void CheckSourceFilePath(String filePath)
-    {
-        this.ClearErrors(nameof(this.SourceFilePath));
-
-        if (String.IsNullOrEmpty(filePath))
-        {
-            this.AddError(nameof(this.SourceFilePath), "Source File is required");
-        }
-        else if (!File.Exists(filePath))
-        {
-            this.AddError(nameof(this.SourceFilePath), "Source File not found");
+            this.AddError(propertyName, $"{displayName ?? propertyName} is required");
         }
     }
 
     private async Task SetSourceFilePath()
     {
-        String? filePath = await this.OpenFilePicker.Handle("Template");
-        if (filePath != null)
+        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = false, Title = "Template", FileTypeFilter = new[] { FilePickerFileTypes.ImagePng } };
+        IEnumerable<String>? files = await this.OpenFilePicker.Handle(options);
+        String? file = files?.SingleOrDefault();
+        if (file != null)
         {
-            this.SourceFilePath = filePath;
+            this.SourceFilePath = file;
         }
     }
 }

@@ -17,11 +17,10 @@ public sealed partial class DialogWindow : ReactiveWindow<DialogWindowModel>
         this.WhenActivated(this.Subscribe);
     }
 
-    private async Task OpenFilePickerHandler(InteractionContext<String, String?> context)
+    private async Task OpenFilePickerHandler(InteractionContext<FilePickerOpenOptions, IEnumerable<String>?> context)
     {
-        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = false, Title = context.Input, FileTypeFilter = new[] { FilePickerFileTypes.ImagePng } };
-        IReadOnlyList<IStorageFile> files = await this.StorageProvider.OpenFilePickerAsync(options).ConfigureAwait(true);
-        context.SetOutput(files?.Select(file => file.Path.LocalPath).SingleOrDefault());
+        IReadOnlyList<IStorageFile> files = await this.StorageProvider.OpenFilePickerAsync(context.Input).ConfigureAwait(true);
+        context.SetOutput(files?.Select(file => file.Path.LocalPath).ToArray());
     }
 
     private async Task OpenFolderPickerHandler(InteractionContext<String, String?> context)

@@ -31,6 +31,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         this.CommandSetBackup = ReactiveCommand.CreateFromTask(this.SetBackup);
 
         this.WhenAnyValue(vm => vm.TabletIp).Subscribe(this.CheckTabletIp);
+        this.WhenAnyValue(vm => vm.TabletPassword).Subscribe(this.CheckTabletPassword);
     }
 
     public ReactiveCommand<Unit, Unit> CommandSetBackup { get; }
@@ -53,6 +54,16 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         if (IpRegex().Match(host).Success) { return; }
 
         this.AddError(nameof(this.TabletIp), "Invalid IP address");
+    }
+
+    private void CheckTabletPassword(String? value)
+    {
+        this.ClearErrors(nameof(this.TabletPassword));
+
+        if (String.IsNullOrEmpty(value))
+        {
+            this.AddError(nameof(this.TabletPassword), "Password is required");
+        }
     }
 
     public void SaveChanges()

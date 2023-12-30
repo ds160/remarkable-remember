@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Reactive;
+using Avalonia.Platform.Storage;
 using ReactiveUI;
 
 namespace ReMarkableRemember.ViewModels;
@@ -11,7 +13,7 @@ public abstract class DialogWindowModel : ViewModelBase
         this.CommandCancel = ReactiveCommand.Create(() => { return false; });
         this.CommandClose = ReactiveCommand.Create(() => { return true; });
 
-        this.OpenFilePicker = new Interaction<String, String?>();
+        this.OpenFilePicker = new Interaction<FilePickerOpenOptions, IEnumerable<String>?>();
         this.OpenFolderPicker = new Interaction<String, String?>();
 
         this.ShowCancel = showCancel;
@@ -25,7 +27,7 @@ public abstract class DialogWindowModel : ViewModelBase
 
     public Object Content { get { return this; } }
 
-    public Interaction<String, String?> OpenFilePicker { get; }
+    public Interaction<FilePickerOpenOptions, IEnumerable<String>?> OpenFilePicker { get; }
 
     public Interaction<String, String?> OpenFolderPicker { get; }
 
