@@ -12,13 +12,13 @@ internal sealed class Settings
     private const String TABLET_IP = "Tablet IP";
     private const String TABLET_PASSWORD = "Tablet Password";
 
-    private readonly String dataSource;
+    private readonly Controller controller;
 
-    public Settings(String dataSource)
+    public Settings(Controller controller)
     {
-        this.dataSource = dataSource;
+        this.controller = controller;
 
-        using DatabaseContext database = new DatabaseContext(this.dataSource);
+        using DatabaseContext database = this.controller.CreateDatabaseContext();
         this.Backup = database.Settings.Find(BACKUP)?.Value ?? String.Empty;
         this.MyScriptApplicationKey = database.Settings.Find(MYSCRIPT_APPLICATION_KEY)?.Value ?? String.Empty;
         this.MyScriptHmacKey = database.Settings.Find(MYSCRIPT_HMAC_KEY)?.Value ?? String.Empty;
@@ -41,7 +41,7 @@ internal sealed class Settings
 
     public void SaveChanges()
     {
-        using DatabaseContext database = new DatabaseContext(this.dataSource);
+        using DatabaseContext database = this.controller.CreateDatabaseContext();
 
         SetValue(database, BACKUP, this.Backup);
         SetValue(database, MYSCRIPT_APPLICATION_KEY, this.MyScriptApplicationKey);

@@ -44,7 +44,7 @@ internal sealed class Tablet : IDisposable
         this.usbSemaphore = new SemaphoreSlim(1, 1);
     }
 
-    public void Dispose()
+    void IDisposable.Dispose()
     {
         this.sshSemaphore.Dispose();
         this.usbClientDocument.Dispose();

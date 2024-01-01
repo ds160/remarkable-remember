@@ -11,12 +11,12 @@ public sealed class ItemViewModel : ViewModelBase
     [Flags]
     public enum Hint
     {
-        None = Item.Hint.None,
-        NotFoundInTarget = Item.Hint.NotFoundInTarget,
-        SyncPathChanged = Item.Hint.SyncPathChanged,
-        Modified = Item.Hint.Modified,
-        New = Item.Hint.New,
-        ExistsInTarget = Item.Hint.ExistsInTarget
+        None = ItemHint.None,
+        NotFoundInTarget = ItemHint.NotFoundInTarget,
+        SyncPathChanged = ItemHint.SyncPathChanged,
+        Modified = ItemHint.Modified,
+        New = ItemHint.New,
+        ExistsInTarget = ItemHint.ExistsInTarget
     }
 
     public enum Image
@@ -44,7 +44,7 @@ public sealed class ItemViewModel : ViewModelBase
         this.Source = source;
     }
 
-    public DateTime? Backup { get { return this.Source.Backup; } }
+    public DateTime? Backup { get { return this.Source.BackupDate; } }
 
     public Hint BackupHint { get { return (Hint)this.Source.BackupHint; } }
 
@@ -58,11 +58,11 @@ public sealed class ItemViewModel : ViewModelBase
 
     public ItemViewModel? Parent { get; }
 
-    public DateTime? Sync { get { return (this.SyncPath != null) ? this.Source?.Sync?.Modified : null; } }
-
-    public String? SyncPath { get { return this.Source.SyncPath; } }
+    public DateTime? Sync { get { return (this.SyncPath != null) ? this.Source?.SyncDate : null; } }
 
     public Hint SyncHint { get { return (Hint)this.Source.SyncHint; } }
+
+    public String? SyncPath { get { return this.Source.SyncPath; } }
 
     internal Item Source { get; }
 

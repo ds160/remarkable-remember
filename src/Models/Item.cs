@@ -3,73 +3,110 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using ReMarkableRemember.Entities;
+using System.Threading.Tasks;
+using ReMarkableRemember.Helper;
 
 namespace ReMarkableRemember.Models;
 
 internal sealed class Item
 {
-    public enum Hint
+    private readonly Controller controller;
+    private Backup? dataBackup;
+    private Sync? dataSync;
+
+    public Item(Controller controller, Tablet.Item tabletItem, Item? parent)
     {
-        None = 0,
-        NotFoundInTarget = 1,
-        SyncPathChanged = 2,
-        Modified = 4,
-        New = 8,
-        ExistsInTarget = 16
-    }
+        this.controller = controller;
 
-    private readonly String dataSource;
-
-    public Item(String dataSource, Tablet.Item tabletItem, Item? parent)
-    {
-        this.dataSource = dataSource;
-
-        this.Collection = tabletItem.Collection?.Select(childTabletItem => new Item(dataSource, childTabletItem, this)).ToArray();
+        this.Collection = tabletItem.Collection?.Select(childTabletItem => new Item(controller, childTabletItem, this)).ToArray();
         this.Id = tabletItem.Id;
         this.Modified = tabletItem.Modified;
         this.Name = tabletItem.Name;
         this.Parent = parent;
         this.Trashed = tabletItem.Trashed;
 
-        using DatabaseContext database = new DatabaseContext(dataSource);
+        using DatabaseContext database = this.controller.CreateDatabaseContext();
         this.Update(database);
     }
 
-    public DateTime? Backup { get; private set; }
-    public Hint BackupHint { get; private set; }
+    public DateTime? BackupDate { get { return this.dataBackup?.Modified; } }
+
+    public ItemHint BackupHint { get; private set; }
+
     public IEnumerable<Item>? Collection { get; }
+
     public String Id { get; }
+
     public DateTime Modified { get; }
+
     public String Name { get; }
+
     internal Item? Parent { get; }
-    public SyncDetail? Sync { get; private set; }
-    public Hint SyncHint { get; private set; }
+
+    public DateTime? SyncDate { get { return this.dataSync?.Modified; } }
+
+    public ItemHint SyncHint { get; private set; }
+
     public String? SyncPath { get; private set; }
+
     public Boolean Trashed { get; }
 
-    internal void BackupDone()
+    public async Task<Boolean> Backup()
     {
-        using DatabaseContext database = new DatabaseContext(this.dataSource);
-        Backup? backup = database.Backups.Find(this.Id);
-        if (backup != null)
+        if (this.BackupHint is ItemHint.None) { return false; }
+        if (this.Trashed) { return false; }
+
+        String targetDirectory = this.controller.Settings.Backup;
+        if (!Directory.Exists(targetDirectory)) { throw new SettingsException("Backup directory not set or not found."); }
+
+        IEnumerable<String> directories = Directory.GetDirectories(targetDirectory, $"{this.Id}*");
+        foreach (String directory in directories)
         {
-            backup.Deleted = null;
-            backup.Modified = this.Modified;
+            FileSystem.Delete(directory);
+        }
+
+        IEnumerable<String> files = Directory.GetFiles(targetDirectory).Where(file => file.StartsWith(Path.Combine(targetDirectory, this.Id), StringComparison.Ordinal));
+        foreach (String file in files)
+        {
+            FileSystem.Delete(file);
+        }
+
+        await this.controller.Tablet.Backup(this.Id, targetDirectory).ConfigureAwait(false);
+
+        this.BackupDone();
+
+        return true;
+    }
+
+    private void BackupDone()
+    {
+        using DatabaseContext database = this.controller.CreateDatabaseContext();
+        if (this.dataBackup != null)
+        {
+            this.dataBackup.Deleted = null;
+            this.dataBackup.Modified = this.Modified;
         }
         else
         {
-            database.Backups.Add(new Backup(this.Id, this.Modified));
+            this.dataBackup = new Backup(this.Id, this.Modified);
+            database.Backups.Add(this.dataBackup);
         }
         database.SaveChanges();
 
-        this.Backup = this.Modified;
         this.BackupHint = this.GetBackupHint();
     }
 
-    public void SetSyncTargetDirectory(String? targetDirectory)
+    public async Task<String> HandWritingRecognition()
     {
-        using DatabaseContext database = new DatabaseContext(this.dataSource);
-        SyncConfiguration? syncConfiguration = database.SyncConfigurations.Find(this.Id);
+        Notebook notebook = await this.controller.Tablet.GetNotebook(this.Id).ConfigureAwait(false);
+        IEnumerable<String> myScriptPages = await Task.WhenAll(notebook.Pages.Select(this.controller.MyScript.Recognize)).ConfigureAwait(false);
+        return String.Join(Environment.NewLine, myScriptPages);
+    }
+
+    public async Task SetSyncTargetDirectory(String? targetDirectory)
+    {
+        using DatabaseContext database = this.controller.CreateDatabaseContext();
+        SyncConfiguration? syncConfiguration = await database.SyncConfigurations.FindAsync(this.Id).ConfigureAwait(false);
         if (targetDirectory != null)
         {
             if (syncConfiguration != null)
@@ -78,7 +115,7 @@ internal sealed class Item
             }
             else
             {
-                database.SyncConfigurations.Add(new SyncConfiguration(this.Id, targetDirectory));
+                await database.SyncConfigurations.AddAsync(new SyncConfiguration(this.Id, targetDirectory)).ConfigureAwait(false);
             }
         }
         else
@@ -88,50 +125,69 @@ internal sealed class Item
                 database.SyncConfigurations.Remove(syncConfiguration);
             }
         }
-        database.SaveChanges();
+        await database.SaveChangesAsync().ConfigureAwait(false);
 
         this.Update(database);
     }
 
-    internal void SyncDone(String path)
+    public async Task<Boolean> Sync()
     {
-        using DatabaseContext database = new DatabaseContext(this.dataSource);
-        Sync? sync = database.Syncs.Find(this.Id);
-        if (sync != null)
+        if (this.SyncHint is ItemHint.None or >= ItemHint.ExistsInTarget) { return false; }
+        if (this.SyncPath == null) { return false; }
+        if (this.Trashed) { return false; }
+
+        if (this.dataSync != null && this.SyncHint is ItemHint.SyncPathChanged)
         {
-            sync.Modified = this.Modified;
-            sync.Path = path;
+            FileSystem.Delete(this.dataSync.Path);
+        }
+
+        using Stream sourceStream = await this.controller.Tablet.Download(this.Id).ConfigureAwait(false);
+        using Stream targetStream = FileSystem.Create(this.SyncPath);
+        await sourceStream.CopyToAsync(targetStream).ConfigureAwait(false);
+
+        this.SyncDone(this.SyncPath);
+
+        return true;
+    }
+
+    private void SyncDone(String path)
+    {
+        using DatabaseContext database = this.controller.CreateDatabaseContext();
+        if (this.dataSync != null)
+        {
+            this.dataSync.Modified = this.Modified;
+            this.dataSync.Path = path;
         }
         else
         {
-            database.Syncs.Add(new Sync(this.Id, this.Modified, path));
+            this.dataSync = new Sync(this.Id, this.Modified, path);
+            database.Syncs.Add(this.dataSync);
         }
         database.SaveChanges();
 
-        this.Sync = new SyncDetail(this.Modified, path);
         this.SyncHint = this.GetSyncHint();
     }
 
-    private Hint GetBackupHint()
+    private ItemHint GetBackupHint()
     {
-        if (this.Backup == null) { return Hint.New; }
-        if (this.Backup < this.Modified) { return Hint.Modified; }
+        if (this.dataBackup == null) { return ItemHint.New; }
+        if (this.dataBackup.Modified < this.Modified) { return ItemHint.Modified; }
 
-        return Hint.None;
+        return ItemHint.None;
     }
 
-    private Hint GetSyncHint()
+    private ItemHint GetSyncHint()
     {
-        if (this.Collection != null) { return Hint.None; }
-        if (this.SyncPath == null) { return Hint.None; }
+        if (this.Collection != null) { return ItemHint.None; }
+        if (this.SyncPath == null) { return ItemHint.None; }
 
-        if (this.Sync == null && Path.Exists(this.SyncPath)) { return Hint.ExistsInTarget; }
-        if (this.Sync == null) { return Hint.New; }
-        if (this.Sync.Path != this.SyncPath) { return Hint.SyncPathChanged; }
-        if (this.Sync.Modified < this.Modified) { return Hint.Modified; }
-        if (!Path.Exists(this.SyncPath)) { return Hint.NotFoundInTarget; }
+        if (this.dataSync == null && Path.Exists(this.SyncPath)) { return ItemHint.ExistsInTarget; }
+        if (this.dataSync == null) { return ItemHint.New; }
+        if (this.dataSync.Path != this.SyncPath) { return ItemHint.SyncPathChanged; }
+        if (this.dataSync.Modified < this.Modified) { return ItemHint.Modified; }
+        if (!Path.Exists(this.SyncPath)) { return ItemHint.NotFoundInTarget; }
 
-        return Hint.None;
+        return ItemHint.None;
     }
 
     private String? GetSyncPath(SyncConfiguration? syncConfiguration)
@@ -155,26 +211,12 @@ internal sealed class Item
         SyncConfiguration? syncConfiguration = database.SyncConfigurations.Find(this.Id);
         this.SyncPath = this.GetSyncPath(syncConfiguration);
 
-        Backup? backup = database.Backups.Find(this.Id);
-        this.Backup = backup?.Modified;
+        this.dataBackup = database.Backups.Find(this.Id);
         this.BackupHint = this.GetBackupHint();
 
-        Sync? sync = database.Syncs.Find(this.Id);
-        this.Sync = (sync != null) ? new SyncDetail(sync.Modified, sync.Path) : null;
+        this.dataSync = database.Syncs.Find(this.Id);
         this.SyncHint = this.GetSyncHint();
 
         this.Collection?.ToList()?.ForEach(childItem => childItem.Update(database));
-    }
-
-    internal sealed class SyncDetail
-    {
-        public SyncDetail(DateTime modified, String path)
-        {
-            this.Modified = modified;
-            this.Path = path;
-        }
-
-        public DateTime Modified { get; }
-        public String Path { get; }
     }
 }

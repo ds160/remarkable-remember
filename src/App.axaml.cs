@@ -22,8 +22,7 @@ public partial class App : Application
         if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             String dataSource = GetDataSource(desktop.Args?.FirstOrDefault());
-            Boolean noHardware = GetNoHardwareOption(desktop.Args);
-            desktop.MainWindow = new MainWindow() { DataContext = new MainWindowModel(dataSource, noHardware) };
+            desktop.MainWindow = new MainWindow() { DataContext = new MainWindowModel(dataSource) };
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -36,10 +35,5 @@ public partial class App : Application
         String dataSource = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), nameof(ReMarkableRemember), "database.db");
         FileSystem.CreateDirectory(dataSource);
         return dataSource;
-    }
-
-    private static Boolean GetNoHardwareOption(String[]? args)
-    {
-        return args?.Any(arg => String.CompareOrdinal("--no-hardware", arg) == 0) == true;
     }
 }

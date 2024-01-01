@@ -7,10 +7,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/bin/Debug/net7.0/ReMarkableRemember.dll",
-            "args": [
-                "${workspaceFolder}/bin/Debug/net7.0/ReMarkableRemember.db",
-                "--no-hardware"
-            ],
+            "args": [],
             "cwd": "${workspaceFolder}/src",
             "console": "internalConsole",
             "stopAtEntry": false

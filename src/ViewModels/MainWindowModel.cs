@@ -7,20 +7,18 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using ReactiveUI;
 using ReMarkableRemember.Models;
-using ReMarkableRemember.Models.Interfaces;
-using ReMarkableRemember.Models.Stubs;
 
 namespace ReMarkableRemember.ViewModels;
 
 public sealed class MainWindowModel : ViewModelBase, IDisposable
 {
     private TabletConnectionError? connectionStatus;
-    private readonly IController controller;
+    private readonly Controller controller;
     private Boolean hasItems;
     private Job.Description jobs;
     private MyScriptLanguageViewModel myScriptLanguage;
 
-    public MainWindowModel(String dataSource, Boolean noHardware)
+    public MainWindowModel(String dataSource)
     {
         this.MyScriptLanguages = MyScriptLanguageViewModel.GetLanguages();
         this.OpenFolderPicker = new Interaction<String, String?>();
@@ -28,7 +26,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.TreeSource = new ItemViewModelTreeSource();
 
         this.connectionStatus = TabletConnectionError.SshNotConnected;
-        this.controller = noHardware ? new ControllerStub(dataSource) : new Controller(dataSource);
+        this.controller = new Controller(dataSource);
         this.hasItems = false;
         this.jobs = Job.Description.None;
         this.myScriptLanguage = this.MyScriptLanguages.Single(language => String.CompareOrdinal(language.Code, this.controller.Settings.MyScriptLanguage) == 0);
@@ -49,7 +47,8 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     public void Dispose()
     {
-        this.controller.Dispose();
+        IDisposable disposable = this.controller;
+        disposable.Dispose();
 
         GC.SuppressFinalize(this);
     }
@@ -81,7 +80,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         {
             using Job job = new Job(Job.Description.HandWritingRecognition, this);
 
-            String text = await this.controller.HandWritingRecognition(selectedItem.Source).ConfigureAwait(true);
+            String text = await selectedItem.Source.HandWritingRecognition().ConfigureAwait(true);
 
             job.Done();
 
@@ -134,12 +133,12 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
         if (!String.IsNullOrEmpty(this.controller.Settings.Backup))
         {
-            await this.controller.BackupItem(item.Source).ConfigureAwait(true);
+            await item.Source.Backup().ConfigureAwait(true);
         }
 
         if (this.ConnectionStatus == null)
         {
-            changed |= await this.controller.SyncItem(item.Source).ConfigureAwait(true);
+            changed |= await item.Source.Sync().ConfigureAwait(true);
         }
 
         if (changed) { item.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Parent); }
@@ -218,13 +217,13 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
                 String? targetDirectory = await this.OpenFolderPicker.Handle("Sync Target Folder");
                 if (targetDirectory != null)
                 {
-                    selectedItem.Source.SetSyncTargetDirectory(targetDirectory);
+                    await selectedItem.Source.SetSyncTargetDirectory(targetDirectory).ConfigureAwait(true);
                     selectedItem.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Collection);
                 }
             }
             else
             {
-                selectedItem.Source.SetSyncTargetDirectory(null);
+                await selectedItem.Source.SetSyncTargetDirectory(null).ConfigureAwait(true);
                 selectedItem.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Collection);
             }
         }
