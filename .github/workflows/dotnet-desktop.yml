@@ -40,8 +40,8 @@ jobs:
         retention-days: 1
 
   release:
+    #   if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
-#    concurrency: "release"
     needs:
       - build
     steps:
@@ -59,17 +59,14 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: publish-output
-        path: ./dist
+        path: ./bin
 
     - name: Generate Release
-      if: github.event_name != 'pull_request'
       uses: softprops/action-gh-release@v1
       with:
 #        body_path: "Changelog.txt"
-        token: ${{ secrets.GITHUB_TOKEN }}
-        prerelease: true
         tag_name: ${{ steps.versiontag.outputs.tag }}
         files: |
-          ./dist/**/*.zip
-          ./dist/**/*.deb
-          ./dist/**/*.rpm
+          ./bin/**/*.zip
+        #   ./bin/**/*.deb
+        #   ./bin/**/*.rpm
