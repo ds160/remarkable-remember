@@ -25,12 +25,12 @@ jobs:
         dotnet-version: 7.0.x
 
     - name: Build
-      run: dotnet publish "./src/ReMarkableRemember.csproj" -c Release -r ${{ matrix.arch }} -p:PublishReadyToRun=true --self-contained --output ./dist/${{ matrix.arch }}
+      run: dotnet publish ReMarkableRemember.sln -c Release -r ${{ matrix.arch }} -p:PublishReadyToRun=true --self-contained
 
     - name: Zip build artifacts
       uses: montudor/action-zip@v1
       with:
-        args: zip -qq -r ./dist/${{ matrix.arch }}.zip ./dist/${{ matrix.arch }}
+        args: zip -qq -r ./dist/${{ matrix.arch }}.zip ./bin/Release/net7.0/${{ matrix.arch }}/publish
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
