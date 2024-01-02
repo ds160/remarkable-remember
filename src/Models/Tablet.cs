@@ -44,16 +44,6 @@ internal sealed class Tablet : IDisposable
         this.usbSemaphore = new SemaphoreSlim(1, 1);
     }
 
-    void IDisposable.Dispose()
-    {
-        this.sshSemaphore.Dispose();
-        this.usbClientDocument.Dispose();
-        this.usbClientDownload.Dispose();
-        this.usbSemaphore.Dispose();
-
-        GC.SuppressFinalize(this);
-    }
-
     public async Task Backup(String id, String targetDirectory)
     {
         await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
@@ -68,6 +58,16 @@ internal sealed class Tablet : IDisposable
         {
             this.sshSemaphore.Release();
         }
+    }
+
+    public void Dispose()
+    {
+        this.sshSemaphore.Dispose();
+        this.usbClientDocument.Dispose();
+        this.usbClientDownload.Dispose();
+        this.usbSemaphore.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 
     public async Task<Stream> Download(String id)

@@ -8,13 +8,13 @@ using ReMarkableRemember.Helper;
 
 namespace ReMarkableRemember.Models;
 
-internal sealed class Item
+public sealed class Item
 {
     private readonly Controller controller;
     private Backup? dataBackup;
     private Sync? dataSync;
 
-    public Item(Controller controller, Tablet.Item tabletItem, Item? parent)
+    internal Item(Controller controller, Tablet.Item tabletItem, Item? parent)
     {
         this.controller = controller;
 
@@ -53,7 +53,7 @@ internal sealed class Item
 
     public async Task<Boolean> Backup()
     {
-        if (this.BackupHint is ItemHint.None) { return false; }
+        if (this.BackupHint is ItemHint.None or >= ItemHint.ExistsInTarget) { return false; }
         if (this.Trashed) { return false; }
 
         String targetDirectory = this.controller.Settings.Backup;
@@ -78,24 +78,6 @@ internal sealed class Item
         return true;
     }
 
-    private void BackupDone()
-    {
-        using DatabaseContext database = this.controller.CreateDatabaseContext();
-        if (this.dataBackup != null)
-        {
-            this.dataBackup.Deleted = null;
-            this.dataBackup.Modified = this.Modified;
-        }
-        else
-        {
-            this.dataBackup = new Backup(this.Id, this.Modified);
-            database.Backups.Add(this.dataBackup);
-        }
-        database.SaveChanges();
-
-        this.BackupHint = this.GetBackupHint();
-    }
-
     public async Task<String> HandWritingRecognition()
     {
         Notebook notebook = await this.controller.Tablet.GetNotebook(this.Id).ConfigureAwait(false);
@@ -103,10 +85,10 @@ internal sealed class Item
         return String.Join(Environment.NewLine, myScriptPages);
     }
 
-    public async Task SetSyncTargetDirectory(String? targetDirectory)
+    public void SetSyncTargetDirectory(String? targetDirectory)
     {
         using DatabaseContext database = this.controller.CreateDatabaseContext();
-        SyncConfiguration? syncConfiguration = await database.SyncConfigurations.FindAsync(this.Id).ConfigureAwait(false);
+        SyncConfiguration? syncConfiguration = database.SyncConfigurations.Find(this.Id);
         if (targetDirectory != null)
         {
             if (syncConfiguration != null)
@@ -115,7 +97,7 @@ internal sealed class Item
             }
             else
             {
-                await database.SyncConfigurations.AddAsync(new SyncConfiguration(this.Id, targetDirectory)).ConfigureAwait(false);
+                database.SyncConfigurations.Add(new SyncConfiguration(this.Id, targetDirectory));
             }
         }
         else
@@ -125,7 +107,7 @@ internal sealed class Item
                 database.SyncConfigurations.Remove(syncConfiguration);
             }
         }
-        await database.SaveChangesAsync().ConfigureAwait(false);
+        database.SaveChanges();
 
         this.Update(database);
     }
@@ -136,7 +118,7 @@ internal sealed class Item
         if (this.SyncPath == null) { return false; }
         if (this.Trashed) { return false; }
 
-        if (this.dataSync != null && this.SyncHint is ItemHint.SyncPathChanged)
+        if (this.dataSync != null && this.SyncHint.HasFlag(ItemHint.SyncPathChanged))
         {
             FileSystem.Delete(this.dataSync.Path);
         }
@@ -150,22 +132,23 @@ internal sealed class Item
         return true;
     }
 
-    private void SyncDone(String path)
+    private void BackupDone()
     {
         using DatabaseContext database = this.controller.CreateDatabaseContext();
-        if (this.dataSync != null)
+        this.dataBackup = database.Backups.Find(this.Id);
+        if (this.dataBackup != null)
         {
-            this.dataSync.Modified = this.Modified;
-            this.dataSync.Path = path;
+            this.dataBackup.Deleted = null;
+            this.dataBackup.Modified = this.Modified;
         }
         else
         {
-            this.dataSync = new Sync(this.Id, this.Modified, path);
-            database.Syncs.Add(this.dataSync);
+            this.dataBackup = new Backup(this.Id, this.Modified);
+            database.Backups.Add(this.dataBackup);
         }
         database.SaveChanges();
 
-        this.SyncHint = this.GetSyncHint();
+        this.BackupHint = this.GetBackupHint();
     }
 
     private ItemHint GetBackupHint()
@@ -204,6 +187,25 @@ internal sealed class Item
         }
 
         return (targetDirectory != null && this.Collection == null) ? Path.Combine(targetDirectory, this.Name) : targetDirectory;
+    }
+
+    private void SyncDone(String path)
+    {
+        using DatabaseContext database = this.controller.CreateDatabaseContext();
+        this.dataSync = database.Syncs.Find(this.Id);
+        if (this.dataSync != null)
+        {
+            this.dataSync.Modified = this.Modified;
+            this.dataSync.Path = path;
+        }
+        else
+        {
+            this.dataSync = new Sync(this.Id, this.Modified, path);
+            database.Syncs.Add(this.dataSync);
+        }
+        database.SaveChanges();
+
+        this.SyncHint = this.GetSyncHint();
     }
 
     private void Update(DatabaseContext database)

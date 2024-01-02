@@ -3,7 +3,7 @@ using ReMarkableRemember.Entities;
 
 namespace ReMarkableRemember.Models;
 
-internal sealed class Settings
+public sealed class Settings
 {
     private const String BACKUP = "Backup";
     private const String MYSCRIPT_APPLICATION_KEY = "MyScript ApplicationKey";
@@ -14,7 +14,7 @@ internal sealed class Settings
 
     private readonly Controller controller;
 
-    public Settings(Controller controller)
+    internal Settings(Controller controller)
     {
         this.controller = controller;
 

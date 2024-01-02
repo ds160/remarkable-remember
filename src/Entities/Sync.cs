@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ReMarkableRemember.Entities;
 
-public class Sync
+internal sealed class Sync
 {
     public Sync(String id, DateTime modified, String path)
     {

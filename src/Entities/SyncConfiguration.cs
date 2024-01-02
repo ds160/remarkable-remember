@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ReMarkableRemember.Entities;
 
-public class SyncConfiguration
+internal sealed class SyncConfiguration
 {
     public SyncConfiguration(String id, String targetDirectory)
     {

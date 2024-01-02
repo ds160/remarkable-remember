@@ -8,7 +8,7 @@ namespace ReMarkableRemember.Migrations;
 
 [DbContext(typeof(DatabaseContext))]
 [Migration("001 - Initial Create")]
-public class Migration001 : Migration
+public sealed class Migration001 : Migration
 {
     protected override void BuildTargetModel(ModelBuilder modelBuilder)
     {

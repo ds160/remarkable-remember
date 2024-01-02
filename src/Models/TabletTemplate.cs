@@ -4,7 +4,7 @@ using System.IO;
 
 namespace ReMarkableRemember.Models;
 
-internal sealed class TabletTemplate
+public sealed class TabletTemplate
 {
     private static readonly Dictionary<String, (String, Boolean)> iconCodes = new Dictionary<String, (String, Boolean)>()
     {
@@ -97,18 +97,24 @@ internal sealed class TabletTemplate
         this.BytesPng = File.ReadAllBytes(Path.Combine(directory, $"{fileName}.png"));
         this.BytesSvg = File.ReadAllBytes(Path.Combine(directory, $"{fileName}.svg"));
         this.Category = category;
-        this.FileName = fileName;
+        this.FileName = $"{category} {name}";
         this.IconCode = iconCode;
         this.Landscape = IsLandscape(iconCode);
         this.Name = name;
     }
 
-    public Byte[] BytesPng { get; }
-    public Byte[] BytesSvg { get; }
+    internal Byte[] BytesPng { get; }
+
+    internal Byte[] BytesSvg { get; }
+
     public String Category { get; }
+
     public String FileName { get; }
+
     public String IconCode { get; }
+
     public Boolean Landscape { get; }
+
     public String Name { get; }
 
     public static IEnumerable<String> IconCodes { get { return iconCodes.Keys; } }

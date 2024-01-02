@@ -6,7 +6,7 @@ using ReMarkableRemember.Entities;
 namespace ReMarkableRemember.Migrations;
 
 [DbContext(typeof(DatabaseContext))]
-public class DatabaseModelSnapshot : ModelSnapshot
+public sealed class DatabaseModelSnapshot : ModelSnapshot
 {
     protected override void BuildModel(ModelBuilder modelBuilder)
     {

@@ -7,7 +7,7 @@ using ReMarkableRemember.Entities;
 
 namespace ReMarkableRemember.Models;
 
-internal sealed class Controller : IDisposable
+public sealed class Controller : IDisposable
 {
     private readonly String dataSource;
 
@@ -23,14 +23,6 @@ internal sealed class Controller : IDisposable
         this.Tablet = new Tablet(this.Settings);
     }
 
-    void IDisposable.Dispose()
-    {
-        IDisposable disposable = this.Tablet;
-        disposable.Dispose();
-
-        GC.SuppressFinalize(this);
-    }
-
     internal MyScript MyScript { get; }
 
     internal Tablet Tablet { get; }
@@ -40,6 +32,13 @@ internal sealed class Controller : IDisposable
     internal DatabaseContext CreateDatabaseContext()
     {
         return new DatabaseContext(this.dataSource);
+    }
+
+    public void Dispose()
+    {
+        this.Tablet.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 
     public async Task<TabletConnectionError?> GetConnectionStatus()

@@ -45,14 +45,6 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         _ = this.UpdateConnectionStatus();
     }
 
-    public void Dispose()
-    {
-        IDisposable disposable = this.controller;
-        disposable.Dispose();
-
-        GC.SuppressFinalize(this);
-    }
-
     private static Boolean CheckConnectionStatusForJob(TabletConnectionError? status, Job.Description job)
     {
         switch (job)
@@ -71,6 +63,13 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             default:
                 throw new NotImplementedException();
         }
+    }
+
+    public void Dispose()
+    {
+        this.controller.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 
     private async Task HandWritingRecognition()
@@ -133,7 +132,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
         if (!String.IsNullOrEmpty(this.controller.Settings.Backup))
         {
-            await item.Source.Backup().ConfigureAwait(true);
+            changed |= await item.Source.Backup().ConfigureAwait(true);
         }
 
         if (this.ConnectionStatus == null)
@@ -217,13 +216,13 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
                 String? targetDirectory = await this.OpenFolderPicker.Handle("Sync Target Folder");
                 if (targetDirectory != null)
                 {
-                    await selectedItem.Source.SetSyncTargetDirectory(targetDirectory).ConfigureAwait(true);
+                    selectedItem.Source.SetSyncTargetDirectory(targetDirectory);
                     selectedItem.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Collection);
                 }
             }
             else
             {
-                await selectedItem.Source.SetSyncTargetDirectory(null).ConfigureAwait(true);
+                selectedItem.Source.SetSyncTargetDirectory(null);
                 selectedItem.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Collection);
             }
         }

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ReMarkableRemember.Entities;
 
-public class Backup
+internal sealed class Backup
 {
     public Backup(String id, DateTime modified)
     {

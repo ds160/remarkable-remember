@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ReMarkableRemember.Entities;
 
-public class Setting
+internal sealed class Setting
 {
     public Setting(String key, String value)
     {

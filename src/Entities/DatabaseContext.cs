@@ -4,7 +4,7 @@ using ReMarkableRemember.Helper;
 
 namespace ReMarkableRemember.Entities;
 
-public class DatabaseContext : DbContext
+internal sealed class DatabaseContext : DbContext
 {
     public DatabaseContext(String dataSource) : base(new DbContextOptionsBuilder<DatabaseContext>().UseSqlite($"Data Source={dataSource}").Options)
     {
@@ -12,8 +12,6 @@ public class DatabaseContext : DbContext
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        if (configurationBuilder == null) { throw new ArgumentNullException(nameof(configurationBuilder)); }
-
         configurationBuilder.Properties<DateTime>().HaveConversion<DateTimeToStringConverter>();
     }
 

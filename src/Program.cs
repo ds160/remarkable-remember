@@ -5,7 +5,7 @@ using Avalonia.ReactiveUI;
 
 namespace ReMarkableRemember;
 
-internal sealed class Program
+public sealed class Program
 {
     [STAThread]
     public static void Main(String[] args)

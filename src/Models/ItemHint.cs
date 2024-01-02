@@ -1,6 +1,9 @@
+using System;
+
 namespace ReMarkableRemember.Models;
 
-internal enum ItemHint
+[Flags]
+public enum ItemHint
 {
     None = 0,
     NotFoundInTarget = 1,
