@@ -1,0 +1,77 @@
+name: .NET Core Desktop
+
+on:
+  push:
+    branches: [ "main" ]
+#  pull_request:
+#    branches: [ "main" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: ["win-x86", "win-x64", "linux-x64", "osx-x64", "osx.12-arm64"]
+    env:
+      Solution_Name: ./src/ReMarkableRemember.csproj
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+
+    - name: Build
+      run: dotnet publish $env:Solution_Name -c Release -r ${{ matrix.arch }} -p:PublishReadyToRun=true --self-contained --output ./dist/${{ matrix.arch }}
+
+    - name: Zip build artifacts
+      uses: montudor/action-zip@v1
+      with:
+        args: zip -qq -r ./dist/${{ matrix.arch }}.zip ./dist/${{ matrix.arch }}
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: publish-output
+        path: "./dist/**/*.*"
+        retention-days: 1
+
+  release:
+    runs-on: ubuntu-latest
+#    concurrency: "release"
+    needs:
+      - build
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        
+    - name: Version Tag
+      id: versiontag
+      run: |
+        echo -e ::set-output name=tag::$(grep '<Version>' < $SOLUTION_NAME | sed 's/<[vV]ersion>\(.*\)<\/[vV]ersion>/\1/')
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: publish-output
+        path: ./dist
+
+    - name: Generate Release
+      if: github.event_name != 'pull_request'
+      uses: softprops/action-gh-release@v1
+      with:
+#        body_path: "./Changelog.txt"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        prerelease: true
+        tag_name: ${{ steps.versiontag.outputs.tag }}
+        files: |
+          ./dist/**/*.zip
+          ./dist/**/*.deb
+          ./dist/**/*.rpm
