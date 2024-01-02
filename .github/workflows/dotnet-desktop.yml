@@ -13,8 +13,6 @@ jobs:
     strategy:
       matrix:
         arch: ["win-x86", "win-x64", "linux-x64", "osx-x64", "osx.12-arm64"]
-    env:
-      Solution_Name: ReMarkableRemember.sln
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -27,7 +25,7 @@ jobs:
         dotnet-version: 7.0.x
 
     - name: Build
-      run: dotnet publish $env:Solution_Name -c Release -r ${{ matrix.arch }} -p:PublishReadyToRun=true --self-contained --output ./dist/${{ matrix.arch }}
+      run: dotnet publish ReMarkableRemember.sln -c Release -r ${{ matrix.arch }} -p:PublishReadyToRun=true --self-contained --output ./dist/${{ matrix.arch }}
 
     - name: Zip build artifacts
       uses: montudor/action-zip@v1
