@@ -14,7 +14,7 @@ jobs:
       matrix:
         arch: ["win-x86", "win-x64", "linux-x64", "osx-x64", "osx.12-arm64"]
     env:
-      Solution_Name: /src/ReMarkableRemember.csproj
+      Solution_Name: ReMarkableRemember.sln
     steps:
     - name: Checkout
       uses: actions/checkout@v3
