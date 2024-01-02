@@ -53,7 +53,7 @@ jobs:
     - name: Version Tag
       id: versiontag
       run: |
-        echo -e ::set-output name=tag::$(grep '<Version>' < $SOLUTION_NAME | sed 's/<[vV]ersion>\(.*\)<\/[vV]ersion>/\1/')
+        echo -e ::set-output name=tag::$(grep '<Version>' < ./src/ReMarkableRemember.csproj | sed 's/<[vV]ersion>\(.*\)<\/[vV]ersion>/\1/')
 
     - name: Download build artifacts
       uses: actions/download-artifact@v3
