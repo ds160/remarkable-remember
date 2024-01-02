@@ -52,7 +52,7 @@ internal sealed class Tablet : IDisposable
         {
             using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
 
-            await this.BackupFiles(client, PATH_NOTEBOOKS, targetDirectory, file => file.Name.StartsWith(id, StringComparison.Ordinal)).ConfigureAwait(false);
+            await BackupFiles(client, PATH_NOTEBOOKS, targetDirectory, file => file.Name.StartsWith(id, StringComparison.Ordinal)).ConfigureAwait(false);
         }
         finally
         {
@@ -142,7 +142,7 @@ internal sealed class Tablet : IDisposable
             }
 
             IEnumerable<Item> items = allItems.Where(item => String.IsNullOrEmpty(item.ParentCollectionId) || item.Trashed);
-            foreach (Item item in items) { this.UpdateItems(item, allItems); }
+            foreach (Item item in items) { UpdateItems(item, allItems); }
             return items;
         }
         finally
@@ -214,7 +214,7 @@ internal sealed class Tablet : IDisposable
         }
     }
 
-    private async Task BackupFiles(SftpClient client, String sourceDirectory, String targetDirectory, Func<ISftpFile, Boolean> filter)
+    private static async Task BackupFiles(SftpClient client, String sourceDirectory, String targetDirectory, Func<ISftpFile, Boolean> filter)
     {
         IEnumerable<ISftpFile> files = await Task.Run(() => client.ListDirectory(sourceDirectory)).ConfigureAwait(false);
         foreach (ISftpFile file in files.Where(filter))
@@ -223,7 +223,7 @@ internal sealed class Tablet : IDisposable
 
             if (file.IsDirectory)
             {
-                await this.BackupFiles(client, file.FullName, targetPath, file => file.Name is not "." and not "..").ConfigureAwait(false);
+                await BackupFiles(client, file.FullName, targetPath, file => file.Name is not "." and not "..").ConfigureAwait(false);
             }
 
             if (file.IsRegularFile)
@@ -308,7 +308,7 @@ internal sealed class Tablet : IDisposable
         await Task.Run(() => client.RunCommand("systemctl restart xochitl")).ConfigureAwait(false);
     }
 
-    private void UpdateItems(Item parentItem, IEnumerable<Item> allItems)
+    private static void UpdateItems(Item parentItem, IEnumerable<Item> allItems)
     {
         IEnumerable<Item> children = allItems.Where(item => item.ParentCollectionId == parentItem.Id);
         foreach (Item child in children)
@@ -316,7 +316,7 @@ internal sealed class Tablet : IDisposable
             child.Trashed = parentItem.Trashed;
             parentItem.Collection?.Add(child);
 
-            this.UpdateItems(child, allItems);
+            UpdateItems(child, allItems);
         }
     }
 
