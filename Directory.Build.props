@@ -3,7 +3,6 @@
         <BaseIntermediateOutputPath>$(SolutionDir)\obj\</BaseIntermediateOutputPath>
         <BaseOutputPath>$(SolutionDir)\bin\</BaseOutputPath>
         <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
-        <EnableGenerateDocumentationFile>true</EnableGenerateDocumentationFile>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
