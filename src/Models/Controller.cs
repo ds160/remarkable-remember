@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -52,8 +53,29 @@ public sealed class Controller : IDisposable
         return tabletItems.Select(tabletItem => new Item(this, tabletItem, null)).ToArray();
     }
 
-    public async Task UploadTemplate(TabletTemplate template)
+    public async Task UploadTemplate([NotNull] TabletTemplate template)
     {
         await this.Tablet.UploadTemplate(template).ConfigureAwait(false);
+
+        this.SaveTemplate(template);
+    }
+
+    private void SaveTemplate(TabletTemplate tabletTemplate)
+    {
+        using DatabaseContext database = this.CreateDatabaseContext();
+
+        Template? template = database.Templates.Find(tabletTemplate.Category, tabletTemplate.Name);
+        if (template != null)
+        {
+            template.IconCode = tabletTemplate.IconCode;
+            template.BytesPng = tabletTemplate.BytesPng;
+            template.BytesSvg = tabletTemplate.BytesSvg;
+        }
+        else
+        {
+            database.Templates.Add(new Template(tabletTemplate.Category, tabletTemplate.Name, tabletTemplate.IconCode, tabletTemplate.BytesPng, tabletTemplate.BytesSvg));
+        }
+
+        database.SaveChanges();
     }
 }

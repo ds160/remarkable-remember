@@ -1,14 +1,16 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using ReMarkableRemember.Entities;
 
 namespace ReMarkableRemember.Migrations;
 
 [DbContext(typeof(DatabaseContext))]
-public sealed class DatabaseModelSnapshot : ModelSnapshot
+[Migration("002 - Templates")]
+public sealed class Migration002 : Migration
 {
-    protected override void BuildModel(ModelBuilder modelBuilder)
+    protected override void BuildTargetModel(ModelBuilder modelBuilder)
     {
         if (modelBuilder == null) { throw new ArgumentNullException(nameof(modelBuilder)); }
 
@@ -58,5 +60,33 @@ public sealed class DatabaseModelSnapshot : ModelSnapshot
             builder.HasKey("Category", "Name");
             builder.ToTable("Templates");
         });
+    }
+
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        if (migrationBuilder == null) { throw new ArgumentNullException(nameof(migrationBuilder)); }
+
+        migrationBuilder.CreateTable(
+            name: "Templates",
+            columns: table => new
+            {
+                Category = table.Column<String>(type: "TEXT", nullable: false),
+                Name = table.Column<String>(type: "TEXT", nullable: false),
+                IconCode = table.Column<String>(type: "TEXT", nullable: false),
+                BytesPng = table.Column<Byte[]>(type: "BLOB", nullable: false),
+                BytesSvg = table.Column<Byte[]>(type: "BLOB", nullable: false)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_Templates", entity => new { entity.Category, entity.Name });
+            }
+        );
+    }
+
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        if (migrationBuilder == null) { throw new ArgumentNullException(nameof(migrationBuilder)); }
+
+        migrationBuilder.DropTable("Templates");
     }
 }

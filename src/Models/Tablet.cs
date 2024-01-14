@@ -388,7 +388,7 @@ internal sealed class Tablet : IDisposable
                     Categories = new List<String>() { template.Category },
                     Filename = template.FileName,
                     IconCode = template.IconCode,
-                    Landscape = template.Landscape,
+                    Landscape = TabletTemplate.IsLandscape(template.IconCode),
                     Name = template.Name
                 };
             }

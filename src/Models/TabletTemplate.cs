@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using ReMarkableRemember.Entities;
 
 namespace ReMarkableRemember.Models;
 
@@ -89,6 +90,15 @@ public sealed class TabletTemplate
         { "\uE98C", ("Hexagon small", false) }
     };
 
+    internal TabletTemplate(Template template)
+    {
+        this.BytesPng = template.BytesPng;
+        this.BytesSvg = template.BytesSvg;
+        this.Category = template.Category;
+        this.IconCode = template.IconCode;
+        this.Name = template.Name;
+    }
+
     public TabletTemplate(String name, String category, String iconCode, String sourceFilePath)
     {
         String directory = Path.GetDirectoryName(sourceFilePath) ?? String.Empty;
@@ -97,9 +107,7 @@ public sealed class TabletTemplate
         this.BytesPng = File.ReadAllBytes(Path.Combine(directory, $"{fileName}.png"));
         this.BytesSvg = File.ReadAllBytes(Path.Combine(directory, $"{fileName}.svg"));
         this.Category = category;
-        this.FileName = $"{category} {name}";
         this.IconCode = iconCode;
-        this.Landscape = IsLandscape(iconCode);
         this.Name = name;
     }
 
@@ -109,11 +117,9 @@ public sealed class TabletTemplate
 
     public String Category { get; }
 
-    public String FileName { get; }
+    public String FileName { get { return $"{this.Category} {this.Name}"; } }
 
     public String IconCode { get; }
-
-    public Boolean Landscape { get; }
 
     public String Name { get; }
 

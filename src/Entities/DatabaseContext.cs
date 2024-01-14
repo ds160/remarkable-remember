@@ -22,4 +22,6 @@ internal sealed class DatabaseContext : DbContext
     public DbSet<SyncConfiguration> SyncConfigurations { get; private set; }
 
     public DbSet<Sync> Syncs { get; private set; }
+
+    public DbSet<Template> Templates { get; private set; }
 }
