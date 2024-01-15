@@ -18,7 +18,7 @@
                 <DataTemplate>
                     <DockPanel Margin="0, 16">
                         <Border DockPanel.Dock="Left" BorderBrush="Gray" BorderThickness="1" CornerRadius="4" Padding="4">
-                            <Image Source="{Binding Image}" Height="300"/>
+                            <Image Source="{Binding Image}" MaxHeight="300" MaxWidth="300" Stretch="Uniform"/>
                         </Border>
                         <StackPanel Margin="16, 0" Spacing="4">
                             <TextBlock HorizontalAlignment="Center" Text="{Binding Name}" FontWeight="Bold"/>

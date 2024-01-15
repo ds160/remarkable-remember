@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
@@ -17,6 +19,7 @@ public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
         this.InitializeComponent();
         this.WhenActivated(this.Subscribe);
 
+        RenderOptions.SetBitmapInterpolationMode(this, BitmapInterpolationMode.HighQuality);
         RxApp.DefaultExceptionHandler = Observer.Create<Exception>(this.ShowExceptionDialog, this.ShowExceptionDialog);
     }
 
