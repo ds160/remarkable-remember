@@ -53,18 +53,30 @@ public sealed class Controller : IDisposable
         return tabletItems.Select(tabletItem => new Item(this, tabletItem, null)).ToArray();
     }
 
-    public async Task UploadTemplate([NotNull] TabletTemplate template)
-    {
-        await this.Tablet.UploadTemplate(template).ConfigureAwait(false);
-
-        this.SaveTemplate(template);
-    }
-
-    private void SaveTemplate(TabletTemplate tabletTemplate)
+    public IEnumerable<TabletTemplate> GetTemplates()
     {
         using DatabaseContext database = this.CreateDatabaseContext();
+        return database.Templates.Select(template => new TabletTemplate(template)).ToArray();
+    }
 
-        Template? template = database.Templates.Find(tabletTemplate.Category, tabletTemplate.Name);
+    public async Task RestoreTemplates()
+    {
+        IEnumerable<TabletTemplate> templates = this.GetTemplates();
+        if (!templates.Any()) { return; }
+
+        await Task.WhenAll(templates.Select(this.Tablet.UploadTemplate)).ConfigureAwait(false);
+
+        await this.Tablet.Restart().ConfigureAwait(false);
+    }
+
+    public async Task UploadTemplate([NotNull] TabletTemplate tabletTemplate)
+    {
+        await this.Tablet.UploadTemplate(tabletTemplate).ConfigureAwait(false);
+        await this.Tablet.Restart().ConfigureAwait(false);
+
+        using DatabaseContext database = this.CreateDatabaseContext();
+
+        Template? template = await database.Templates.FindAsync(tabletTemplate.Category, tabletTemplate.Name).ConfigureAwait(false);
         if (template != null)
         {
             template.IconCode = tabletTemplate.IconCode;
@@ -73,9 +85,10 @@ public sealed class Controller : IDisposable
         }
         else
         {
-            database.Templates.Add(new Template(tabletTemplate.Category, tabletTemplate.Name, tabletTemplate.IconCode, tabletTemplate.BytesPng, tabletTemplate.BytesSvg));
+            template = new Template(tabletTemplate.Category, tabletTemplate.Name, tabletTemplate.IconCode, tabletTemplate.BytesPng, tabletTemplate.BytesSvg);
+            await database.Templates.AddAsync(template).ConfigureAwait(false);
         }
 
-        database.SaveChanges();
+        await database.SaveChangesAsync().ConfigureAwait(false);
     }
 }

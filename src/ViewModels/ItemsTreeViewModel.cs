@@ -7,9 +7,9 @@ using ReMarkableRemember.Templates;
 
 namespace ReMarkableRemember.ViewModels;
 
-public sealed class ItemViewModelTreeSource : HierarchicalTreeDataGridSource<ItemViewModel>
+public sealed class ItemsTreeViewModel : HierarchicalTreeDataGridSource<ItemViewModel>
 {
-    public ItemViewModelTreeSource() : base(new List<ItemViewModel>())
+    public ItemsTreeViewModel() : base(new List<ItemViewModel>())
     {
         this.Columns.Add(new HierarchicalExpanderColumn<ItemViewModel>(new TextColumn<ItemViewModel, String>("Name", item => item.Name), item => item.Collection));
         this.Columns.Add(new TextColumn<ItemViewModel, String>("Modified", item => item.Modified.ToDisplayString()));

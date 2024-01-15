@@ -180,6 +180,24 @@ internal sealed class Tablet : IDisposable
         }
     }
 
+    public async Task Restart()
+    {
+        await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
+
+        try
+        {
+            using SshClient client = new SshClient(this.CreateSshConnectionInfo());
+
+            await ConnectClient(client).ConfigureAwait(false);
+
+            await Task.Run(() => client.RunCommand("systemctl restart xochitl")).ConfigureAwait(false);
+        }
+        finally
+        {
+            this.sshSemaphore.Release();
+        }
+    }
+
     public async Task UploadTemplate(TabletTemplate template)
     {
         await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
@@ -205,8 +223,6 @@ internal sealed class Tablet : IDisposable
             await Task.Run(() => client.WriteAllBytes(Path.Combine(PATH_TEMPLATES, $"{template.FileName}.png"), template.BytesPng)).ConfigureAwait(false);
             await Task.Run(() => client.WriteAllBytes(Path.Combine(PATH_TEMPLATES, $"{template.FileName}.svg"), template.BytesSvg)).ConfigureAwait(false);
             await Task.Run(() => client.WriteAllText(templatesFilePath, JsonSerializer.Serialize(templatesFile, jsonSerializerOptions))).ConfigureAwait(false);
-
-            await this.Restart().ConfigureAwait(false);
         }
         finally
         {
@@ -299,13 +315,6 @@ internal sealed class Tablet : IDisposable
         {
             throw new TabletException(TabletConnectionError.UsbNotConnected, "reMarkable is not connected via USB.", exception);
         }
-    }
-
-    private async Task Restart()
-    {
-        using SshClient client = new SshClient(this.CreateSshConnectionInfo());
-        await ConnectClient(client).ConfigureAwait(false);
-        await Task.Run(() => client.RunCommand("systemctl restart xochitl")).ConfigureAwait(false);
     }
 
     private static void UpdateItems(Item parentItem, IEnumerable<Item> allItems)

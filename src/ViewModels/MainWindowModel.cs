@@ -20,10 +20,10 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     public MainWindowModel(String dataSource)
     {
+        this.ItemsTree = new ItemsTreeViewModel();
         this.MyScriptLanguages = MyScriptLanguageViewModel.GetLanguages();
         this.OpenFolderPicker = new Interaction<String, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
-        this.TreeSource = new ItemViewModelTreeSource();
 
         this.connectionStatus = TabletConnectionError.SshNotConnected;
         this.controller = new Controller(dataSource);
@@ -34,6 +34,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
         this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process, this.Process_CanExecute());
         this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh, this.Refresh_CanExecute());
+        this.CommandRestoreTemplates = ReactiveCommand.CreateFromTask(this.RestoreTemplates, this.RestoreTemplates_CanExecute());
         this.CommandSettings = ReactiveCommand.CreateFromTask(this.Settings, this.Settings_CanExecute());
         this.CommandSyncTargetDirectory = ReactiveCommand.CreateFromTask<String>(this.SyncTargetDirectory, this.SyncTargetDirectory_CanExecute());
         this.CommandUploadTemplate = ReactiveCommand.CreateFromTask(this.UploadTemplate, this.UploadTemplate_CanExecute());
@@ -58,6 +59,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             case Job.Description.Process:
             case Job.Description.HandWritingRecognition:
             case Job.Description.UploadTemplate:
+            case Job.Description.RestoreTemplates:
                 return status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected);
 
             default:
@@ -74,7 +76,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     private async Task HandWritingRecognition()
     {
-        ItemViewModel? selectedItem = this.TreeSource.RowSelection!.SelectedItem;
+        ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
         if (selectedItem != null)
         {
             using Job job = new Job(Job.Description.HandWritingRecognition, this);
@@ -90,7 +92,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
     private IObservable<Boolean> HandWritingRecognition_CanExecute()
     {
         IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.HandWritingRecognition));
-        IObservable<Boolean> treeSelection = this.TreeSource.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
+        IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
 
         return Observable.CombineLatest(connectionStatus, treeSelection, (value1, value2) => value1 && value2);
     }
@@ -101,7 +103,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         {
             using Job job = new Job(Job.Description.Process, this);
 
-            List<ItemViewModel> items = this.TreeSource.Items.ToList();
+            List<ItemViewModel> items = this.ItemsTree.Items.ToList();
             foreach (ItemViewModel item in items)
             {
                 await this.Process(item).ConfigureAwait(true);
@@ -109,12 +111,12 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         }
         catch
         {
-            this.TreeSource.Items = new List<ItemViewModel>();
+            this.ItemsTree.Items = new List<ItemViewModel>();
             throw;
         }
         finally
         {
-            this.HasItems = this.TreeSource.Items.Any();
+            this.HasItems = this.ItemsTree.Items.Any();
         }
     }
 
@@ -163,22 +165,37 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             List<ItemViewModel> list = items.Where(item => !item.Trashed).Select(item => new ItemViewModel(item, null)).ToList();
             list.Sort(new Comparison<ItemViewModel>(ItemViewModel.Compare));
 
-            this.TreeSource.Items = list;
+            this.ItemsTree.Items = list;
         }
         catch
         {
-            this.TreeSource.Items = new List<ItemViewModel>();
+            this.ItemsTree.Items = new List<ItemViewModel>();
             throw;
         }
         finally
         {
-            this.HasItems = this.TreeSource.Items.Any();
+            this.HasItems = this.ItemsTree.Items.Any();
         }
     }
 
     private IObservable<Boolean> Refresh_CanExecute()
     {
         return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
+    }
+
+    private async Task RestoreTemplates()
+    {
+        using Job job = new Job(Job.Description.RestoreTemplates, this);
+
+        await this.controller.RestoreTemplates().ConfigureAwait(true);
+    }
+
+    private IObservable<Boolean> RestoreTemplates_CanExecute()
+    {
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.RestoreTemplates));
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
+
+        return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
     }
 
     private void SaveMyScriptLanguage(MyScriptLanguageViewModel language)
@@ -205,7 +222,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     private async Task SyncTargetDirectory(String setString)
     {
-        ItemViewModel? selectedItem = this.TreeSource.RowSelection!.SelectedItem;
+        ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
         if (selectedItem != null)
         {
             using Job job = new Job(Job.Description.SetSyncTargetDirectory, this);
@@ -231,7 +248,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
     private IObservable<Boolean> SyncTargetDirectory_CanExecute()
     {
         IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
-        IObservable<Boolean> treeSelection = this.TreeSource.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null);
+        IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null);
 
         return Observable.CombineLatest(jobs, treeSelection, (value1, value2) => value1 && value2);
     }
@@ -271,6 +288,8 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     public ReactiveCommand<Unit, Unit> CommandRefresh { get; }
 
+    public ReactiveCommand<Unit, Unit> CommandRestoreTemplates { get; }
+
     public ReactiveCommand<Unit, Unit> CommandSettings { get; }
 
     public ReactiveCommand<String, Unit> CommandSyncTargetDirectory { get; }
@@ -300,6 +319,8 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         }
     }
 
+    public ItemsTreeViewModel ItemsTree { get; }
+
     public Boolean HasItems
     {
         get { return this.hasItems; }
@@ -322,6 +343,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             if (this.Jobs.HasFlag(Job.Description.Process)) { jobs.Add("Backup & Syncing"); }
             if (this.Jobs.HasFlag(Job.Description.HandWritingRecognition)) { jobs.Add("Hand Writing Recognition"); }
             if (this.Jobs.HasFlag(Job.Description.UploadTemplate)) { jobs.Add("Uploading Template"); }
+            if (this.Jobs.HasFlag(Job.Description.RestoreTemplates)) { jobs.Add("Restoring Templates"); }
 
             return (jobs.Count > 0) ? String.Join(" and ", jobs) : null;
         }
@@ -339,8 +361,6 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     public Interaction<DialogWindowModel, Boolean> ShowDialog { get; }
 
-    public ItemViewModelTreeSource TreeSource { get; }
-
     private sealed class Job : IDisposable
     {
         [Flags]
@@ -351,8 +371,9 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             Process = 2,
             HandWritingRecognition = 4,
             UploadTemplate = 8,
-            SetSyncTargetDirectory = 16,
-            Settings = 32
+            RestoreTemplates = 16,
+            SetSyncTargetDirectory = 32,
+            Settings = 64
         }
 
         private readonly Description description;

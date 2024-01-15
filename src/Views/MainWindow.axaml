@@ -8,9 +8,9 @@
         x:DataType="vm:MainWindowModel"
         Icon="/Assets/Logo.ico"
         MinHeight="600"
-        MinWidth="1200"
+        MinWidth="940"
         Title="reMarkable Remember"
-        Width="1200"
+        Width="940"
         WindowStartupLocation="CenterScreen">
 
     <Design.DataContext>
@@ -18,128 +18,147 @@
     </Design.DataContext>
 
     <Window.Styles>
-        <Style Selector="Button.Menu">
+        <Style Selector="TabControl.Menu">
+            <Setter Property="Background" Value="#F0F0F0"/>
+            <Setter Property="Height" Value="192"/>
+        </Style>
+        <Style Selector="TabControl.Menu>TabItem">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="DemiBold"/>
+        </Style>
+        <Style Selector="TabControl.Menu>TabItem>StackPanel">
+            <Setter Property="Orientation" Value="Horizontal"/>
+            <Setter Property="Spacing" Value="8"/>
+        </Style>
+        <Style Selector="TabControl.Menu>TabItem>StackPanel>Button">
             <Setter Property="Height" Value="120"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="4"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Width" Value="120"/>
         </Style>
-        <Style Selector="ComboBox.Menu">
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Style Selector="TabControl.Menu>TabItem>StackPanel>Button>StackPanel">
             <Setter Property="Margin" Value="4"/>
+            <Setter Property="Spacing" Value="8"/>
         </Style>
-        <Style Selector="Label.Menu">
-            <Setter Property="FontWeight" Value="DemiBold"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="4"/>
-        </Style>
-        <Style Selector="Image.Button">
+        <Style Selector="TabControl.Menu>TabItem>StackPanel>Button>StackPanel>Image">
             <Setter Property="Height" Value="32"/>
             <Setter Property="Width" Value="32"/>
         </Style>
-        <Style Selector="Rectangle.Menu">
+        <Style Selector="TabControl.Menu>TabItem>StackPanel>Button>StackPanel>TextBlock">
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        <Style Selector="TabControl.Menu>TabItem>StackPanel>Rectangle">
             <Setter Property="Fill" Value="Gainsboro"/>
             <Setter Property="Margin" Value="4"/>
             <Setter Property="VerticalAlignment" Value="Stretch"/>
             <Setter Property="Width" Value="1.1"/>
         </Style>
-        <Style Selector="StackPanel.Button">
-            <Setter Property="Margin" Value="4"/>
-            <Setter Property="Spacing" Value="8"/>
-        </Style>
-        <Style Selector="StackPanel.Menu">
-            <Setter Property="Height" Value="120"/>
-            <Setter Property="Width" Value="120"/>
-        </Style>
-        <Style Selector="TextBlock.Button">
-            <Setter Property="TextAlignment" Value="Center"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
-        </Style>
     </Window.Styles>
 
     <Grid RowDefinitions="Auto, *, Auto">
-        <Grid Classes="Menu"
-              Grid.Row="0"
-              ColumnDefinitions="Auto, Auto, Auto, 16, Auto, Auto, 16, Auto, Auto, 16, Auto"
-              RowDefinitions="Auto, Auto"
-              Margin="4">
+        <TabControl Classes="Menu" Grid.Row="0">
+            <TabItem Header="Items">
+                <StackPanel>
+                    <Button Command="{Binding CommandRefresh}">
+                        <StackPanel>
+                            <Image Source="/Assets/Menu/Refresh.png"/>
+                            <TextBlock Text="Refresh&#x0a;Items"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding CommandProcess}">
+                        <StackPanel>
+                            <Image Source="/Assets/Menu/Process.png"/>
+                            <TextBlock Text="Backup &amp; Sync"/>
+                        </StackPanel>
+                    </Button>
 
-            <Label Classes="Menu" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Content="reMarkable"/>
-            <Button Classes="Menu" Grid.Row="1" Grid.Column="0" Command="{Binding CommandRefresh}">
-                <StackPanel Classes="Button">
-                    <Image Classes="Button" Source="/Assets/Menu/Refresh.png"/>
-                    <TextBlock Classes="Button" Text="Refresh&#x0a;Items"/>
+                    <Rectangle/>
+
+                    <Button Command="{Binding CommandSyncTargetDirectory}" CommandParameter="True">
+                        <StackPanel>
+                            <Image Source="/Assets/Menu/SyncTargetDirectorySet.png"/>
+                            <TextBlock Text="Set Sync Directory"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding CommandSyncTargetDirectory}" CommandParameter="False">
+                        <StackPanel>
+                            <Image Source="/Assets/Menu/SyncTargetDirectoryReset.png"/>
+                            <TextBlock Text="Reset Sync Directory"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Rectangle/>
+
+                    <Button Command="{Binding CommandHandWritingRecognition}">
+                        <StackPanel>
+                            <Image Source="/Assets/Menu/HandWritingRecognition.png"/>
+                            <TextBlock Text="Hand Writing Recognition"/>
+                        </StackPanel>
+                    </Button>
+                    <StackPanel Margin="0, 8" Spacing="8" Width="240">
+                        <Label Content="Language"/>
+                        <ComboBox HorizontalAlignment="Stretch"
+                                  ItemsSource="{Binding MyScriptLanguages}"
+                                  SelectedItem="{Binding MyScriptLanguage}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayName}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
                 </StackPanel>
-            </Button>
-            <Button Classes="Menu" Grid.Row="1" Grid.Column="1" Command="{Binding CommandProcess}">
-                <StackPanel Classes="Button">
-                    <Image Classes="Button" Source="/Assets/Menu/Process.png"/>
-                    <TextBlock Classes="Button" Text="Backup &amp; Sync"/>
+            </TabItem>
+
+            <TabItem Header="Templates">
+                <StackPanel>
+                    <Button Command="{Binding CommandUploadTemplate}">
+                        <StackPanel>
+                            <Image Source="/Assets/Menu/UploadTemplate.png"/>
+                            <TextBlock Text="Upload Template"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding CommandRestoreTemplates}">
+                        <StackPanel>
+                            <Image Source="/Assets/Menu/RestoreTemplates.png"/>
+                            <TextBlock Text="Restore Templates"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
-            </Button>
-            <Button Classes="Menu" Grid.Row="1" Grid.Column="2" Command="{Binding CommandUploadTemplate}">
-                <StackPanel Classes="Button">
-                    <Image Classes="Button" Source="/Assets/Menu/UploadTemplate.png"/>
-                    <TextBlock Classes="Button" Text="Upload Template"/>
+            </TabItem>
+
+            <TabItem Header="Preferences">
+                <StackPanel>
+                    <Button Command="{Binding CommandSettings}">
+                        <StackPanel>
+                            <Image Source="/Assets/Menu/Settings.png"/>
+                            <TextBlock Text="Settings"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
-            </Button>
+            </TabItem>
+        </TabControl>
 
-            <Rectangle Classes="Menu" Grid.Row="0" Grid.Column="3" Grid.RowSpan="2"/>
-
-            <Label Classes="Menu" Grid.Row="0" Grid.Column="4" Grid.ColumnSpan="2" Content="Document"/>
-            <Button Classes="Menu" Grid.Row="1" Grid.Column="4" Command="{Binding CommandHandWritingRecognition}">
-                <StackPanel Classes="Button">
-                    <Image Classes="Button" Source="/Assets/Menu/HandWritingRecognition.png"/>
-                    <TextBlock Classes="Button" Text="Hand Writing Recognition"/>
-                </StackPanel>
-            </Button>
-            <StackPanel Classes="Menu" Grid.Row="1" Grid.Column="5" Width="240">
-                <Label Classes="Menu" Content="Language" FontWeight="Normal"/>
-                <ComboBox Classes="Menu" ItemsSource="{Binding MyScriptLanguages}" SelectedItem="{Binding MyScriptLanguage}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding DisplayName}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </StackPanel>
-
-            <Rectangle Classes="Menu" Grid.Row="0" Grid.Column="6" Grid.RowSpan="2"/>
-
-            <Label Classes="Menu" Grid.Row="0" Grid.Column="7" Grid.ColumnSpan="2" Content="Sync Target Directory"/>
-            <Button Classes="Menu" Grid.Row="1" Grid.Column="7" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="True">
-                <StackPanel Classes="Button">
-                    <Image Classes="Button" Source="/Assets/Menu/SyncTargetDirectorySet.png"/>
-                    <TextBlock Classes="Button" Text="Set"/>
-                </StackPanel>
-            </Button>
-            <Button Classes="Menu" Grid.Row="1" Grid.Column="8" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="False">
-                <StackPanel Classes="Button">
-                    <Image Classes="Button" Source="/Assets/Menu/SyncTargetDirectoryReset.png"/>
-                    <TextBlock Classes="Button" Text="Reset"/>
-                </StackPanel>
-            </Button>
-
-            <Rectangle Classes="Menu" Grid.Row="0" Grid.Column="9" Grid.RowSpan="2"/>
-
-            <Label Classes="Menu" Grid.Row="0" Grid.Column="10" Grid.ColumnSpan="1" Content="Preferences"/>
-            <Button Classes="Menu" Grid.Row="1" Grid.Column="10" Command="{Binding CommandSettings}">
-                <StackPanel Classes="Button">
-                    <Image Classes="Button" Source="/Assets/Menu/Settings.png"/>
-                    <TextBlock Classes="Button" Text="Settings"/>
-                </StackPanel>
-            </Button>
-        </Grid>
-
-        <TreeDataGrid Grid.Row="1" Source="{Binding TreeSource}" CanUserResizeColumns="True" CanUserSortColumns="False" Margin="8, 24, 8, 8">
+        <TreeDataGrid Grid.Row="1" Source="{Binding ItemsTree}" CanUserResizeColumns="True" CanUserSortColumns="False" Margin="8">
             <TreeDataGrid.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Hand Writing Recognition" Command="{Binding CommandHandWritingRecognition}"/>
+                    <MenuItem Header="Set Sync Directory" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="True">
+                        <MenuItem.Icon>
+                            <Image Source="/Assets/Menu/SyncTargetDirectorySet.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Reset Sync Directory" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="False">
+                        <MenuItem.Icon>
+                            <Image Source="/Assets/Menu/SyncTargetDirectoryReset.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <Separator/>
-                    <MenuItem Header="Sync Target Directory Set" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="True"/>
-                    <MenuItem Header="Sync Target Directory Reset" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="False"/>
+                    <MenuItem Header="Hand Writing Recognition" Command="{Binding CommandHandWritingRecognition}">
+                        <MenuItem.Icon>
+                            <Image Source="/Assets/Menu/HandWritingRecognition.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </ContextMenu>
             </TreeDataGrid.ContextMenu>
         </TreeDataGrid>
