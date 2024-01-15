@@ -116,13 +116,13 @@
                     <Button Command="{Binding CommandUploadTemplate}">
                         <StackPanel>
                             <Image Source="/Assets/Menu/UploadTemplate.png"/>
-                            <TextBlock Text="Upload Template"/>
+                            <TextBlock Text="Upload"/>
                         </StackPanel>
                     </Button>
                     <Button Command="{Binding CommandRestoreTemplates}">
                         <StackPanel>
                             <Image Source="/Assets/Menu/RestoreTemplates.png"/>
-                            <TextBlock Text="Restore Templates"/>
+                            <TextBlock Text="Restore"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>

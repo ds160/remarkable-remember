@@ -4,12 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:ReMarkableRemember.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ReMarkableRemember.Views.TemplateView"
-             x:DataType="vm:TemplateViewModel"
+             x:Class="ReMarkableRemember.Views.TemplateUploadView"
+             x:DataType="vm:TemplateUploadViewModel"
              MinWidth="480">
 
     <Design.DataContext>
-        <vm:TemplateViewModel/>
+        <vm:TemplateUploadViewModel/>
     </Design.DataContext>
 
     <StackPanel>

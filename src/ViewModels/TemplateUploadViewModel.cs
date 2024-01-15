@@ -9,14 +9,14 @@ using ReactiveUI;
 
 namespace ReMarkableRemember.ViewModels;
 
-public sealed partial class TemplateViewModel : DialogWindowModel
+public sealed partial class TemplateUploadViewModel : DialogWindowModel
 {
     private String category;
     private TemplateIconViewModel icon;
     private String name;
     private String sourceFilePath;
 
-    public TemplateViewModel() : base("Template", "Upload", true)
+    public TemplateUploadViewModel() : base("Template", "Upload", true)
     {
         this.Icons = TemplateIconViewModel.GetIcons();
 

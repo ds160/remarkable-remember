@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using ReMarkableRemember.Entities;
 
 namespace ReMarkableRemember.Models;
@@ -90,8 +91,12 @@ public sealed class TabletTemplate
         { "\uE98C", ("Hexagon small", false) }
     };
 
-    internal TabletTemplate(Template template)
+    private readonly Controller controller;
+
+    internal TabletTemplate(Controller controller, Template template)
     {
+        this.controller = controller;
+
         this.BytesPng = template.BytesPng;
         this.BytesSvg = template.BytesSvg;
         this.Category = template.Category;
@@ -99,8 +104,10 @@ public sealed class TabletTemplate
         this.Name = template.Name;
     }
 
-    public TabletTemplate(String name, String category, String iconCode, String sourceFilePath)
+    public TabletTemplate(Controller controller, String name, String category, String iconCode, String sourceFilePath)
     {
+        this.controller = controller;
+
         String directory = Path.GetDirectoryName(sourceFilePath) ?? String.Empty;
         String fileName = Path.GetFileNameWithoutExtension(sourceFilePath);
 
@@ -109,6 +116,29 @@ public sealed class TabletTemplate
         this.Category = category;
         this.IconCode = iconCode;
         this.Name = name;
+    }
+
+    public async Task Upload()
+    {
+        await this.controller.Tablet.UploadTemplate(this).ConfigureAwait(false);
+        await this.controller.Tablet.Restart().ConfigureAwait(false);
+
+        using DatabaseContext database = this.controller.CreateDatabaseContext();
+
+        Template? template = await database.Templates.FindAsync(this.Category, this.Name).ConfigureAwait(false);
+        if (template != null)
+        {
+            template.IconCode = this.IconCode;
+            template.BytesPng = this.BytesPng;
+            template.BytesSvg = this.BytesSvg;
+        }
+        else
+        {
+            template = new Template(this.Category, this.Name, this.IconCode, this.BytesPng, this.BytesSvg);
+            await database.Templates.AddAsync(template).ConfigureAwait(false);
+        }
+
+        await database.SaveChangesAsync().ConfigureAwait(false);
     }
 
     internal Byte[] BytesPng { get; }

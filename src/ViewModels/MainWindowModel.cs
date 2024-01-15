@@ -227,8 +227,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         {
             using Job job = new Job(Job.Description.SetSyncTargetDirectory, this);
 
-            Boolean set;
-            if (Boolean.TryParse(setString, out set) && set)
+            if (Boolean.TryParse(setString, out Boolean set) && set)
             {
                 String? targetDirectory = await this.OpenFolderPicker.Handle("Sync Target Folder");
                 if (targetDirectory != null)
@@ -266,11 +265,11 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
     {
         using Job job = new Job(Job.Description.UploadTemplate, this);
 
-        TemplateViewModel template = new TemplateViewModel();
+        TemplateUploadViewModel template = new TemplateUploadViewModel();
         if (await this.ShowDialog.Handle(template))
         {
-            TabletTemplate tabletTemplate = new TabletTemplate(template.Name, template.Category, template.Icon.Code, template.SourceFilePath);
-            await this.controller.UploadTemplate(tabletTemplate).ConfigureAwait(true);
+            TabletTemplate tabletTemplate = new TabletTemplate(this.controller, template.Name, template.Category, template.Icon.Code, template.SourceFilePath);
+            await tabletTemplate.Upload().ConfigureAwait(true);
         }
     }
 

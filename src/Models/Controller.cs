@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -56,7 +55,7 @@ public sealed class Controller : IDisposable
     public IEnumerable<TabletTemplate> GetTemplates()
     {
         using DatabaseContext database = this.CreateDatabaseContext();
-        return database.Templates.Select(template => new TabletTemplate(template)).ToArray();
+        return database.Templates.Select(template => new TabletTemplate(this, template)).ToArray();
     }
 
     public async Task RestoreTemplates()
@@ -67,28 +66,5 @@ public sealed class Controller : IDisposable
         await Task.WhenAll(templates.Select(this.Tablet.UploadTemplate)).ConfigureAwait(false);
 
         await this.Tablet.Restart().ConfigureAwait(false);
-    }
-
-    public async Task UploadTemplate([NotNull] TabletTemplate tabletTemplate)
-    {
-        await this.Tablet.UploadTemplate(tabletTemplate).ConfigureAwait(false);
-        await this.Tablet.Restart().ConfigureAwait(false);
-
-        using DatabaseContext database = this.CreateDatabaseContext();
-
-        Template? template = await database.Templates.FindAsync(tabletTemplate.Category, tabletTemplate.Name).ConfigureAwait(false);
-        if (template != null)
-        {
-            template.IconCode = tabletTemplate.IconCode;
-            template.BytesPng = tabletTemplate.BytesPng;
-            template.BytesSvg = tabletTemplate.BytesSvg;
-        }
-        else
-        {
-            template = new Template(tabletTemplate.Category, tabletTemplate.Name, tabletTemplate.IconCode, tabletTemplate.BytesPng, tabletTemplate.BytesSvg);
-            await database.Templates.AddAsync(template).ConfigureAwait(false);
-        }
-
-        await database.SaveChangesAsync().ConfigureAwait(false);
     }
 }
