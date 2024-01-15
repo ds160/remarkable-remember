@@ -276,9 +276,14 @@ internal sealed class Tablet : IDisposable
         }
         catch (SocketException exception)
         {
-            if (exception.SocketErrorCode == SocketError.ConnectionRefused)
+            if (exception.SocketErrorCode is SocketError.ConnectionRefused)
             {
                 throw new TabletException(TabletConnectionError.SshNotConfigured, "SSH protocol information are not configured or wrong.", exception);
+            }
+
+            if (exception.SocketErrorCode is SocketError.HostDown or SocketError.HostUnreachable)
+            {
+                throw new TabletException(TabletConnectionError.SshNotConnected, "reMarkable is not connected via WiFi or USB.", exception);
             }
 
             throw new TabletException(exception.Message, exception);
@@ -303,7 +308,7 @@ internal sealed class Tablet : IDisposable
         {
             if (exception.InnerException is SocketException socketException)
             {
-                if (socketException.SocketErrorCode is SocketError.ConnectionRefused or SocketError.NetworkDown or SocketError.NetworkUnreachable)
+                if (socketException.SocketErrorCode is SocketError.ConnectionRefused or SocketError.HostDown or SocketError.HostUnreachable)
                 {
                     throw new TabletException(TabletConnectionError.UsbNotActived, "USB web interface is not activated.", exception);
                 }
