@@ -49,7 +49,7 @@ Clone the repository, install .NET Core SDK 7 or higher, and build the project w
 
 - [ ] Packaging for Linux, Windows and OSX
 - [ ] Automatic refresh of items
-- [ ] Template Management (Save to database, Restore, Delete)
+- [ ] Template Management (Delete)
 - [ ] ...
 
 ## Dependencies and Acknowledgment

@@ -13,6 +13,6 @@
 
     <StackPanel Orientation="Horizontal" Spacing="16">
         <Image Source="/Assets/Error.png" Width="50"/>
-        <Label Content="{Binding Message}"/>
+        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" MaxWidth="800"/>
     </StackPanel>
 </UserControl>

@@ -9,7 +9,7 @@ using ReactiveUI;
 
 namespace ReMarkableRemember.ViewModels;
 
-public sealed partial class TemplateUploadViewModel : DialogWindowModel
+public sealed class TemplateUploadViewModel : DialogWindowModel
 {
     private String category;
     private TemplateIconViewModel icon;

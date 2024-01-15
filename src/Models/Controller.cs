@@ -55,7 +55,9 @@ public sealed class Controller : IDisposable
     public IEnumerable<TabletTemplate> GetTemplates()
     {
         using DatabaseContext database = this.CreateDatabaseContext();
-        return database.Templates.Select(template => new TabletTemplate(this, template)).ToArray();
+
+        IEnumerable<Template> templates = database.Templates;
+        return templates.Select(template => new TabletTemplate(this, template)).ToArray();
     }
 
     public async Task RestoreTemplates()

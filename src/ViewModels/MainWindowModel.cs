@@ -187,7 +187,11 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
     {
         using Job job = new Job(Job.Description.RestoreTemplates, this);
 
-        await this.controller.RestoreTemplates().ConfigureAwait(true);
+        TemplatesRestoreViewModel templates = new TemplatesRestoreViewModel(this.controller.GetTemplates());
+        if (await this.ShowDialog.Handle(templates))
+        {
+            await this.controller.RestoreTemplates().ConfigureAwait(true);
+        }
     }
 
     private IObservable<Boolean> RestoreTemplates_CanExecute()
