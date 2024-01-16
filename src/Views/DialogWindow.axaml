@@ -8,6 +8,7 @@
         x:DataType="vm:DialogWindowModel"
         CanResize="False"
         Icon="/Assets/Logo.ico"
+        RenderOptions.BitmapInterpolationMode="HighQuality"
         ShowInTaskbar="False"
         SizeToContent="WidthAndHeight"
         Title="{Binding Title}"

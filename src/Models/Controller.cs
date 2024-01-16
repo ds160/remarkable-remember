@@ -60,13 +60,8 @@ public sealed class Controller : IDisposable
         return templates.Select(template => new TabletTemplate(this, template)).ToArray();
     }
 
-    public async Task RestoreTemplates()
+    public async Task Restart()
     {
-        IEnumerable<TabletTemplate> templates = this.GetTemplates();
-        if (!templates.Any()) { return; }
-
-        await Task.WhenAll(templates.Select(this.Tablet.UploadTemplate)).ConfigureAwait(false);
-
         await this.Tablet.Restart().ConfigureAwait(false);
     }
 }

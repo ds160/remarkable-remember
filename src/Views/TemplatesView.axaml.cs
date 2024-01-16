@@ -3,9 +3,9 @@ using ReMarkableRemember.ViewModels;
 
 namespace ReMarkableRemember.Views;
 
-public sealed partial class TemplatesRestoreView : ReactiveUserControl<TemplatesRestoreViewModel>
+public sealed partial class TemplatesView : ReactiveUserControl<TemplatesViewModel>
 {
-    public TemplatesRestoreView()
+    public TemplatesView()
     {
         this.InitializeComponent();
     }

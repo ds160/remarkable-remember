@@ -118,10 +118,20 @@ public sealed class TabletTemplate
         this.Name = name;
     }
 
+    public Task Delete()
+    {
+        throw new NotImplementedException();
+    }
+
+
+    public async Task Restore()
+    {
+        await this.controller.Tablet.UploadTemplate(this).ConfigureAwait(false);
+    }
+
     public async Task Upload()
     {
         await this.controller.Tablet.UploadTemplate(this).ConfigureAwait(false);
-        await this.controller.Tablet.Restart().ConfigureAwait(false);
 
         using DatabaseContext database = this.controller.CreateDatabaseContext();
 

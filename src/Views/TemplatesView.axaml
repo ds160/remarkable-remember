@@ -4,12 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:ReMarkableRemember.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ReMarkableRemember.Views.TemplatesRestoreView"
-             x:DataType="vm:TemplatesRestoreViewModel"
+             x:Class="ReMarkableRemember.Views.TemplatesView"
+             x:DataType="vm:TemplatesViewModel"
              MinWidth="480">
 
     <Design.DataContext>
-        <vm:TemplatesRestoreViewModel/>
+        <vm:TemplatesViewModel/>
     </Design.DataContext>
 
     <ScrollViewer MaxHeight="700">
@@ -24,6 +24,7 @@
                             <TextBlock HorizontalAlignment="Center" Text="{Binding Name}" FontWeight="Bold"/>
                             <TextBlock HorizontalAlignment="Center" Text="{Binding Category}"/>
                             <Image HorizontalAlignment="Center" Source="{Binding Icon.Image}" Height="120" Margin="8"/>
+                            <Button HorizontalAlignment="Center" Content="Delete" Command="{Binding CommandDelete}"/>
                         </StackPanel>
                     </DockPanel>
                 </DataTemplate>

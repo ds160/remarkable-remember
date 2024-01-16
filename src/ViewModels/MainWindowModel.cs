@@ -32,9 +32,9 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.myScriptLanguage = this.MyScriptLanguages.Single(language => String.CompareOrdinal(language.Code, this.controller.Settings.MyScriptLanguage) == 0);
 
         this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
+        this.CommandManageTemplates = ReactiveCommand.CreateFromTask(this.ManageTemplates, this.ManageTemplates_CanExecute());
         this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process, this.Process_CanExecute());
         this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh, this.Refresh_CanExecute());
-        this.CommandRestoreTemplates = ReactiveCommand.CreateFromTask(this.RestoreTemplates, this.RestoreTemplates_CanExecute());
         this.CommandSettings = ReactiveCommand.CreateFromTask(this.Settings, this.Settings_CanExecute());
         this.CommandSyncTargetDirectory = ReactiveCommand.CreateFromTask<String>(this.SyncTargetDirectory, this.SyncTargetDirectory_CanExecute());
         this.CommandUploadTemplate = ReactiveCommand.CreateFromTask(this.UploadTemplate, this.UploadTemplate_CanExecute());
@@ -59,7 +59,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             case Job.Description.Process:
             case Job.Description.HandWritingRecognition:
             case Job.Description.UploadTemplate:
-            case Job.Description.RestoreTemplates:
+            case Job.Description.ManageTemplates:
                 return status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected);
 
             default:
@@ -95,6 +95,41 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
 
         return Observable.CombineLatest(connectionStatus, treeSelection, (value1, value2) => value1 && value2);
+    }
+
+    private async Task ManageTemplates()
+    {
+        using Job job = new Job(Job.Description.ManageTemplates, this);
+
+        TemplatesViewModel templates = new TemplatesViewModel(this.controller.GetTemplates());
+        if (templates.Templates.Any())
+        {
+            Boolean restartRequired = false;
+            if (await this.ShowDialog.Handle(templates))
+            {
+                await Task.WhenAll(templates.Templates.Select(template => template.Restore())).ConfigureAwait(true);
+                restartRequired = templates.Templates.Any();
+            }
+
+            if (restartRequired || templates.RestartRequired)
+            {
+                await this.Restart().ConfigureAwait(true);
+            }
+        }
+        else
+        {
+            job.Done();
+
+            await this.UploadTemplate().ConfigureAwait(true);
+        }
+    }
+
+    private IObservable<Boolean> ManageTemplates_CanExecute()
+    {
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.ManageTemplates));
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
+
+        return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
     }
 
     private async Task Process()
@@ -183,23 +218,9 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
     }
 
-    private async Task RestoreTemplates()
+    private async Task Restart()
     {
-        using Job job = new Job(Job.Description.RestoreTemplates, this);
-
-        TemplatesRestoreViewModel templates = new TemplatesRestoreViewModel(this.controller.GetTemplates());
-        if (await this.ShowDialog.Handle(templates))
-        {
-            await this.controller.RestoreTemplates().ConfigureAwait(true);
-        }
-    }
-
-    private IObservable<Boolean> RestoreTemplates_CanExecute()
-    {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.RestoreTemplates));
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
-
-        return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
+        await this.controller.Restart().ConfigureAwait(true);
     }
 
     private void SaveMyScriptLanguage(MyScriptLanguageViewModel language)
@@ -274,6 +295,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         {
             TabletTemplate tabletTemplate = new TabletTemplate(this.controller, template.Name, template.Category, template.Icon.Code, template.SourceFilePath);
             await tabletTemplate.Upload().ConfigureAwait(true);
+            await this.Restart().ConfigureAwait(true);
         }
     }
 
@@ -287,11 +309,11 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     public ReactiveCommand<Unit, Unit> CommandHandWritingRecognition { get; }
 
+    public ReactiveCommand<Unit, Unit> CommandManageTemplates { get; }
+
     public ReactiveCommand<Unit, Unit> CommandProcess { get; }
 
     public ReactiveCommand<Unit, Unit> CommandRefresh { get; }
-
-    public ReactiveCommand<Unit, Unit> CommandRestoreTemplates { get; }
 
     public ReactiveCommand<Unit, Unit> CommandSettings { get; }
 
@@ -346,7 +368,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             if (this.Jobs.HasFlag(Job.Description.Process)) { jobs.Add("Backup & Syncing"); }
             if (this.Jobs.HasFlag(Job.Description.HandWritingRecognition)) { jobs.Add("Hand Writing Recognition"); }
             if (this.Jobs.HasFlag(Job.Description.UploadTemplate)) { jobs.Add("Uploading Template"); }
-            if (this.Jobs.HasFlag(Job.Description.RestoreTemplates)) { jobs.Add("Restoring Templates"); }
+            if (this.Jobs.HasFlag(Job.Description.ManageTemplates)) { jobs.Add("Managing Templates"); }
 
             return (jobs.Count > 0) ? String.Join(" and ", jobs) : null;
         }
@@ -374,7 +396,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             Process = 2,
             HandWritingRecognition = 4,
             UploadTemplate = 8,
-            RestoreTemplates = 16,
+            ManageTemplates = 16,
             SetSyncTargetDirectory = 32,
             Settings = 64
         }

@@ -9,6 +9,7 @@
         Icon="/Assets/Logo.ico"
         MinHeight="600"
         MinWidth="940"
+        RenderOptions.BitmapInterpolationMode="HighQuality"
         Title="reMarkable Remember"
         Width="940"
         WindowStartupLocation="CenterScreen">
@@ -119,10 +120,10 @@
                             <TextBlock Text="Upload"/>
                         </StackPanel>
                     </Button>
-                    <Button Command="{Binding CommandRestoreTemplates}">
+                    <Button Command="{Binding CommandManageTemplates}">
                         <StackPanel>
-                            <Image Source="/Assets/Menu/RestoreTemplates.png"/>
-                            <TextBlock Text="Restore"/>
+                            <Image Source="/Assets/Menu/ManageTemplates.png"/>
+                            <TextBlock Text="Manage"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
