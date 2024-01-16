@@ -23,15 +23,15 @@
 
         <StackPanel Grid.Row="1" HorizontalAlignment="Right" Margin="16, 8, 16, 16" Orientation="Horizontal" Spacing="8">
             <Button Command="{Binding CommandCancel}"
-                    Content="Cancel"
+                    Content="{Binding TextCancel}"
                     HorizontalContentAlignment="Center"
                     IsCancel="True"
-                    IsVisible="{Binding ShowCancel}"
+                    IsVisible="{Binding TextCancel, Converter={x:Static ObjectConverters.IsNotNull}}"
                     Width="80"/>
             <Button Command="{Binding CommandClose}"
                     Content="{Binding TextClose}"
                     HorizontalContentAlignment="Center"
-                    IsCancel="{Binding !ShowCancel}"
+                    IsCancel="{Binding TextCancel, Converter={x:Static ObjectConverters.IsNull}}"
                     IsDefault="True"
                     IsEnabled="{Binding !HasErrors}"
                     Width="80"/>

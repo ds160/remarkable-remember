@@ -16,7 +16,7 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
     private String name;
     private String sourceFilePath;
 
-    public TemplateUploadViewModel() : base("Template", "Upload", true)
+    public TemplateUploadViewModel() : base("Template", "Upload", "Cancel")
     {
         this.Icons = TemplateIconViewModel.GetIcons();
 

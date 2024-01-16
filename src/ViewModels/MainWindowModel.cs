@@ -220,7 +220,16 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     private async Task Restart()
     {
-        await this.controller.Restart().ConfigureAwait(true);
+        MessageViewModel message = new MessageViewModel("Restart",
+@"The template information has been changed. A restart is required for the changes to take effect.
+Please save your work on your tablet by going to the main screen before restarting.
+
+Would you like to restart your reMarkable tablet now?");
+
+        if (await this.ShowDialog.Handle(message))
+        {
+            await this.controller.Restart().ConfigureAwait(true);
+        }
     }
 
     private void SaveMyScriptLanguage(MyScriptLanguageViewModel language)

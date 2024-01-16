@@ -4,7 +4,7 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class HandWritingRecognitionViewModel : DialogWindowModel
 {
-    public HandWritingRecognitionViewModel(String text) : base("Hand Writing Recognition")
+    public HandWritingRecognitionViewModel(String text) : base("Hand Writing Recognition", "Close")
     {
         this.Text = text;
     }

@@ -36,7 +36,7 @@ public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
 
     private async void ShowExceptionDialog(Exception exception)
     {
-        DialogWindow dialog = new DialogWindow() { DataContext = new ExceptionViewModel(exception.Message) };
+        DialogWindow dialog = new DialogWindow() { DataContext = new MessageViewModel(exception) };
         await dialog.ShowDialog<Boolean?>(this).ConfigureAwait(true);
     }
 

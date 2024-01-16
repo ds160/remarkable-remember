@@ -12,7 +12,7 @@ public sealed class TemplatesViewModel : DialogWindowModel
 {
     private readonly ObservableCollection<TemplateViewModel> templates;
 
-    public TemplatesViewModel(IEnumerable<TabletTemplate> templates) : base("Templates", "Restore", true)
+    public TemplatesViewModel(IEnumerable<TabletTemplate> templates) : base("Templates", "Restore", "Cancel")
     {
         this.templates = new ObservableCollection<TemplateViewModel>();
 

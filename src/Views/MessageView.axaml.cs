@@ -3,9 +3,9 @@ using ReMarkableRemember.ViewModels;
 
 namespace ReMarkableRemember.Views;
 
-public sealed partial class ExceptionView : ReactiveUserControl<ExceptionViewModel>
+public sealed partial class MessageView : ReactiveUserControl<MessageViewModel>
 {
-    public ExceptionView()
+    public MessageView()
     {
         this.InitializeComponent();
     }

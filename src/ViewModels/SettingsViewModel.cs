@@ -18,7 +18,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
 
     private readonly Settings settings;
 
-    internal SettingsViewModel(Settings settings) : base("Settings", "Save", true)
+    internal SettingsViewModel(Settings settings) : base("Settings", "Save", "Cancel")
     {
         this.settings = settings;
 
