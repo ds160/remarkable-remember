@@ -60,6 +60,34 @@ internal sealed class Tablet : IDisposable
         }
     }
 
+    public async Task DeleteTemplate(TabletTemplate template)
+    {
+        await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
+
+        try
+        {
+            using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
+
+            String templatesFilePath = Path.Combine(PATH_TEMPLATES, PATH_TEMPLATES_FILE);
+            String templatesFileText = await Task.Run(() => client.ReadAllText(templatesFilePath)).ConfigureAwait(false);
+            TemplatesFile templatesFile = JsonSerializer.Deserialize<TemplatesFile>(templatesFileText, jsonSerializerOptions);
+
+            Int32 index = templatesFile.Templates.FindIndex((item) => String.CompareOrdinal(item.Filename, template.FileName) == 0);
+            if (index > -1)
+            {
+                templatesFile.Templates.RemoveAt(index);
+            }
+
+            await FileDelete(client, Path.Combine(PATH_TEMPLATES, $"{template.FileName}.png")).ConfigureAwait(false);
+            await FileDelete(client, Path.Combine(PATH_TEMPLATES, $"{template.FileName}.svg")).ConfigureAwait(false);
+            await FileWrite(client, templatesFilePath, JsonSerializer.Serialize(templatesFile, jsonSerializerOptions)).ConfigureAwait(false);
+        }
+        finally
+        {
+            this.sshSemaphore.Release();
+        }
+    }
+
     public void Dispose()
     {
         this.sshSemaphore.Dispose();
@@ -220,9 +248,9 @@ internal sealed class Tablet : IDisposable
                 templatesFile.Templates.Add(TemplatesFile.Template.Convert(template));
             }
 
-            await Task.Run(() => client.WriteAllBytes(Path.Combine(PATH_TEMPLATES, $"{template.FileName}.png"), template.BytesPng)).ConfigureAwait(false);
-            await Task.Run(() => client.WriteAllBytes(Path.Combine(PATH_TEMPLATES, $"{template.FileName}.svg"), template.BytesSvg)).ConfigureAwait(false);
-            await Task.Run(() => client.WriteAllText(templatesFilePath, JsonSerializer.Serialize(templatesFile, jsonSerializerOptions))).ConfigureAwait(false);
+            await FileWrite(client, Path.Combine(PATH_TEMPLATES, $"{template.FileName}.png"), template.BytesPng).ConfigureAwait(false);
+            await FileWrite(client, Path.Combine(PATH_TEMPLATES, $"{template.FileName}.svg"), template.BytesSvg).ConfigureAwait(false);
+            await FileWrite(client, templatesFilePath, JsonSerializer.Serialize(templatesFile, jsonSerializerOptions)).ConfigureAwait(false);
         }
         finally
         {
@@ -319,6 +347,29 @@ internal sealed class Tablet : IDisposable
         catch (TaskCanceledException exception)
         {
             throw new TabletException(TabletConnectionError.UsbNotConnected, "reMarkable is not connected via USB.", exception);
+        }
+    }
+
+    private static async Task FileDelete(SftpClient client, String path)
+    {
+        await Task.Run(() => { if (client.Exists(path)) { client.DeleteFile(path); } }).ConfigureAwait(false);
+    }
+
+    private static async Task FileWrite(SftpClient client, String path, Object content)
+    {
+        await FileDelete(client, path).ConfigureAwait(false);
+
+        if (content is String text)
+        {
+            await Task.Run(() => client.WriteAllText(path, text)).ConfigureAwait(false);
+        }
+        else if (content is Byte[] bytes)
+        {
+            await Task.Run(() => client.WriteAllBytes(path, bytes)).ConfigureAwait(false);
+        }
+        else
+        {
+            throw new NotSupportedException();
         }
     }
 

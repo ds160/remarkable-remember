@@ -10,7 +10,7 @@ The application is a cross-platform managenment tool for your reMarkable tablet.
 - Connect your reMarkable tablet via WiFi or USB
 - Sync PDF documents via USB
 - Backup notebooks and folders
-- Upload of templates
+- Template management
 - Hand writing recognition via MyScript
 
 ## Installation
@@ -49,7 +49,6 @@ Clone the repository, install .NET Core SDK 7 or higher, and build the project w
 
 - [ ] Packaging for Linux, Windows and OSX
 - [ ] Automatic refresh of items
-- [ ] Template Management (Delete)
 - [ ] ...
 
 ## Dependencies and Acknowledgment

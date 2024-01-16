@@ -118,11 +118,20 @@ public sealed class TabletTemplate
         this.Name = name;
     }
 
-    public Task Delete()
+    public async Task Delete()
     {
-        throw new NotImplementedException();
-    }
+        await this.controller.Tablet.DeleteTemplate(this).ConfigureAwait(false);
 
+        using DatabaseContext database = this.controller.CreateDatabaseContext();
+
+        Template? template = await database.Templates.FindAsync(this.Category, this.Name).ConfigureAwait(false);
+        if (template != null)
+        {
+            database.Templates.Remove(template);
+        }
+
+        await database.SaveChangesAsync().ConfigureAwait(false);
+    }
 
     public async Task Restore()
     {
