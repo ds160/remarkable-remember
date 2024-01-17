@@ -9,16 +9,26 @@ public sealed class MessageViewModel : DialogWindowModel
 {
     private static readonly String? assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
 
-    internal MessageViewModel(String title, String message) : base(title, "Yes", "No")
+    private MessageViewModel(String title, String message) : base(title, "Yes", "No")
     {
         this.Icon = new Bitmap(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/Question.png")));
         this.Message = message;
     }
 
-    internal MessageViewModel(Exception exception) : base("Error", "OK")
+    private MessageViewModel(Exception exception) : base("Error", "OK")
     {
         this.Icon = new Bitmap(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/Error.png")));
         this.Message = exception.Message;
+    }
+
+    internal static MessageViewModel Error(Exception exception)
+    {
+        return new MessageViewModel(exception);
+    }
+
+    internal static MessageViewModel Question(String title, String message)
+    {
+        return new MessageViewModel(title, message);
     }
 
     public Bitmap Icon { get; }

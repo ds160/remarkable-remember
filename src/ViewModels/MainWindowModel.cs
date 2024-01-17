@@ -32,6 +32,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.myScriptLanguage = this.MyScriptLanguages.Single(language => String.CompareOrdinal(language.Code, this.controller.Settings.MyScriptLanguage) == 0);
 
         this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
+        this.CommandInstallLamyEraser = ReactiveCommand.CreateFromTask(this.InstallLamyEraser, this.InstallLamyEraser_CanExecute());
         this.CommandManageTemplates = ReactiveCommand.CreateFromTask(this.ManageTemplates, this.ManageTemplates_CanExecute());
         this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process, this.Process_CanExecute());
         this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh, this.Refresh_CanExecute());
@@ -60,6 +61,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             case Job.Description.HandWritingRecognition:
             case Job.Description.UploadTemplate:
             case Job.Description.ManageTemplates:
+            case Job.Description.InstallLamyEraser:
                 return status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected);
 
             default:
@@ -95,6 +97,22 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
 
         return Observable.CombineLatest(connectionStatus, treeSelection, (value1, value2) => value1 && value2);
+    }
+
+    private async Task InstallLamyEraser()
+    {
+        using Job job = new Job(Job.Description.InstallLamyEraser, this);
+
+        LamyEraserOptionsViewModel options = new LamyEraserOptionsViewModel();
+        if (await this.ShowDialog.Handle(options))
+        {
+            await this.controller.InstallLamyEraser(options.Press != 0, options.Undo != 0, options.LeftHanded != 0).ConfigureAwait(true);
+        }
+    }
+
+    private IObservable<Boolean> InstallLamyEraser_CanExecute()
+    {
+        return this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.InstallLamyEraser));
     }
 
     private async Task ManageTemplates()
@@ -220,7 +238,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     private async Task Restart()
     {
-        MessageViewModel message = new MessageViewModel("Restart",
+        MessageViewModel message = MessageViewModel.Question("Restart",
 @"The template information has been changed. A restart is required for the changes to take effect.
 Please save your work on your tablet by going to the main screen before restarting.
 
@@ -318,6 +336,8 @@ Would you like to restart your reMarkable tablet now?");
 
     public ReactiveCommand<Unit, Unit> CommandHandWritingRecognition { get; }
 
+    public ReactiveCommand<Unit, Unit> CommandInstallLamyEraser { get; }
+
     public ReactiveCommand<Unit, Unit> CommandManageTemplates { get; }
 
     public ReactiveCommand<Unit, Unit> CommandProcess { get; }
@@ -378,6 +398,7 @@ Would you like to restart your reMarkable tablet now?");
             if (this.Jobs.HasFlag(Job.Description.HandWritingRecognition)) { jobs.Add("Hand Writing Recognition"); }
             if (this.Jobs.HasFlag(Job.Description.UploadTemplate)) { jobs.Add("Uploading Template"); }
             if (this.Jobs.HasFlag(Job.Description.ManageTemplates)) { jobs.Add("Managing Templates"); }
+            if (this.Jobs.HasFlag(Job.Description.InstallLamyEraser)) { jobs.Add("Installing Lamy Eraser"); }
 
             return (jobs.Count > 0) ? String.Join(" and ", jobs) : null;
         }
@@ -407,7 +428,8 @@ Would you like to restart your reMarkable tablet now?");
             UploadTemplate = 8,
             ManageTemplates = 16,
             SetSyncTargetDirectory = 32,
-            Settings = 64
+            InstallLamyEraser = 64,
+            Settings = 128
         }
 
         private readonly Description description;

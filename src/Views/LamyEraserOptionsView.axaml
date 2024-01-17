@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ReMarkableRemember.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ReMarkableRemember.Views.LamyEraserOptionsView"
+             x:DataType="vm:LamyEraserOptionsViewModel"
+             MinWidth="480">
+
+    <Design.DataContext>
+        <vm:LamyEraserOptionsViewModel/>
+    </Design.DataContext>
+
+    <StackPanel>
+        <TextBlock>Erase Behavior</TextBlock>
+        <ComboBox SelectedIndex="{Binding Press}" Margin="0, 8, 0, 24" MinWidth="500">
+            <ComboBoxItem>Press the button to erase, press the button again to switch back</ComboBoxItem>
+            <ComboBoxItem>Press and hold to erase, release to switch back</ComboBoxItem>
+        </ComboBox>
+
+        <TextBlock>Double Click Behavior</TextBlock>
+        <ComboBox SelectedIndex="{Binding Undo}" Margin="0, 8, 0, 24" MinWidth="150">
+            <ComboBoxItem>Redo</ComboBoxItem>
+            <ComboBoxItem>Undo</ComboBoxItem>
+        </ComboBox>
+
+        <TextBlock>Left Handed</TextBlock>
+        <ComboBox SelectedIndex="{Binding LeftHanded}" Margin="0, 8, 0, 0" MinWidth="150">
+            <ComboBoxItem>No</ComboBoxItem>
+            <ComboBoxItem>Yes</ComboBoxItem>
+        </ComboBox>
+    </StackPanel>
+</UserControl>

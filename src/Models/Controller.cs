@@ -60,6 +60,11 @@ public sealed class Controller : IDisposable
         return templates.Select(template => new TabletTemplate(this, template)).ToArray();
     }
 
+    public async Task InstallLamyEraser(Boolean press, Boolean undo, Boolean leftHanded)
+    {
+        await this.Tablet.InstallLamyEraser(press, undo, leftHanded).ConfigureAwait(false);
+    }
+
     public async Task Restart()
     {
         await this.Tablet.Restart().ConfigureAwait(false);

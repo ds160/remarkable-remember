@@ -29,6 +29,7 @@ internal sealed class Tablet : IDisposable
 
     private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true };
 
+    private readonly HttpClient gitHubClient;
     private readonly Settings settings;
     private readonly SemaphoreSlim sshSemaphore;
     private readonly HttpClient usbClientDocument;
@@ -37,6 +38,7 @@ internal sealed class Tablet : IDisposable
 
     public Tablet(Settings settings)
     {
+        this.gitHubClient = new HttpClient();
         this.settings = settings;
         this.sshSemaphore = new SemaphoreSlim(1, 1);
         this.usbClientDocument = new HttpClient() { Timeout = TimeSpan.FromSeconds(USB_TIMEOUT) };
@@ -90,6 +92,7 @@ internal sealed class Tablet : IDisposable
 
     public void Dispose()
     {
+        this.gitHubClient.Dispose();
         this.sshSemaphore.Dispose();
         this.usbClientDocument.Dispose();
         this.usbClientDownload.Dispose();
@@ -208,17 +211,44 @@ internal sealed class Tablet : IDisposable
         }
     }
 
+    public async Task InstallLamyEraser(Boolean press, Boolean undo, Boolean leftHanded)
+    {
+        await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
+
+        try
+        {
+            using SftpClient sftpClient = await this.CreateSftpClient().ConfigureAwait(false);
+            using SshClient sshClient = await this.CreateSshClient().ConfigureAwait(false);
+
+            await ExecuteSshCommand(sshClient, "systemctl stop LamyEraser.service 2&> /dev/null", false).ConfigureAwait(false);
+            await ExecuteSshCommand(sshClient, "systemctl disable LamyEraser.service 2&> /dev/null", false).ConfigureAwait(false);
+
+            String serviceText = await this.gitHubClient.GetStringAsync(new Uri("https://raw.githubusercontent.com/isaacwisdom/RemarkableLamyEraser/v1/RemarkableLamyEraser/LamyEraser.service")).ConfigureAwait(false);
+            serviceText = InstallLamyEraserOptions(serviceText, press, undo, leftHanded);
+            await FileWrite(sftpClient, "/lib/systemd/system/LamyEraser.service", serviceText).ConfigureAwait(false);
+
+            Byte[] serviceBytes = await this.gitHubClient.GetByteArrayAsync(new Uri("https://raw.githubusercontent.com/isaacwisdom/RemarkableLamyEraser/v1/RemarkableLamyEraser/RemarkableLamyEraser")).ConfigureAwait(false);
+            await FileWrite(sftpClient, "/usr/sbin/RemarkableLamyEraser", serviceBytes).ConfigureAwait(false);
+
+            await ExecuteSshCommand(sshClient, "chmod +x /usr/sbin/RemarkableLamyEraser").ConfigureAwait(false);
+            await ExecuteSshCommand(sshClient, "systemctl daemon-reload").ConfigureAwait(false);
+            await ExecuteSshCommand(sshClient, "systemctl enable LamyEraser.service").ConfigureAwait(false);
+            await ExecuteSshCommand(sshClient, "systemctl start LamyEraser.service").ConfigureAwait(false);
+        }
+        finally
+        {
+            this.sshSemaphore.Release();
+        }
+    }
+
     public async Task Restart()
     {
         await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
 
         try
         {
-            using SshClient client = new SshClient(this.CreateSshConnectionInfo());
-
-            await ConnectClient(client).ConfigureAwait(false);
-
-            await Task.Run(() => client.RunCommand("systemctl restart xochitl")).ConfigureAwait(false);
+            using SshClient client = await this.CreateSshClient().ConfigureAwait(false);
+            await ExecuteSshCommand(client, "systemctl restart xochitl").ConfigureAwait(false);
         }
         finally
         {
@@ -281,6 +311,13 @@ internal sealed class Tablet : IDisposable
     private async Task<SftpClient> CreateSftpClient()
     {
         SftpClient client = new SftpClient(this.CreateSshConnectionInfo());
+        await ConnectClient(client).ConfigureAwait(false);
+        return client;
+    }
+
+    private async Task<SshClient> CreateSshClient()
+    {
+        SshClient client = new SshClient(this.CreateSshConnectionInfo());
         await ConnectClient(client).ConfigureAwait(false);
         return client;
     }
@@ -350,6 +387,15 @@ internal sealed class Tablet : IDisposable
         }
     }
 
+    private static async Task ExecuteSshCommand(SshClient client, String command, Boolean checkResult = true)
+    {
+        SshCommand result = await Task.Run(() => client.RunCommand(command)).ConfigureAwait(false);
+        if (checkResult && result.ExitStatus != 0)
+        {
+            throw new TabletException(result.Error);
+        }
+    }
+
     private static async Task FileDelete(SftpClient client, String path)
     {
         await Task.Run(() => { if (client.Exists(path)) { client.DeleteFile(path); } }).ConfigureAwait(false);
@@ -371,6 +417,19 @@ internal sealed class Tablet : IDisposable
         {
             throw new NotSupportedException();
         }
+    }
+
+    private static String InstallLamyEraserOptions(String serviceText, Boolean press, Boolean undo, Boolean leftHanded)
+    {
+        String pressText = press ? " --press" : " --toggle";
+        String undoText = undo ? " --double-press undo" : " --double-press redo";
+        String leftHandedText = leftHanded ? " --left-handed" : String.Empty;
+
+        return serviceText.Replace(
+            "ExecStart=/usr/sbin/RemarkableLamyEraser",
+            $"ExecStart=/usr/sbin/RemarkableLamyEraser{pressText}{undoText}{leftHandedText}",
+            StringComparison.Ordinal
+        );
     }
 
     private static void UpdateItems(Item parentItem, IEnumerable<Item> allItems)

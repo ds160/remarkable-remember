@@ -12,6 +12,7 @@ The application is a cross-platform managenment tool for your reMarkable tablet.
 - Backup notebooks and folders
 - Template management
 - Hand writing recognition via MyScript
+- Install [Lamy Eraser](https://github.com/isaacwisdom/RemarkableLamyEraser/tree/v1) via WiFi or USB
 
 ## Installation
 
@@ -53,13 +54,12 @@ Clone the repository, install .NET Core SDK 7 or higher, and build the project w
 
 ## Dependencies and Acknowledgment
 
-I'm using [Avalonia](https://github.com/AvaloniaUI/Avalonia) for the UI and [SSH.NET](https://github.com/sshnet/SSH.NET) for the SFTP and SSH communication.
+I'm using [Avalonia](https://github.com/AvaloniaUI/Avalonia) for the UI and [SSH.NET](https://github.com/sshnet/SSH.NET) for the SFTP and SSH communication. I'm using the [Lamy Eraser](https://github.com/isaacwisdom/RemarkableLamyEraser/tree/v1) sources that turns the button on the Lamy Pen into an eraser on the reMarkable tablet.
 
 Thanks to the developers for their beautiful work.
 
 ## Links
 
-- [Awesome reMarkable](https://github.com/reHackable/awesome-reMarkable/blob/master/README.md)
-- [Lamy Pen](https://github.com/isaacwisdom/RemarkableLamyEraser)
+- [Awesome reMarkable](https://github.com/reHackable/awesome-reMarkable)
 - [Lines File, Version 6](https://github.com/ricklupton/rmscene)
 - [Toltec](https://toltec-dev.org/)

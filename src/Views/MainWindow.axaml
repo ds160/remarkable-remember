@@ -112,18 +112,27 @@
                 </StackPanel>
             </TabItem>
 
-            <TabItem Header="Templates">
+            <TabItem Header="Tablet">
                 <StackPanel>
                     <Button Command="{Binding CommandUploadTemplate}">
                         <StackPanel>
                             <Image Source="/Assets/Menu/UploadTemplate.png"/>
-                            <TextBlock Text="Upload"/>
+                            <TextBlock Text="Upload Template"/>
                         </StackPanel>
                     </Button>
                     <Button Command="{Binding CommandManageTemplates}">
                         <StackPanel>
                             <Image Source="/Assets/Menu/ManageTemplates.png"/>
-                            <TextBlock Text="Manage"/>
+                            <TextBlock Text="Manage Templates"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Rectangle/>
+
+                    <Button Command="{Binding CommandInstallLamyEraser}">
+                        <StackPanel>
+                            <Image Source="/Assets/Menu/InstallLamyEraser.png"/>
+                            <TextBlock Text="Install&#x0a;Lamy Eraser"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
