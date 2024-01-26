@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -105,9 +106,9 @@ internal sealed class MyScript
         using HttpClient client = new HttpClient();
         client.DefaultRequestHeaders.Add("applicationKey", this.settings.MyScriptApplicationKey);
         client.DefaultRequestHeaders.Add("hmac", hmac);
-        client.DefaultRequestHeaders.Add("accept", "text/plain, application/json");
+        client.DefaultRequestHeaders.Add("accept", $"{MediaTypeNames.Text.Plain}, {MediaTypeNames.Application.Json}");
 
-        using StringContent requestContent = new StringContent(requestBody, Encoding.UTF8, "application/json");
+        using StringContent requestContent = new StringContent(requestBody, Encoding.UTF8, MediaTypeNames.Application.Json);
         HttpResponseMessage response = await client.PostAsync(new Uri("https://cloud.myscript.com/api/v4.0/iink/batch"), requestContent).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.Unauthorized)
         {

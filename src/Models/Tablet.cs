@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -32,8 +33,8 @@ internal sealed class Tablet : IDisposable
     private readonly HttpClient gitHubClient;
     private readonly Settings settings;
     private readonly SemaphoreSlim sshSemaphore;
-    private readonly HttpClient usbClientDocument;
-    private readonly HttpClient usbClientDownload;
+    private readonly HttpClient usbClient;
+    private readonly HttpClient usbClientConnection;
     private readonly SemaphoreSlim usbSemaphore;
 
     public Tablet(Settings settings)
@@ -41,8 +42,8 @@ internal sealed class Tablet : IDisposable
         this.gitHubClient = new HttpClient();
         this.settings = settings;
         this.sshSemaphore = new SemaphoreSlim(1, 1);
-        this.usbClientDocument = new HttpClient() { Timeout = TimeSpan.FromSeconds(USB_TIMEOUT) };
-        this.usbClientDownload = new HttpClient();
+        this.usbClient = new HttpClient();
+        this.usbClientConnection = new HttpClient() { Timeout = TimeSpan.FromSeconds(USB_TIMEOUT) };
         this.usbSemaphore = new SemaphoreSlim(1, 1);
     }
 
@@ -94,8 +95,8 @@ internal sealed class Tablet : IDisposable
     {
         this.gitHubClient.Dispose();
         this.sshSemaphore.Dispose();
-        this.usbClientDocument.Dispose();
-        this.usbClientDownload.Dispose();
+        this.usbClient.Dispose();
+        this.usbClientConnection.Dispose();
         this.usbSemaphore.Dispose();
 
         GC.SuppressFinalize(this);
@@ -107,7 +108,7 @@ internal sealed class Tablet : IDisposable
 
         try
         {
-            return await ExecuteHttp(() => this.usbClientDownload.GetStreamAsync(new Uri($"http://{IP}/download/{id}/placeholder"))).ConfigureAwait(false);
+            return await ExecuteHttp(() => this.usbClient.GetStreamAsync(new Uri($"http://{IP}/download/{id}/placeholder"))).ConfigureAwait(false);
         }
         finally
         {
@@ -136,7 +137,7 @@ internal sealed class Tablet : IDisposable
 
         try
         {
-            await ExecuteHttp(() => this.usbClientDocument.GetStringAsync(new Uri($"http://{IP}/documents/"))).ConfigureAwait(false);
+            await ExecuteHttp(() => this.usbClientConnection.GetStringAsync(new Uri($"http://{IP}/documents/"))).ConfigureAwait(false);
         }
         catch (TabletException exception)
         {
@@ -253,6 +254,32 @@ internal sealed class Tablet : IDisposable
         finally
         {
             this.sshSemaphore.Release();
+        }
+    }
+
+    public async Task UploadFile(String path, String? parentId)
+    {
+        await this.usbSemaphore.WaitAsync().ConfigureAwait(false);
+
+        try
+        {
+            await ExecuteHttp(() => this.usbClient.GetStringAsync(new Uri($"http://{IP}/documents/{parentId}"))).ConfigureAwait(false);
+
+            FileInfo file = new FileInfo(path);
+            String mediaType = UploadFileCheck(file);
+
+            using StreamContent fileContent = new StreamContent(File.OpenRead(path));
+            fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data") { Name = "\"file\"", FileName = $"\"{file.Name}\"" };
+            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(mediaType);
+
+            using MultipartFormDataContent multipartContent = new MultipartFormDataContent() { { fileContent } };
+
+            HttpResponseMessage response = await ExecuteHttp(() => this.usbClient.PostAsync(new Uri($"http://{IP}/upload"), multipartContent)).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+        }
+        finally
+        {
+            this.usbSemaphore.Release();
         }
     }
 
@@ -441,6 +468,18 @@ internal sealed class Tablet : IDisposable
             parentItem.Collection?.Add(child);
 
             UpdateItems(child, allItems);
+        }
+    }
+
+    private static String UploadFileCheck(FileInfo file)
+    {
+        if (file.Length >= 100 * 1024 * 1024) { throw new NotSupportedException("File is to large."); }
+
+        switch (file.Extension.ToUpperInvariant())
+        {
+            case ".PDF": return "application/pdf";
+            case ".EPUB": return "application/epub+zip";
+            default: throw new NotSupportedException("File type is not supported.");
         }
     }
 
