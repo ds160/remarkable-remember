@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 using ReactiveUI;
 using ReMarkableRemember.Models;
 
@@ -12,6 +13,14 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class MainWindowModel : ViewModelBase, IDisposable
 {
+    private static readonly FilePickerFileType FileTypeEpub = new FilePickerFileType("EPUB e-book")
+    {
+        Patterns = new String[1] { "*.epub" },
+        AppleUniformTypeIdentifiers = new String[1] { "org.idpf.epub-container" },
+        MimeTypes = new String[1] { "application/epub+zip" }
+    };
+    private static readonly FilePickerFileType FileTypePdf = FilePickerFileTypes.Pdf;
+
     private TabletConnectionError? connectionStatus;
     private readonly Controller controller;
     private Boolean hasItems;
@@ -22,6 +31,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
     {
         this.ItemsTree = new ItemsTreeViewModel();
         this.MyScriptLanguages = MyScriptLanguageViewModel.GetLanguages();
+        this.OpenFilePicker = new Interaction<FilePickerOpenOptions, IEnumerable<String>?>();
         this.OpenFolderPicker = new Interaction<String, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
 
@@ -38,6 +48,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh, this.Refresh_CanExecute());
         this.CommandSettings = ReactiveCommand.CreateFromTask(this.Settings, this.Settings_CanExecute());
         this.CommandSyncTargetDirectory = ReactiveCommand.CreateFromTask<String>(this.SyncTargetDirectory, this.SyncTargetDirectory_CanExecute());
+        this.CommandUploadFile = ReactiveCommand.CreateFromTask(this.UploadFile, this.UploadFile_CanExecute());
         this.CommandUploadTemplate = ReactiveCommand.CreateFromTask(this.UploadTemplate, this.UploadTemplate_CanExecute());
 
         this.WhenAnyValue(vm => vm.ConnectionStatus).Subscribe(status => this.RaisePropertyChanged(nameof(this.ConnectionStatusText)));
@@ -63,6 +74,9 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             case Job.Description.ManageTemplates:
             case Job.Description.InstallLamyEraser:
                 return status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected);
+
+            case Job.Description.UploadFile:
+                return status is null;
 
             default:
                 throw new NotImplementedException();
@@ -313,6 +327,28 @@ Would you like to restart your reMarkable tablet now?");
         }
     }
 
+    private async Task UploadFile()
+    {
+        using Job job = new Job(Job.Description.UploadFile, this);
+
+        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = false, Title = "File", FileTypeFilter = new[] { FileTypePdf, FileTypeEpub } };
+        IEnumerable<String>? files = await this.OpenFilePicker.Handle(options);
+        String? file = files?.SingleOrDefault();
+        if (file != null)
+        {
+            ItemViewModel? parentItem = this.ItemsTree.RowSelection!.SelectedItem;
+            await this.controller.UploadFile(file, parentItem?.Source).ConfigureAwait(true);
+        }
+    }
+
+    private IObservable<Boolean> UploadFile_CanExecute()
+    {
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.UploadFile));
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
+
+        return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
+    }
+
     private async Task UploadTemplate()
     {
         using Job job = new Job(Job.Description.UploadTemplate, this);
@@ -347,6 +383,8 @@ Would you like to restart your reMarkable tablet now?");
     public ReactiveCommand<Unit, Unit> CommandSettings { get; }
 
     public ReactiveCommand<String, Unit> CommandSyncTargetDirectory { get; }
+
+    public ReactiveCommand<Unit, Unit> CommandUploadFile { get; }
 
     public ReactiveCommand<Unit, Unit> CommandUploadTemplate { get; }
 
@@ -396,6 +434,7 @@ Would you like to restart your reMarkable tablet now?");
             if (this.Jobs.HasFlag(Job.Description.Refresh)) { jobs.Add("Refreshing"); }
             if (this.Jobs.HasFlag(Job.Description.Process)) { jobs.Add("Backup & Syncing"); }
             if (this.Jobs.HasFlag(Job.Description.HandWritingRecognition)) { jobs.Add("Hand Writing Recognition"); }
+            if (this.Jobs.HasFlag(Job.Description.UploadFile)) { jobs.Add("Uploading File"); }
             if (this.Jobs.HasFlag(Job.Description.UploadTemplate)) { jobs.Add("Uploading Template"); }
             if (this.Jobs.HasFlag(Job.Description.ManageTemplates)) { jobs.Add("Managing Templates"); }
             if (this.Jobs.HasFlag(Job.Description.InstallLamyEraser)) { jobs.Add("Installing Lamy Eraser"); }
@@ -412,6 +451,8 @@ Would you like to restart your reMarkable tablet now?");
 
     public IEnumerable<MyScriptLanguageViewModel> MyScriptLanguages { get; }
 
+    public Interaction<FilePickerOpenOptions, IEnumerable<String>?> OpenFilePicker { get; }
+
     public Interaction<String, String?> OpenFolderPicker { get; }
 
     public Interaction<DialogWindowModel, Boolean> ShowDialog { get; }
@@ -425,11 +466,12 @@ Would you like to restart your reMarkable tablet now?");
             Refresh = 1,
             Process = 2,
             HandWritingRecognition = 4,
-            UploadTemplate = 8,
-            ManageTemplates = 16,
-            SetSyncTargetDirectory = 32,
-            InstallLamyEraser = 64,
-            Settings = 128
+            UploadFile = 8,
+            UploadTemplate = 16,
+            ManageTemplates = 32,
+            SetSyncTargetDirectory = 64,
+            InstallLamyEraser = 128,
+            Settings = 256
         }
 
         private readonly Description description;

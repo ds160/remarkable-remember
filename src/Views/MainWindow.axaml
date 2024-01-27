@@ -8,10 +8,10 @@
         x:DataType="vm:MainWindowModel"
         Icon="/Assets/Logo.ico"
         MinHeight="600"
-        MinWidth="940"
+        MinWidth="1086"
         RenderOptions.BitmapInterpolationMode="HighQuality"
         Title="reMarkable Remember"
-        Width="940"
+        Width="1086"
         WindowStartupLocation="CenterScreen">
 
     <Design.DataContext>
@@ -71,6 +71,15 @@
                         <StackPanel>
                             <Image Source="/Assets/Menu/Process.png"/>
                             <TextBlock Text="Backup &amp; Sync"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Rectangle/>
+
+                    <Button Command="{Binding CommandUploadFile}">
+                        <StackPanel>
+                            <Image Source="/Assets/Menu/UploadFile.png"/>
+                            <TextBlock Text="Upload&#x0a;File"/>
                         </StackPanel>
                     </Button>
 
@@ -153,6 +162,12 @@
         <TreeDataGrid Grid.Row="1" Source="{Binding ItemsTree}" CanUserResizeColumns="True" CanUserSortColumns="False" Margin="8">
             <TreeDataGrid.ContextMenu>
                 <ContextMenu>
+                    <MenuItem Header="Upload File" Command="{Binding CommandUploadFile}">
+                        <MenuItem.Icon>
+                            <Image Source="/Assets/Menu/UploadFile.png"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator/>
                     <MenuItem Header="Set Sync Directory" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="True">
                         <MenuItem.Icon>
                             <Image Source="/Assets/Menu/SyncTargetDirectorySet.png"/>

@@ -70,8 +70,23 @@ public sealed class Controller : IDisposable
         await this.Tablet.Restart().ConfigureAwait(false);
     }
 
-    public async Task UploadFile(String path, String? parentId)
+    public async Task UploadFile(String path, Item? parentItem)
     {
-        await this.Tablet.UploadFile(path, parentId).ConfigureAwait(false);
+        await this.Tablet.UploadFile(path, UploadFileParentId(parentItem)).ConfigureAwait(false);
+    }
+
+    private static String? UploadFileParentId(Item? parentItem)
+    {
+        while (parentItem != null)
+        {
+            if (parentItem.Collection != null)
+            {
+                return parentItem.Id;
+            }
+
+            parentItem = parentItem.Parent;
+        }
+
+        return null;
     }
 }

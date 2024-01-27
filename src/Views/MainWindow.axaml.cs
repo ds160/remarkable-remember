@@ -20,6 +20,12 @@ public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
         RxApp.DefaultExceptionHandler = Observer.Create<Exception>(this.ShowExceptionDialog, this.ShowExceptionDialog);
     }
 
+    private async Task OpenFilePickerHandler(InteractionContext<FilePickerOpenOptions, IEnumerable<String>?> context)
+    {
+        IReadOnlyList<IStorageFile> files = await this.StorageProvider.OpenFilePickerAsync(context.Input).ConfigureAwait(true);
+        context.SetOutput(files?.Select(file => file.Path.LocalPath).ToArray());
+    }
+
     private async Task OpenFolderPickerHandler(InteractionContext<String, String?> context)
     {
         FolderPickerOpenOptions options = new FolderPickerOpenOptions() { AllowMultiple = false, Title = context.Input };
@@ -45,6 +51,7 @@ public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
         if (this.ViewModel == null) { return; }
 
         action(this.ViewModel.ShowDialog.RegisterHandler(this.ShowDialogHandler));
+        action(this.ViewModel.OpenFilePicker.RegisterHandler(this.OpenFilePickerHandler));
         action(this.ViewModel.OpenFolderPicker.RegisterHandler(this.OpenFolderPickerHandler));
     }
 }
