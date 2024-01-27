@@ -27,14 +27,9 @@ jobs:
     - name: Build
       run: dotnet publish ReMarkableRemember.sln -c Release -r ${{ matrix.arch }} -p:PublishReadyToRun=true --self-contained
 
-    - name: Zip build artifacts
-      uses: montudor/action-zip@v1
-      with:
-        args: zip -qq -r ./bin/${{ matrix.arch }}.zip ./bin/Release/net7.0/${{ matrix.arch }}/publish/
-
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: publish-${{ matrix.arch }}
-        path: "./bin/*.zip"
+        name: ${{ matrix.arch }}
+        path: "./bin/Release/net7.0/${{ matrix.arch }}/publish/*.*"
         retention-days: 3
