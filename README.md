@@ -9,6 +9,7 @@ The application is a cross-platform managenment tool for your reMarkable tablet.
 
 - Connect your reMarkable tablet via WiFi or USB
 - Sync PDF documents via USB
+- Uploads PDFs and EPUBs via USB
 - Backup notebooks and folders
 - Template management
 - Hand writing recognition via MyScript
@@ -54,12 +55,15 @@ Clone the repository, install .NET Core SDK 7 or higher, and build the project w
 
 ## Dependencies and Acknowledgment
 
-I'm using [Avalonia](https://github.com/AvaloniaUI/Avalonia) for the UI and [SSH.NET](https://github.com/sshnet/SSH.NET) for the SFTP and SSH communication. I'm using the [Lamy Eraser](https://github.com/isaacwisdom/RemarkableLamyEraser/tree/v1) sources that turns the button on the Lamy Pen into an eraser on the reMarkable tablet.
+I'm using [Avalonia](https://github.com/AvaloniaUI/Avalonia) for the UI and [SSH.NET](https://github.com/sshnet/SSH.NET) for the SFTP and SSH communication.
+
+I got inspired by [rmscene](https://github.com/ricklupton/rmscene) to parse the reMarkable Lines File (version 6) and do hand writing recognition via MyScript.
+
+I'm using the [Lamy Eraser](https://github.com/isaacwisdom/RemarkableLamyEraser/tree/v1) sources that turns the button on the Lamy Pen into an eraser on the reMarkable tablet.
 
 Thanks to the developers for their beautiful work.
 
 ## Links
 
 - [Awesome reMarkable](https://github.com/reHackable/awesome-reMarkable)
-- [Lines File, Version 6](https://github.com/ricklupton/rmscene)
 - [Toltec](https://toltec-dev.org/)

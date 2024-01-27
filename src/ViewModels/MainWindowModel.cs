@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
@@ -55,7 +56,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.WhenAnyValue(vm => vm.Jobs).Subscribe(jobs => this.RaisePropertyChanged(nameof(this.JobsText)));
         this.WhenAnyValue(vm => vm.MyScriptLanguage).Subscribe(this.SaveMyScriptLanguage);
 
-        _ = this.UpdateConnectionStatus();
+        RxApp.MainThreadScheduler.Schedule(this.UpdateConnectionStatus);
     }
 
     private static Boolean CheckConnectionStatusForJob(TabletConnectionError? status, Job.Description job)
@@ -318,7 +319,7 @@ Would you like to restart your reMarkable tablet now?");
         return Observable.CombineLatest(jobs, treeSelection, (value1, value2) => value1 && value2);
     }
 
-    private async Task UpdateConnectionStatus()
+    private async void UpdateConnectionStatus()
     {
         while (true)
         {
