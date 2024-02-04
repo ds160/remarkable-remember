@@ -9,7 +9,7 @@ The application is a cross-platform managenment tool for your reMarkable tablet.
 
 - Connect your reMarkable tablet via WiFi or USB
 - Sync PDF documents via USB
-- Uploads PDFs and EPUBs via USB
+- Upload PDFs and EPUBs via USB
 - Backup notebooks and folders
 - Template management
 - Hand writing recognition via MyScript

@@ -31,5 +31,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.arch }}
-        path: "./bin/Release/net7.0/${{ matrix.arch }}/publish/*.*"
+        path: "./bin/Release/net7.0/${{ matrix.arch }}/publish/"
         retention-days: 3
