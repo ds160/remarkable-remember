@@ -21,7 +21,7 @@ namespace ReMarkableRemember.Models;
 internal sealed class Tablet : IDisposable
 {
     private const String IP = "10.11.99.1";
-    private const String PATH_NOTEBOOKS = "/home/root/.local/share/remarkable/xochitl";
+    private const String PATH_NOTEBOOKS = "/home/root/.local/share/remarkable/xochitl/";
     private const String PATH_TEMPLATES = "/usr/share/remarkable/templates/";
     private const String PATH_TEMPLATES_FILE = "templates.json";
     private const Int32 SSH_TIMEOUT = 2;
@@ -71,7 +71,7 @@ internal sealed class Tablet : IDisposable
         {
             using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
 
-            String templatesFilePath = Path.Combine(PATH_TEMPLATES, PATH_TEMPLATES_FILE);
+            String templatesFilePath = $"{PATH_TEMPLATES}{PATH_TEMPLATES_FILE}";
             String templatesFileText = await Task.Run(() => client.ReadAllText(templatesFilePath)).ConfigureAwait(false);
             TemplatesFile templatesFile = JsonSerializer.Deserialize<TemplatesFile>(templatesFileText, jsonSerializerOptions);
 
@@ -81,8 +81,8 @@ internal sealed class Tablet : IDisposable
                 templatesFile.Templates.RemoveAt(index);
             }
 
-            await FileDelete(client, Path.Combine(PATH_TEMPLATES, $"{template.FileName}.png")).ConfigureAwait(false);
-            await FileDelete(client, Path.Combine(PATH_TEMPLATES, $"{template.FileName}.svg")).ConfigureAwait(false);
+            await FileDelete(client, $"{PATH_TEMPLATES}{template.FileName}.png").ConfigureAwait(false);
+            await FileDelete(client, $"{PATH_TEMPLATES}{template.FileName}.svg").ConfigureAwait(false);
             await FileWrite(client, templatesFilePath, JsonSerializer.Serialize(templatesFile, jsonSerializerOptions)).ConfigureAwait(false);
         }
         finally
@@ -191,7 +191,7 @@ internal sealed class Tablet : IDisposable
         {
             using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
 
-            String contentFileText = await Task.Run(() => client.ReadAllText(Path.Combine(PATH_NOTEBOOKS, $"{id}.content"))).ConfigureAwait(false);
+            String contentFileText = await Task.Run(() => client.ReadAllText($"{PATH_NOTEBOOKS}{id}.content")).ConfigureAwait(false);
             ContentFile contentFile = JsonSerializer.Deserialize<ContentFile>(contentFileText, jsonSerializerOptions);
 
             if (contentFile.FileType != "notebook") { throw new NotebookException("Invalid reMarkable file type."); }
@@ -201,12 +201,8 @@ internal sealed class Tablet : IDisposable
             IEnumerable<String> pages = (contentFile.FormatVersion == 1) ? contentFile.Pages : contentFile.CPages.Pages.Where(page => page.Deleted == null).Select(page => page.Id);
             foreach (String page in pages)
             {
-                String pagePath = Path.Combine(PATH_NOTEBOOKS, id, $"{page}.rm");
-                if (client.Exists(pagePath))
-                {
-                    Byte[] pageBuffer = await Task.Run(() => client.ReadAllBytes(pagePath)).ConfigureAwait(false);
-                    pageBuffers.Add(pageBuffer);
-                }
+                Byte[] pageBuffer = await Task.Run(() => client.ReadAllBytes($"{PATH_NOTEBOOKS}{id}/{page}.rm")).ConfigureAwait(false);
+                pageBuffers.Add(pageBuffer);
             }
             return new Notebook(pageBuffers, contentFile.Orientation == "portrait");
         }
@@ -295,7 +291,7 @@ internal sealed class Tablet : IDisposable
         {
             using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
 
-            String templatesFilePath = Path.Combine(PATH_TEMPLATES, PATH_TEMPLATES_FILE);
+            String templatesFilePath = $"{PATH_TEMPLATES}{PATH_TEMPLATES_FILE}";
             String templatesFileText = await Task.Run(() => client.ReadAllText(templatesFilePath)).ConfigureAwait(false);
             TemplatesFile templatesFile = JsonSerializer.Deserialize<TemplatesFile>(templatesFileText, jsonSerializerOptions);
 
@@ -309,8 +305,8 @@ internal sealed class Tablet : IDisposable
                 templatesFile.Templates.Add(TemplatesFile.Template.Convert(template));
             }
 
-            await FileWrite(client, Path.Combine(PATH_TEMPLATES, $"{template.FileName}.png"), template.BytesPng).ConfigureAwait(false);
-            await FileWrite(client, Path.Combine(PATH_TEMPLATES, $"{template.FileName}.svg"), template.BytesSvg).ConfigureAwait(false);
+            await FileWrite(client, $"{PATH_TEMPLATES}{template.FileName}.png", template.BytesPng).ConfigureAwait(false);
+            await FileWrite(client, $"{PATH_TEMPLATES}{template.FileName}.svg", template.BytesSvg).ConfigureAwait(false);
             await FileWrite(client, templatesFilePath, JsonSerializer.Serialize(templatesFile, jsonSerializerOptions)).ConfigureAwait(false);
         }
         finally
