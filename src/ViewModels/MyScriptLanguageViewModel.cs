@@ -11,7 +11,7 @@ public sealed class MyScriptLanguageViewModel
     private MyScriptLanguageViewModel(String code)
     {
         this.Code = code;
-        this.DisplayName = CultureInfo.GetCultureInfo(code).DisplayName;
+        this.DisplayName = GetDisplayName(code);
     }
 
     public String Code { get; }
@@ -24,5 +24,15 @@ public sealed class MyScriptLanguageViewModel
             .Select(code => new MyScriptLanguageViewModel(code))
             .OrderBy(language => language.DisplayName)
             .ToArray();
+    }
+
+    private static String GetDisplayName(String code)
+    {
+        switch (code)
+        {
+            case "az_AZ": return CultureInfo.GetCultureInfo("az").DisplayName;
+            case "bs_BA": return CultureInfo.GetCultureInfo("bs").DisplayName;
+            default: return CultureInfo.GetCultureInfo(code).DisplayName;
+        }
     }
 }
