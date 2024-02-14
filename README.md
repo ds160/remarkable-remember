@@ -33,7 +33,7 @@ Set the folder if you want to back up your notebooks and folders.
 
 Connect your reMarkable tablet via USB for full functionality and activate the `USB web interface` for downloading PDF documents. Navigate to `Menu` > `Settings` > `Storage` and enable the feature.
 
-If you connect your reMarkable tablet via WiFi almost everything is supported, but downloading PDF documents is not working.
+If you connect your reMarkable tablet via WiFi almost everything is supported, but downloading PDFs and uploading PDFs and EPUBs is not supported.
 
 ![Application](./assets/application.png)
 

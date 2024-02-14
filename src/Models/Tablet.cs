@@ -201,8 +201,12 @@ internal sealed class Tablet : IDisposable
             IEnumerable<String> pages = (contentFile.FormatVersion == 1) ? contentFile.Pages : contentFile.CPages.Pages.Where(page => page.Deleted == null).Select(page => page.Id);
             foreach (String page in pages)
             {
-                Byte[] pageBuffer = await Task.Run(() => client.ReadAllBytes(Path.Combine(PATH_NOTEBOOKS, id, $"{page}.rm"))).ConfigureAwait(false);
-                pageBuffers.Add(pageBuffer);
+                String pagePath = Path.Combine(PATH_NOTEBOOKS, id, $"{page}.rm");
+                if (client.Exists(pagePath))
+                {
+                    Byte[] pageBuffer = await Task.Run(() => client.ReadAllBytes(pagePath)).ConfigureAwait(false);
+                    pageBuffers.Add(pageBuffer);
+                }
             }
             return new Notebook(pageBuffers, contentFile.Orientation == "portrait");
         }
@@ -373,7 +377,7 @@ internal sealed class Tablet : IDisposable
                 throw new TabletException(TabletConnectionError.SshNotConfigured, "SSH protocol information are not configured or wrong.", exception);
             }
 
-            if (exception.SocketErrorCode is SocketError.HostDown or SocketError.HostUnreachable)
+            if (exception.SocketErrorCode is SocketError.HostDown or SocketError.HostUnreachable or SocketError.NetworkDown or SocketError.NetworkUnreachable)
             {
                 throw new TabletException(TabletConnectionError.SshNotConnected, "reMarkable is not connected via WiFi or USB.", exception);
             }
@@ -400,9 +404,14 @@ internal sealed class Tablet : IDisposable
         {
             if (exception.InnerException is SocketException socketException)
             {
-                if (socketException.SocketErrorCode is SocketError.ConnectionRefused or SocketError.HostDown or SocketError.HostUnreachable)
+                if (socketException.SocketErrorCode is SocketError.ConnectionRefused)
                 {
                     throw new TabletException(TabletConnectionError.UsbNotActived, "USB web interface is not activated.", exception);
+                }
+
+                if (socketException.SocketErrorCode is SocketError.HostDown or SocketError.HostUnreachable or SocketError.NetworkDown or SocketError.NetworkUnreachable)
+                {
+                    throw new TabletException(TabletConnectionError.UsbNotConnected, "reMarkable is not connected via USB.", exception);
                 }
             }
 
