@@ -110,11 +110,19 @@ internal sealed class MyScript
 
         using StringContent requestContent = new StringContent(requestBody, Encoding.UTF8, MediaTypeNames.Application.Json);
         HttpResponseMessage response = await client.PostAsync(new Uri("https://cloud.myscript.com/api/v4.0/iink/batch"), requestContent).ConfigureAwait(false);
+
         if (response.StatusCode == HttpStatusCode.Unauthorized)
         {
             throw new MyScriptException("MyScript authorization information not configured or wrong.");
         }
+
+        if (response.StatusCode == HttpStatusCode.RequestEntityTooLarge)
+        {
+            throw new MyScriptException($"MyScript cannot analyze page {page.Index + 1}, it has to much content.");
+        }
+
         response.EnsureSuccessStatusCode();
+
         return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
     }
 

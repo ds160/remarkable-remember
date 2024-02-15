@@ -10,15 +10,16 @@ internal sealed class Notebook
 {
     public Notebook(IEnumerable<Byte[]> pageBuffers, Boolean portraitMode)
     {
-        this.Pages = pageBuffers.Select(pageBuffer => new Page(pageBuffer, portraitMode)).ToArray();
+        this.Pages = pageBuffers.Select((pageBuffer, pageIndex) => new Page(pageBuffer, pageIndex, portraitMode)).ToArray();
     }
 
     public IEnumerable<Page> Pages { get; }
 
     internal sealed class Page
     {
-        public Page(Byte[] buffer, Boolean portraitMode)
+        public Page(Byte[] buffer, Int32 index, Boolean portraitMode)
         {
+            this.Index = index;
             this.PortraitMode = portraitMode;
 
             PageBuffer pageBuffer = new PageBuffer(buffer);
@@ -35,6 +36,8 @@ internal sealed class Notebook
                     throw new NotebookException("Unknown reMarkable .lines file header.");
             }
         }
+
+        public Int32 Index { get; }
 
         public IEnumerable<Line> Lines { get; }
 
