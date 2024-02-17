@@ -69,17 +69,17 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         List<ItemViewModel> items = this.ItemsTree.Items.ToList();
         foreach (ItemViewModel item in items)
         {
-            await this.Backup(item).ConfigureAwait(true);
+            await Backup(item).ConfigureAwait(true);
         }
     }
 
-    private async Task Backup(ItemViewModel item)
+    private static async Task Backup(ItemViewModel item)
     {
         if (item.Collection != null)
         {
             foreach (ItemViewModel childItem in item.Collection)
             {
-                await this.Backup(childItem).ConfigureAwait(true);
+                await Backup(childItem).ConfigureAwait(true);
             }
         }
 
@@ -248,17 +248,17 @@ Would you like to restart your reMarkable tablet now?");
         List<ItemViewModel> items = this.ItemsTree.Items.ToList();
         foreach (ItemViewModel item in items)
         {
-            await this.Sync(item).ConfigureAwait(true);
+            await Sync(item).ConfigureAwait(true);
         }
     }
 
-    private async Task Sync(ItemViewModel item)
+    private static async Task Sync(ItemViewModel item)
     {
         if (item.Collection != null)
         {
             foreach (ItemViewModel childItem in item.Collection)
             {
-                await this.Sync(childItem).ConfigureAwait(true);
+                await Sync(childItem).ConfigureAwait(true);
             }
         }
 
