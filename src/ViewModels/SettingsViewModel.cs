@@ -83,9 +83,6 @@ public sealed partial class SettingsViewModel : DialogWindowModel
     private async Task SetBackup()
     {
         String? backupFolder = await this.OpenFolderPicker.Handle("Backup Folder");
-        if (backupFolder != null)
-        {
-            this.Backup = backupFolder;
-        }
+        this.Backup = backupFolder ?? String.Empty;
     }
 }

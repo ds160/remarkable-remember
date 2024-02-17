@@ -57,7 +57,6 @@ public sealed class Item
         if (this.Trashed) { return false; }
 
         String targetDirectory = this.controller.Settings.Backup;
-        if (!Directory.Exists(targetDirectory)) { throw new SettingsException("Backup directory not set or not found."); }
 
         IEnumerable<String> directories = Directory.GetDirectories(targetDirectory, $"{this.Id}*");
         foreach (String directory in directories)
@@ -153,6 +152,8 @@ public sealed class Item
 
     private ItemHint GetBackupHint()
     {
+        if (String.IsNullOrEmpty(this.controller.Settings.Backup)) { return ItemHint.None; }
+
         if (this.dataBackup == null) { return ItemHint.New; }
         if (this.dataBackup.Modified < this.Modified) { return ItemHint.Modified; }
 

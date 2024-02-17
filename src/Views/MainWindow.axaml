@@ -61,16 +61,16 @@
         <TabControl Classes="Menu" Grid.Row="0">
             <TabItem Header="Items">
                 <StackPanel>
-                    <Button Command="{Binding CommandRefresh}">
+                    <Button Command="{Binding CommandSync}">
                         <StackPanel>
-                            <Image Source="/Assets/Menu/Refresh.png"/>
-                            <TextBlock Text="Refresh&#x0a;Items"/>
+                            <Image Source="/Assets/Menu/Sync.png"/>
+                            <TextBlock Text="Sync&#x0a;Items"/>
                         </StackPanel>
                     </Button>
-                    <Button Command="{Binding CommandProcess}">
+                    <Button Command="{Binding CommandBackup}">
                         <StackPanel>
-                            <Image Source="/Assets/Menu/Process.png"/>
-                            <TextBlock Text="Backup &amp; Sync"/>
+                            <Image Source="/Assets/Menu/Backup.png"/>
+                            <TextBlock Text="Backup&#x0a;Items"/>
                         </StackPanel>
                     </Button>
 

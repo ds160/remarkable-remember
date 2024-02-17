@@ -42,12 +42,12 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.jobs = Job.Description.None;
         this.myScriptLanguage = this.MyScriptLanguages.Single(language => String.CompareOrdinal(language.Code, this.controller.Settings.MyScriptLanguage) == 0);
 
+        this.CommandBackup = ReactiveCommand.CreateFromTask(this.Backup, this.Backup_CanExecute());
         this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
         this.CommandInstallLamyEraser = ReactiveCommand.CreateFromTask(this.InstallLamyEraser, this.InstallLamyEraser_CanExecute());
         this.CommandManageTemplates = ReactiveCommand.CreateFromTask(this.ManageTemplates, this.ManageTemplates_CanExecute());
-        this.CommandProcess = ReactiveCommand.CreateFromTask(this.Process, this.Process_CanExecute());
-        this.CommandRefresh = ReactiveCommand.CreateFromTask(this.Refresh, this.Refresh_CanExecute());
         this.CommandSettings = ReactiveCommand.CreateFromTask(this.Settings, this.Settings_CanExecute());
+        this.CommandSync = ReactiveCommand.CreateFromTask(this.Sync, this.Sync_CanExecute());
         this.CommandSyncTargetDirectory = ReactiveCommand.CreateFromTask<String>(this.SyncTargetDirectory, this.SyncTargetDirectory_CanExecute());
         this.CommandUploadFile = ReactiveCommand.CreateFromTask(this.UploadFile, this.UploadFile_CanExecute());
         this.CommandUploadTemplate = ReactiveCommand.CreateFromTask(this.UploadTemplate, this.UploadTemplate_CanExecute());
@@ -56,7 +56,42 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.WhenAnyValue(vm => vm.Jobs).Subscribe(jobs => this.RaisePropertyChanged(nameof(this.JobsText)));
         this.WhenAnyValue(vm => vm.MyScriptLanguage).Subscribe(this.SaveMyScriptLanguage);
 
-        RxApp.MainThreadScheduler.Schedule(this.UpdateConnectionStatus);
+        RxApp.MainThreadScheduler.Schedule(this.Update);
+    }
+
+    private async Task Backup()
+    {
+        using Job job = new Job(Job.Description.Backup, this);
+
+        List<ItemViewModel> items = this.ItemsTree.Items.ToList();
+        foreach (ItemViewModel item in items)
+        {
+            await this.Backup(item).ConfigureAwait(true);
+        }
+    }
+
+    private async Task Backup(ItemViewModel item)
+    {
+        if (item.Collection != null)
+        {
+            foreach (ItemViewModel childItem in item.Collection)
+            {
+                await this.Backup(childItem).ConfigureAwait(true);
+            }
+        }
+
+        Boolean changed = await item.Source.Backup().ConfigureAwait(true);
+        if (changed) { item.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Parent); }
+    }
+
+    private IObservable<Boolean> Backup_CanExecute()
+    {
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.Backup));
+        IObservable<Boolean> items = this.WhenAnyValue(vm => vm.HasItems);
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
+        // IObservable<Boolean> settings;
+
+        return Observable.CombineLatest(connectionStatus, items, jobs, (value1, value2, value3) => value1 && value2 && value3);
     }
 
     private static Boolean CheckConnectionStatusForJob(TabletConnectionError? status, Job.Description job)
@@ -64,19 +99,19 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         switch (job)
         {
             case Job.Description.None:
-            case Job.Description.Refresh:
             case Job.Description.SetSyncTargetDirectory:
             case Job.Description.Settings:
                 return true;
 
-            case Job.Description.Process:
+            case Job.Description.Backup:
             case Job.Description.HandWritingRecognition:
             case Job.Description.UploadTemplate:
             case Job.Description.ManageTemplates:
             case Job.Description.InstallLamyEraser:
                 return status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected);
 
-            case Job.Description.UploadFile:
+            case Job.Description.Sync:
+            case Job.Description.Upload:
                 return status is null;
 
             default:
@@ -165,90 +200,42 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
     }
 
-    private async Task Process()
+    private async Task<Boolean> RefreshItems()
     {
         try
         {
-            using Job job = new Job(Job.Description.Process, this);
-
-            List<ItemViewModel> items = this.ItemsTree.Items.ToList();
-            foreach (ItemViewModel item in items)
+            if (this.ConnectionStatus is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected))
             {
-                await this.Process(item).ConfigureAwait(true);
+                if (this.Jobs is Job.Description.None or Job.Description.HandWritingRecognition)
+                {
+                    IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(true);
+
+                    List<ItemViewModel> list = items.Where(item => !item.Trashed).Select(item => new ItemViewModel(item, null)).ToList();
+                    list.Sort(new Comparison<ItemViewModel>(ItemViewModel.Compare));
+
+                    this.ItemsTree.Items = list;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                this.ItemsTree.Items = new List<ItemViewModel>();
+                return false;
             }
         }
-        catch
+        catch (TabletException)
         {
             this.ItemsTree.Items = new List<ItemViewModel>();
-            throw;
+            return false;
         }
         finally
         {
             this.HasItems = this.ItemsTree.Items.Any();
         }
-    }
-
-    private async Task Process(ItemViewModel item)
-    {
-        if (item.Collection != null)
-        {
-            foreach (ItemViewModel childItem in item.Collection)
-            {
-                await this.Process(childItem).ConfigureAwait(true);
-            }
-        }
-
-        Boolean changed = false;
-
-        if (!String.IsNullOrEmpty(this.controller.Settings.Backup))
-        {
-            changed |= await item.Source.Backup().ConfigureAwait(true);
-        }
-
-        if (this.ConnectionStatus == null)
-        {
-            changed |= await item.Source.Sync().ConfigureAwait(true);
-        }
-
-        if (changed) { item.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Parent); }
-    }
-
-    private IObservable<Boolean> Process_CanExecute()
-    {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.Process));
-        IObservable<Boolean> items = this.WhenAnyValue(vm => vm.HasItems);
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
-
-        return Observable.CombineLatest(connectionStatus, items, jobs, (value1, value2, value3) => value1 && value2 && value3);
-    }
-
-    private async Task Refresh()
-    {
-        try
-        {
-            using Job job = new Job(Job.Description.Refresh, this);
-
-            IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(true);
-
-            List<ItemViewModel> list = items.Where(item => !item.Trashed).Select(item => new ItemViewModel(item, null)).ToList();
-            list.Sort(new Comparison<ItemViewModel>(ItemViewModel.Compare));
-
-            this.ItemsTree.Items = list;
-        }
-        catch
-        {
-            this.ItemsTree.Items = new List<ItemViewModel>();
-            throw;
-        }
-        finally
-        {
-            this.HasItems = this.ItemsTree.Items.Any();
-        }
-    }
-
-    private IObservable<Boolean> Refresh_CanExecute()
-    {
-        return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
     }
 
     private async Task Restart()
@@ -287,6 +274,40 @@ Would you like to restart your reMarkable tablet now?");
         return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
     }
 
+    private async Task Sync()
+    {
+        using Job job = new Job(Job.Description.Sync, this);
+
+        List<ItemViewModel> items = this.ItemsTree.Items.ToList();
+        foreach (ItemViewModel item in items)
+        {
+            await this.Sync(item).ConfigureAwait(true);
+        }
+    }
+
+    private async Task Sync(ItemViewModel item)
+    {
+        if (item.Collection != null)
+        {
+            foreach (ItemViewModel childItem in item.Collection)
+            {
+                await this.Sync(childItem).ConfigureAwait(true);
+            }
+        }
+
+        Boolean changed = await item.Source.Sync().ConfigureAwait(true);
+        if (changed) { item.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Parent); }
+    }
+
+    private IObservable<Boolean> Sync_CanExecute()
+    {
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.Sync));
+        IObservable<Boolean> items = this.WhenAnyValue(vm => vm.HasItems);
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
+
+        return Observable.CombineLatest(connectionStatus, items, jobs, (value1, value2, value3) => value1 && value2 && value3);
+    }
+
     private async Task SyncTargetDirectory(String setString)
     {
         ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
@@ -319,18 +340,22 @@ Would you like to restart your reMarkable tablet now?");
         return Observable.CombineLatest(jobs, treeSelection, (value1, value2) => value1 && value2);
     }
 
-    private async void UpdateConnectionStatus()
+    private async void Update()
     {
         while (true)
         {
             this.ConnectionStatus = await this.controller.GetConnectionStatus().ConfigureAwait(true);
-            await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(true);
+
+            Boolean refreshed = await this.RefreshItems().ConfigureAwait(true);
+
+            Double delay = refreshed ? 10 : 1;
+            await Task.Delay(TimeSpan.FromSeconds(delay)).ConfigureAwait(true);
         }
     }
 
     private async Task UploadFile()
     {
-        using Job job = new Job(Job.Description.UploadFile, this);
+        using Job job = new Job(Job.Description.Upload, this);
 
         FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = false, Title = "File", FileTypeFilter = new[] { FileTypePdf, FileTypeEpub } };
         IEnumerable<String>? files = await this.OpenFilePicker.Handle(options);
@@ -344,7 +369,7 @@ Would you like to restart your reMarkable tablet now?");
 
     private IObservable<Boolean> UploadFile_CanExecute()
     {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.UploadFile));
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.Upload));
         IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
 
         return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
@@ -371,17 +396,17 @@ Would you like to restart your reMarkable tablet now?");
         return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
     }
 
+    public ReactiveCommand<Unit, Unit> CommandBackup { get; }
+
     public ReactiveCommand<Unit, Unit> CommandHandWritingRecognition { get; }
 
     public ReactiveCommand<Unit, Unit> CommandInstallLamyEraser { get; }
 
     public ReactiveCommand<Unit, Unit> CommandManageTemplates { get; }
 
-    public ReactiveCommand<Unit, Unit> CommandProcess { get; }
-
-    public ReactiveCommand<Unit, Unit> CommandRefresh { get; }
-
     public ReactiveCommand<Unit, Unit> CommandSettings { get; }
+
+    public ReactiveCommand<Unit, Unit> CommandSync { get; }
 
     public ReactiveCommand<String, Unit> CommandSyncTargetDirectory { get; }
 
@@ -432,10 +457,10 @@ Would you like to restart your reMarkable tablet now?");
         {
             List<String> jobs = new List<String>();
 
-            if (this.Jobs.HasFlag(Job.Description.Refresh)) { jobs.Add("Refreshing"); }
-            if (this.Jobs.HasFlag(Job.Description.Process)) { jobs.Add("Backup & Syncing"); }
+            if (this.Jobs.HasFlag(Job.Description.Sync)) { jobs.Add("Syncing"); }
+            if (this.Jobs.HasFlag(Job.Description.Backup)) { jobs.Add("Backup"); }
             if (this.Jobs.HasFlag(Job.Description.HandWritingRecognition)) { jobs.Add("Hand Writing Recognition"); }
-            if (this.Jobs.HasFlag(Job.Description.UploadFile)) { jobs.Add("Uploading File"); }
+            if (this.Jobs.HasFlag(Job.Description.Upload)) { jobs.Add("Uploading File"); }
             if (this.Jobs.HasFlag(Job.Description.UploadTemplate)) { jobs.Add("Uploading Template"); }
             if (this.Jobs.HasFlag(Job.Description.ManageTemplates)) { jobs.Add("Managing Templates"); }
             if (this.Jobs.HasFlag(Job.Description.InstallLamyEraser)) { jobs.Add("Installing Lamy Eraser"); }
@@ -464,10 +489,10 @@ Would you like to restart your reMarkable tablet now?");
         public enum Description
         {
             None = 0,
-            Refresh = 1,
-            Process = 2,
+            Sync = 1,
+            Backup = 2,
             HandWritingRecognition = 4,
-            UploadFile = 8,
+            Upload = 8,
             UploadTemplate = 16,
             ManageTemplates = 32,
             SetSyncTargetDirectory = 64,
