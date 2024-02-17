@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
@@ -24,6 +25,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     private TabletConnectionError? connectionStatus;
     private readonly Controller controller;
+    private Boolean hasBackupDirectory;
     private Boolean hasItems;
     private Job.Description jobs;
     private MyScriptLanguageViewModel myScriptLanguage;
@@ -38,6 +40,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
         this.connectionStatus = TabletConnectionError.SshNotConnected;
         this.controller = new Controller(dataSource);
+        this.hasBackupDirectory = Path.Exists(this.controller.Settings.Backup);
         this.hasItems = false;
         this.jobs = Job.Description.None;
         this.myScriptLanguage = this.MyScriptLanguages.Single(language => String.CompareOrdinal(language.Code, this.controller.Settings.MyScriptLanguage) == 0);
@@ -86,12 +89,12 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     private IObservable<Boolean> Backup_CanExecute()
     {
+        IObservable<Boolean> backupDirectory = this.WhenAnyValue(vm => vm.HasBackupDirectory);
         IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.Backup));
         IObservable<Boolean> items = this.WhenAnyValue(vm => vm.HasItems);
         IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
-        // IObservable<Boolean> settings;
 
-        return Observable.CombineLatest(connectionStatus, items, jobs, (value1, value2, value3) => value1 && value2 && value3);
+        return Observable.CombineLatest(backupDirectory, connectionStatus, items, jobs, (value1, value2, value3, value4) => value1 && value2 && value3 && value4);
     }
 
     private static Boolean CheckConnectionStatusForJob(TabletConnectionError? status, Job.Description job)
@@ -200,44 +203,6 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
     }
 
-    private async Task<Boolean> RefreshItems()
-    {
-        try
-        {
-            if (this.ConnectionStatus is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected))
-            {
-                if (this.Jobs is Job.Description.None or Job.Description.HandWritingRecognition)
-                {
-                    IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(true);
-
-                    List<ItemViewModel> list = items.Where(item => !item.Trashed).Select(item => new ItemViewModel(item, null)).ToList();
-                    list.Sort(new Comparison<ItemViewModel>(ItemViewModel.Compare));
-
-                    this.ItemsTree.Items = list;
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                this.ItemsTree.Items = new List<ItemViewModel>();
-                return false;
-            }
-        }
-        catch (TabletException)
-        {
-            this.ItemsTree.Items = new List<ItemViewModel>();
-            return false;
-        }
-        finally
-        {
-            this.HasItems = this.ItemsTree.Items.Any();
-        }
-    }
-
     private async Task Restart()
     {
         MessageViewModel message = MessageViewModel.Question("Restart",
@@ -267,6 +232,8 @@ Would you like to restart your reMarkable tablet now?");
         {
             settings.SaveChanges();
         }
+
+        this.HasBackupDirectory = Path.Exists(this.controller.Settings.Backup);
     }
 
     private IObservable<Boolean> Settings_CanExecute()
@@ -346,10 +313,47 @@ Would you like to restart your reMarkable tablet now?");
         {
             this.ConnectionStatus = await this.controller.GetConnectionStatus().ConfigureAwait(true);
 
-            Boolean refreshed = await this.RefreshItems().ConfigureAwait(true);
+            Boolean updated = await this.UpdateItems().ConfigureAwait(true);
 
-            Double delay = refreshed ? 10 : 1;
-            await Task.Delay(TimeSpan.FromSeconds(delay)).ConfigureAwait(true);
+            await Task.Delay(TimeSpan.FromSeconds(updated ? 10 : 1)).ConfigureAwait(true);
+        }
+    }
+
+    private async Task<Boolean> UpdateItems()
+    {
+        try
+        {
+            if (this.ConnectionStatus is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected))
+            {
+                if (this.Jobs is Job.Description.None or Job.Description.HandWritingRecognition)
+                {
+                    IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(true);
+
+                    List<ItemViewModel> list = items.Where(item => !item.Trashed).Select(item => new ItemViewModel(item, null)).ToList();
+                    list.Sort(new Comparison<ItemViewModel>(ItemViewModel.Compare));
+
+                    this.ItemsTree.Items = list;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                this.ItemsTree.Items = new List<ItemViewModel>();
+                return false;
+            }
+        }
+        catch (TabletException)
+        {
+            this.ItemsTree.Items = new List<ItemViewModel>();
+            return false;
+        }
+        finally
+        {
+            this.HasItems = this.ItemsTree.Items.Any();
         }
     }
 
@@ -438,6 +442,12 @@ Would you like to restart your reMarkable tablet now?");
     }
 
     public ItemsTreeViewModel ItemsTree { get; }
+
+    private Boolean HasBackupDirectory
+    {
+        get { return this.hasBackupDirectory; }
+        set { this.RaiseAndSetIfChanged(ref this.hasBackupDirectory, value); }
+    }
 
     public Boolean HasItems
     {
