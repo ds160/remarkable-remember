@@ -47,12 +47,6 @@ You can upload custom templates to your reMarkable. Buy, download, or design you
 
 Clone the repository, install .NET Core SDK 7 or higher, and build the project with `dotnet build`.
 
-## To-Do
-
-- [ ] Packaging for Linux, Windows and OSX
-- [ ] Automatic refresh of items
-- [ ] ...
-
 ## Dependencies and Acknowledgment
 
 I'm using [Avalonia](https://github.com/AvaloniaUI/Avalonia) for the UI and [SSH.NET](https://github.com/sshnet/SSH.NET) for the SFTP and SSH communication.
