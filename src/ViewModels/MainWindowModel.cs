@@ -328,11 +328,10 @@ Would you like to restart your reMarkable tablet now?");
                 if (this.Jobs is Job.Description.None or Job.Description.HandWritingRecognition)
                 {
                     IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(true);
+                    ItemViewModel.UpdateItems(items, this.ItemsTree.Items, null);
 
-                    List<ItemViewModel> list = items.Where(item => !item.Trashed).Select(item => new ItemViewModel(item, null)).ToList();
-                    list.Sort(new Comparison<ItemViewModel>(ItemViewModel.Compare));
+                    this.ItemsTree.Sort(new Comparison<ItemViewModel>(ItemViewModel.Compare));
 
-                    this.ItemsTree.Items = list;
                     return true;
                 }
                 else
@@ -342,13 +341,13 @@ Would you like to restart your reMarkable tablet now?");
             }
             else
             {
-                this.ItemsTree.Items = new List<ItemViewModel>();
+                this.ItemsTree.Items.Clear();
                 return false;
             }
         }
         catch (TabletException)
         {
-            this.ItemsTree.Items = new List<ItemViewModel>();
+            this.ItemsTree.Items.Clear();
             return false;
         }
         finally

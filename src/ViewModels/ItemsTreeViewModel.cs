@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using ReMarkableRemember.Helper;
@@ -9,7 +9,7 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class ItemsTreeViewModel : HierarchicalTreeDataGridSource<ItemViewModel>
 {
-    public ItemsTreeViewModel() : base(new List<ItemViewModel>())
+    public ItemsTreeViewModel() : base(new ObservableCollection<ItemViewModel>())
     {
         this.Columns.Add(new HierarchicalExpanderColumn<ItemViewModel>(new TextColumn<ItemViewModel, String>("Name", item => item.Name), item => item.Collection));
         this.Columns.Add(new TextColumn<ItemViewModel, String>("Modified", item => item.Modified.ToDisplayString()));
@@ -17,5 +17,10 @@ public sealed class ItemsTreeViewModel : HierarchicalTreeDataGridSource<ItemView
         this.Columns.Add(new TextColumn<ItemViewModel, String>("Sync Path", item => item.SyncPath));
         this.Columns.Add(new TemplateColumn<ItemViewModel>("Sync Information", new ItemHintColumnTemplate(item => item.Sync, item => item.SyncHint)));
         this.Columns.Add(new TemplateColumn<ItemViewModel>("Backup Information", new ItemHintColumnTemplate(item => item.Backup, item => item.BackupHint)));
+    }
+
+    public new ObservableCollection<ItemViewModel> Items
+    {
+        get { return (ObservableCollection<ItemViewModel>)base.Items; }
     }
 }

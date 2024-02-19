@@ -37,7 +37,7 @@ If you connect your reMarkable tablet via WiFi almost everything is supported, b
 
 ![Application](./assets/application.png)
 
-Refresh items when your tablet is connected. Select an item and configure the target directory for downloading and syncing folders and documents.
+The items are refrehed every 10 seconds when your tablet is connected. Select an item and configure the target directory for downloading and syncing folders and documents.
 
 You can upload custom templates to your reMarkable. Buy, download, or design your own template (see [here](https://github.com/reHackable/awesome-reMarkable/blob/master/README.md#custom-templates)). To upload a template, select the file, define the name and category and select the desired icon. The application will restart your reMarkable tablet automatically to enable the template.
 

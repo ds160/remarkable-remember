@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using ReactiveUI;
 using ReMarkableRemember.Models;
@@ -37,9 +38,8 @@ public sealed class ItemViewModel : ViewModelBase
     internal ItemViewModel(Item source, ItemViewModel? parent)
     {
         List<ItemViewModel>? collection = source.Collection?.Select(childItem => new ItemViewModel(childItem, this)).ToList();
-        collection?.Sort(new Comparison<ItemViewModel>(Compare));
 
-        this.Collection = collection;
+        this.Collection = (collection != null) ? new ObservableCollection<ItemViewModel>(collection) : null;
         this.Parent = parent;
         this.Source = source;
     }
@@ -48,7 +48,7 @@ public sealed class ItemViewModel : ViewModelBase
 
     public Hint BackupHint { get { return (Hint)this.Source.BackupHint; } }
 
-    public IEnumerable<ItemViewModel>? Collection { get; }
+    public ObservableCollection<ItemViewModel>? Collection { get; }
 
     public Hint CombinedHint { get { return GetCombinedHint(this); } }
 
@@ -64,7 +64,7 @@ public sealed class ItemViewModel : ViewModelBase
 
     public String? SyncPath { get { return this.Source.SyncPath; } }
 
-    internal Item Source { get; }
+    internal Item Source { get; set; }
 
     internal void RaiseChanged(RaiseChangedAdditional additional)
     {
@@ -122,5 +122,34 @@ public sealed class ItemViewModel : ViewModelBase
         if (hint == Hint.None) { return (dateTime != null) ? "Up-to-date" : null; }
 
         throw new NotImplementedException();
+    }
+
+    internal static void UpdateItems(IEnumerable<Item> sourceItems, ObservableCollection<ItemViewModel> items, ItemViewModel? parentItem)
+    {
+        foreach (Item sourceItem in sourceItems)
+        {
+            ItemViewModel? item = items.SingleOrDefault(item => item.Source.Id == sourceItem.Id);
+            if (item == null)
+            {
+                items.Add(new ItemViewModel(sourceItem, parentItem));
+            }
+            else
+            {
+                item.Source = sourceItem;
+
+                if (sourceItem.Collection != null && item.Collection != null)
+                {
+                    UpdateItems(sourceItem.Collection, item.Collection, item);
+                }
+
+                if (parentItem == null)
+                {
+                    item.RaiseChanged(RaiseChangedAdditional.Collection);
+                }
+            }
+        }
+
+        List<ItemViewModel> itemsToRemove = items.Where(item => !sourceItems.Any(sourceItem => item.Source.Id == sourceItem.Id)).ToList();
+        itemsToRemove.ForEach(itemToRemove => items.Remove(itemToRemove));
     }
 }

@@ -46,10 +46,11 @@ public sealed class Controller : IDisposable
         return await this.Tablet.GetConnectionStatus().ConfigureAwait(false);
     }
 
-    public async Task<IEnumerable<Item>> GetItems()
+    public async Task<IEnumerable<Item>> GetItems(Boolean includeTrashed = false)
     {
         IEnumerable<Tablet.Item> tabletItems = await this.Tablet.GetItems().ConfigureAwait(false);
-        return tabletItems.Select(tabletItem => new Item(this, tabletItem, null)).ToArray();
+        IEnumerable<Item> items = tabletItems.Select(tabletItem => new Item(this, tabletItem, null)).ToArray();
+        return includeTrashed ? items : items.Where(item => !item.Trashed).ToArray();
     }
 
     public IEnumerable<TabletTemplate> GetTemplates()
