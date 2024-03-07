@@ -13,7 +13,7 @@ The application is a cross-platform managenment tool for your reMarkable tablet.
 - Backup notebooks and folders
 - Template management
 - Hand writing recognition via MyScript
-- Install [Lamy Eraser](https://github.com/isaacwisdom/RemarkableLamyEraser/tree/v1) via WiFi or USB
+- Install [Lamy Eraser](https://github.com/isaacwisdom/RemarkableLamyEraser/tree/v1) via WiFi
 
 ## Installation
 
@@ -31,7 +31,7 @@ Set the folder if you want to back up your notebooks and folders.
 
 ## Usage
 
-Connect your reMarkable tablet via USB for full functionality and activate the `USB web interface` for downloading PDF documents. Navigate to `Menu` > `Settings` > `Storage` and enable the feature.
+Connect your reMarkable tablet via USB for full functionality and activate the `USB web interface` for downloading PDF documents. Navigate to `Menu` > `Settings` > `Storage` and enable the feature. Optional you can use the [WebInterface-OnBoot](https://github.com/rM-self-serve/webinterface-onboot) program to eliminates the need to switch on the web interface setting after connecting the USB cable.
 
 If you connect your reMarkable tablet via WiFi almost everything is supported, but downloading PDFs and uploading PDFs and EPUBs is not supported.
 

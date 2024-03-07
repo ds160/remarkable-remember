@@ -6,7 +6,6 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ReMarkableRemember.Views.HandWritingRecognitionView"
              x:DataType="vm:HandWritingRecognitionViewModel"
-             MaxHeight="800"
              MinWidth="480">
 
     <Design.DataContext>
@@ -14,6 +13,6 @@
     </Design.DataContext>
 
     <StackPanel>
-        <TextBox Text="{Binding Text}" IsReadOnly="True"/>
+        <TextBox Text="{Binding Text}" IsReadOnly="True" MaxHeight="700"/>
     </StackPanel>
 </UserControl>
