@@ -162,9 +162,9 @@
         <TreeDataGrid Grid.Row="1" Source="{Binding ItemsTree}" CanUserResizeColumns="True" CanUserSortColumns="False" Margin="8">
             <TreeDataGrid.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Upload File" Command="{Binding CommandUploadFile}">
+                    <MenuItem Header="Open" Command="{Binding CommandOpenItem}">
                         <MenuItem.Icon>
-                            <Image Source="/Assets/Menu/UploadFile.png"/>
+                            <Image Source="/Assets/Menu/OpenItem.png"/>
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator/>

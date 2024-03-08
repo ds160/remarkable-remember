@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -49,6 +50,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
         this.CommandInstallLamyEraser = ReactiveCommand.CreateFromTask(this.InstallLamyEraser, this.InstallLamyEraser_CanExecute());
         this.CommandManageTemplates = ReactiveCommand.CreateFromTask(this.ManageTemplates, this.ManageTemplates_CanExecute());
+        this.CommandOpenItem = ReactiveCommand.Create(this.OpenItem, this.OpenItem_CanExecute());
         this.CommandSettings = ReactiveCommand.CreateFromTask(this.Settings, this.Settings_CanExecute());
         this.CommandSync = ReactiveCommand.CreateFromTask(this.Sync, this.Sync_CanExecute());
         this.CommandSyncTargetDirectory = ReactiveCommand.CreateFromTask<String>(this.SyncTargetDirectory, this.SyncTargetDirectory_CanExecute());
@@ -201,6 +203,20 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
 
         return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
+    }
+
+    private void OpenItem()
+    {
+        ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
+        if (selectedItem?.SyncPath != null)
+        {
+            Process.Start(new ProcessStartInfo(selectedItem.SyncPath) { UseShellExecute = true });
+        }
+    }
+
+    private IObservable<Boolean> OpenItem_CanExecute()
+    {
+        return this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => Path.Exists(item?.SyncPath));
     }
 
     private async Task Restart()
@@ -406,6 +422,8 @@ Would you like to restart your reMarkable tablet now?");
     public ReactiveCommand<Unit, Unit> CommandInstallLamyEraser { get; }
 
     public ReactiveCommand<Unit, Unit> CommandManageTemplates { get; }
+
+    public ReactiveCommand<Unit, Unit> CommandOpenItem { get; }
 
     public ReactiveCommand<Unit, Unit> CommandSettings { get; }
 

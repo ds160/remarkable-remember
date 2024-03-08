@@ -13,7 +13,7 @@ The application is a cross-platform managenment tool for your reMarkable tablet.
 - Backup notebooks and folders
 - Template management
 - Hand writing recognition via MyScript
-- Install [Lamy Eraser](https://github.com/isaacwisdom/RemarkableLamyEraser/tree/v1) via WiFi
+- Install [Lamy Eraser](https://github.com/isaacwisdom/RemarkableLamyEraser/tree/v1) via WiFi or USB
 
 ## Installation
 
