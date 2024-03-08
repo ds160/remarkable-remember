@@ -108,6 +108,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             case Job.Description.Settings:
                 return true;
 
+            case Job.Description.GetItems:
             case Job.Description.Backup:
             case Job.Description.HandWritingRecognition:
             case Job.Description.UploadTemplate:
@@ -339,10 +340,12 @@ Would you like to restart your reMarkable tablet now?");
     {
         try
         {
-            if (this.ConnectionStatus is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected))
+            if (CheckConnectionStatusForJob(this.ConnectionStatus, Job.Description.GetItems))
             {
                 if (this.Jobs is Job.Description.None or Job.Description.HandWritingRecognition)
                 {
+                    using Job? job = this.HasItems ? null : new Job(Job.Description.GetItems, this);
+
                     IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(true);
                     ItemViewModel.UpdateItems(items, this.ItemsTree.Items, null);
 
@@ -484,6 +487,7 @@ Would you like to restart your reMarkable tablet now?");
         {
             List<String> jobs = new List<String>();
 
+            if (this.Jobs.HasFlag(Job.Description.GetItems)) { jobs.Add("Getting Items"); }
             if (this.Jobs.HasFlag(Job.Description.Sync)) { jobs.Add("Syncing"); }
             if (this.Jobs.HasFlag(Job.Description.Backup)) { jobs.Add("Backup"); }
             if (this.Jobs.HasFlag(Job.Description.HandWritingRecognition)) { jobs.Add("Hand Writing Recognition"); }
@@ -515,16 +519,17 @@ Would you like to restart your reMarkable tablet now?");
         [Flags]
         public enum Description
         {
-            None = 0,
-            Sync = 1,
-            Backup = 2,
-            HandWritingRecognition = 4,
-            Upload = 8,
-            UploadTemplate = 16,
-            ManageTemplates = 32,
-            SetSyncTargetDirectory = 64,
-            InstallLamyEraser = 128,
-            Settings = 256
+            None = 0x0000,
+            GetItems = 0x0001,
+            Sync = 0x0002,
+            Backup = 0x0004,
+            HandWritingRecognition = 0x0008,
+            Upload = 0x0010,
+            UploadTemplate = 0x0020,
+            ManageTemplates = 0x0040,
+            SetSyncTargetDirectory = 0x0080,
+            InstallLamyEraser = 0x0100,
+            Settings = 0x0200
         }
 
         private readonly Description description;
