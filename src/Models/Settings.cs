@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ReMarkableRemember.Entities;
 
 namespace ReMarkableRemember.Models;
@@ -43,7 +44,7 @@ public sealed class Settings
     {
         using DatabaseContext database = this.controller.CreateDatabaseContext();
 
-        SetValue(database, BACKUP, this.Backup);
+        if (SetValue(database, BACKUP, this.Backup)) { database.Backups.RemoveRange(database.Backups.ToArray()); }
         SetValue(database, MYSCRIPT_APPLICATION_KEY, this.MyScriptApplicationKey);
         SetValue(database, MYSCRIPT_HMAC_KEY, this.MyScriptHmacKey);
         SetValue(database, MYSCRIPT_LANGUAGE, this.MyScriptLanguage);
@@ -53,16 +54,22 @@ public sealed class Settings
         database.SaveChanges();
     }
 
-    private static void SetValue(DatabaseContext database, String key, String value)
+    private static Boolean SetValue(DatabaseContext database, String key, String value)
     {
+        Boolean changed;
+
         Setting? setting = database.Settings.Find(key);
         if (setting != null)
         {
+            changed = String.CompareOrdinal(setting.Value, value) != 0;
             setting.Value = value;
         }
         else
         {
+            changed = false;
             database.Settings.Add(new Setting(key, value));
         }
+
+        return changed;
     }
 }
