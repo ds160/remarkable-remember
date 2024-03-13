@@ -21,7 +21,7 @@ The application is available for Windows, Linux, and OSX. Executables are availa
 
 ## Settings
 
-For the initial setup, enter your reMarkable SSH protocol information. You find the information at the bottom of the Copyrights notices and software licenses page. Navigate to `Menu` > `Settings` > `General` > `Help` > `About` > `Copyrights and licenses`. If you connect your reMarkable tablet via USB, the IP can be blank, only the password is needed.
+For the initial setup, enter your reMarkable SSH protocol information. You find the information at the bottom of the Copyrights notices and software licenses page. Navigate to `Menu` > `Settings` > `General` > `Help` > `About` > `Copyrights and licenses`. If you connect your reMarkable tablet via USB, the IP can be blank, only the password is required.
 
 You need a [MyScript](https://developer.myscript.com/getting-started/web) account for hand writing recognition. Register to receive your keys and enter your keys.
 

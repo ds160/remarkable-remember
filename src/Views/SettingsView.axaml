@@ -14,10 +14,10 @@
 
     <StackPanel>
         <TextBlock>reMarkable IP</TextBlock>
-        <TextBox Text="{Binding TabletIp}" Margin="0, 8, 0, 16"/>
+        <TextBox Text="{Binding TabletIp}" Watermark="Can be blank if connected via USB" Margin="0, 8, 0, 16"/>
 
         <TextBlock>reMarkable Password</TextBlock>
-        <TextBox Text="{Binding TabletPassword}" Margin="0, 8, 0, 48"/>
+        <TextBox Text="{Binding TabletPassword}" Watermark="SSH protocol password, see 'Copyrights and licenses'" Margin="0, 8, 0, 48"/>
 
         <TextBlock>MyScript Application Key</TextBlock>
         <TextBox Text="{Binding MyScriptApplicationKey}" Margin="0, 8, 0, 16"/>
