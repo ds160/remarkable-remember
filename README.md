@@ -45,7 +45,7 @@ You can upload custom templates to your reMarkable. Buy, download, or design you
 
 ## Build
 
-Clone the repository, install .NET Core SDK 7 or higher, and build the project with `dotnet build`.
+Clone the repository, install .NET Core SDK 8 or higher, and build the project with `dotnet build`.
 
 ## Dependencies and Acknowledgment
 

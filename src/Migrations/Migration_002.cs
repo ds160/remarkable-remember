@@ -12,7 +12,7 @@ public sealed class Migration002 : Migration
 {
     protected override void BuildTargetModel(ModelBuilder modelBuilder)
     {
-        if (modelBuilder == null) { throw new ArgumentNullException(nameof(modelBuilder)); }
+        ArgumentNullException.ThrowIfNull(modelBuilder);
 
         modelBuilder.HasAnnotation("ProductVersion", "7.0.5");
 
@@ -64,7 +64,7 @@ public sealed class Migration002 : Migration
 
     protected override void Up(MigrationBuilder migrationBuilder)
     {
-        if (migrationBuilder == null) { throw new ArgumentNullException(nameof(migrationBuilder)); }
+        ArgumentNullException.ThrowIfNull(migrationBuilder);
 
         migrationBuilder.CreateTable(
             name: "Templates",
@@ -85,7 +85,7 @@ public sealed class Migration002 : Migration
 
     protected override void Down(MigrationBuilder migrationBuilder)
     {
-        if (migrationBuilder == null) { throw new ArgumentNullException(nameof(migrationBuilder)); }
+        ArgumentNullException.ThrowIfNull(migrationBuilder);
 
         migrationBuilder.DropTable("Templates");
     }

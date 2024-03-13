@@ -10,7 +10,7 @@ public sealed class DatabaseModelSnapshot : ModelSnapshot
 {
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
-        if (modelBuilder == null) { throw new ArgumentNullException(nameof(modelBuilder)); }
+        ArgumentNullException.ThrowIfNull(modelBuilder);
 
         modelBuilder.HasAnnotation("ProductVersion", "7.0.5");
 

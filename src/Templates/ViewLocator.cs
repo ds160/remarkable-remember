@@ -27,7 +27,7 @@ public sealed class ViewLocator : IDataTemplate
 
     public Control? Build(Object? param)
     {
-        if (param == null) { throw new ArgumentNullException(nameof(param)); }
+        ArgumentNullException.ThrowIfNull(param);
 
         Func<Control> createControl = mapping[param.GetType()];
         Control control = createControl();
