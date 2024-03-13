@@ -398,17 +398,23 @@ internal sealed class Tablet : IDisposable
         }
         catch (HttpRequestException exception)
         {
-            if (exception.InnerException is SocketException socketException)
+            Exception? innerException = exception.InnerException;
+            while (innerException != null)
             {
-                if (socketException.SocketErrorCode is SocketError.ConnectionRefused)
+                if (innerException is SocketException socketException)
                 {
-                    throw new TabletException(TabletConnectionError.UsbNotActived, "USB web interface is not activated.", exception);
+                    if (socketException.SocketErrorCode is SocketError.ConnectionRefused)
+                    {
+                        throw new TabletException(TabletConnectionError.UsbNotActived, "USB web interface is not activated.", exception);
+                    }
+
+                    if (socketException.SocketErrorCode is SocketError.HostDown or SocketError.HostUnreachable or SocketError.NetworkDown or SocketError.NetworkUnreachable)
+                    {
+                        throw new TabletException(TabletConnectionError.UsbNotConnected, "reMarkable is not connected via USB.", exception);
+                    }
                 }
 
-                if (socketException.SocketErrorCode is SocketError.HostDown or SocketError.HostUnreachable or SocketError.NetworkDown or SocketError.NetworkUnreachable)
-                {
-                    throw new TabletException(TabletConnectionError.UsbNotConnected, "reMarkable is not connected via USB.", exception);
-                }
+                innerException = innerException.InnerException;
             }
 
             throw new TabletException(exception.Message, exception);
