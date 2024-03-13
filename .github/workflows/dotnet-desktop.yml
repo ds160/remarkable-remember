@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: ["win-x64", "linux-x64", "osx-x64", "osx.arm64"]
+        arch: ["win-x64", "linux-x64", "osx-x64", "osx"]
     steps:
     - name: Checkout
       uses: actions/checkout@v4
