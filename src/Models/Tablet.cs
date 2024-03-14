@@ -221,8 +221,7 @@ internal sealed class Tablet : IDisposable
             using SftpClient sftpClient = await this.CreateSftpClient().ConfigureAwait(false);
             using SshClient sshClient = await this.CreateSshClient().ConfigureAwait(false);
 
-            await ExecuteSshCommand(sshClient, "systemctl stop LamyEraser.service 2&> /dev/null", false).ConfigureAwait(false);
-            await ExecuteSshCommand(sshClient, "systemctl disable LamyEraser.service 2&> /dev/null", false).ConfigureAwait(false);
+            await ExecuteSshCommand(sshClient, "systemctl disable --now LamyEraser.service", false).ConfigureAwait(false);
 
             String serviceText = await this.gitHubClient.GetStringAsync(new Uri("https://raw.githubusercontent.com/isaacwisdom/RemarkableLamyEraser/v1/RemarkableLamyEraser/LamyEraser.service")).ConfigureAwait(false);
             serviceText = InstallLamyEraserOptions(serviceText, press, undo, leftHanded);
@@ -233,8 +232,34 @@ internal sealed class Tablet : IDisposable
 
             await ExecuteSshCommand(sshClient, "chmod +x /usr/sbin/RemarkableLamyEraser").ConfigureAwait(false);
             await ExecuteSshCommand(sshClient, "systemctl daemon-reload").ConfigureAwait(false);
-            await ExecuteSshCommand(sshClient, "systemctl enable LamyEraser.service").ConfigureAwait(false);
-            await ExecuteSshCommand(sshClient, "systemctl start LamyEraser.service").ConfigureAwait(false);
+            await ExecuteSshCommand(sshClient, "systemctl enable --now LamyEraser.service").ConfigureAwait(false);
+        }
+        finally
+        {
+            this.sshSemaphore.Release();
+        }
+    }
+
+    public async Task InstallWebInterfaceOnBoot(Boolean applyHack = true, String release = "v1.2.3")
+    {
+        await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
+
+        try
+        {
+            using SftpClient sftpClient = await this.CreateSftpClient().ConfigureAwait(false);
+            using SshClient sshClient = await this.CreateSshClient().ConfigureAwait(false);
+
+            await ExecuteSshCommand(sshClient, "systemctl disable --now webinterface-onboot.service", false).ConfigureAwait(false);
+
+            String serviceText = await this.gitHubClient.GetStringAsync(new Uri($"https://github.com/rM-self-serve/webinterface-onboot/releases/download/{release}/webinterface-onboot.service")).ConfigureAwait(false);
+            await FileWrite(sftpClient, "/lib/systemd/system/webinterface-onboot.service", serviceText).ConfigureAwait(false);
+
+            Byte[] serviceBytes = await this.gitHubClient.GetByteArrayAsync(new Uri($"https://github.com/rM-self-serve/webinterface-onboot/releases/download/{release}/webinterface-onboot")).ConfigureAwait(false);
+            await FileWrite(sftpClient, "/home/root/.local/bin/webinterface-onboot", serviceBytes).ConfigureAwait(false);
+
+            await ExecuteSshCommand(sshClient, "chmod +x /home/root/.local/bin/webinterface-onboot").ConfigureAwait(false);
+            if (applyHack) { await ExecuteSshCommand(sshClient, "/home/root/.local/bin/webinterface-onboot apply-hack -y").ConfigureAwait(false); }
+            await ExecuteSshCommand(sshClient, "systemctl enable --now webinterface-onboot.service").ConfigureAwait(false);
         }
         finally
         {
@@ -383,6 +408,10 @@ internal sealed class Tablet : IDisposable
         catch (SshAuthenticationException exception)
         {
             throw new TabletException(TabletConnectionError.SshNotConfigured, "SSH protocol information are not configured or wrong.", exception);
+        }
+        catch (SshConnectionException exception)
+        {
+            throw new TabletException(TabletConnectionError.SshNotConnected, "reMarkable is not connected via WiFi or USB.", exception);
         }
         catch (SshOperationTimeoutException exception)
         {

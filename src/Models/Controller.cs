@@ -66,6 +66,11 @@ public sealed class Controller : IDisposable
         await this.Tablet.InstallLamyEraser(press, undo, leftHanded).ConfigureAwait(false);
     }
 
+    public async Task InstallWebInterfaceOnBoot()
+    {
+        await this.Tablet.InstallWebInterfaceOnBoot().ConfigureAwait(false);
+    }
+
     public async Task Restart()
     {
         await this.Tablet.Restart().ConfigureAwait(false);

@@ -49,6 +49,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.CommandBackup = ReactiveCommand.CreateFromTask(this.Backup, this.Backup_CanExecute());
         this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
         this.CommandInstallLamyEraser = ReactiveCommand.CreateFromTask(this.InstallLamyEraser, this.InstallLamyEraser_CanExecute());
+        this.CommandInstallWebInterfaceOnBoot = ReactiveCommand.CreateFromTask(this.InstallWebInterfaceOnBoot, this.InstallWebInterfaceOnBoot_CanExecute());
         this.CommandManageTemplates = ReactiveCommand.CreateFromTask(this.ManageTemplates, this.ManageTemplates_CanExecute());
         this.CommandOpenItem = ReactiveCommand.Create(this.OpenItem, this.OpenItem_CanExecute());
         this.CommandSettings = ReactiveCommand.CreateFromTask(this.Settings, this.Settings_CanExecute());
@@ -114,6 +115,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
             case Job.Description.UploadTemplate:
             case Job.Description.ManageTemplates:
             case Job.Description.InstallLamyEraser:
+            case Job.Description.InstallWebInterfaceOnBoot:
                 return status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected);
 
             case Job.Description.Sync:
@@ -171,6 +173,18 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         return this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.InstallLamyEraser));
     }
 
+    private async Task InstallWebInterfaceOnBoot()
+    {
+        using Job job = new Job(Job.Description.InstallWebInterfaceOnBoot, this);
+
+        await this.controller.InstallWebInterfaceOnBoot().ConfigureAwait(true);
+    }
+
+    private IObservable<Boolean> InstallWebInterfaceOnBoot_CanExecute()
+    {
+        return this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.InstallWebInterfaceOnBoot));
+    }
+
     private async Task ManageTemplates()
     {
         using Job job = new Job(Job.Description.ManageTemplates, this);
@@ -187,6 +201,8 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
             if (restartRequired || templates.RestartRequired)
             {
+                job.Done();
+
                 await this.Restart().ConfigureAwait(true);
             }
         }
@@ -424,6 +440,8 @@ Would you like to restart your reMarkable tablet now?");
 
     public ReactiveCommand<Unit, Unit> CommandInstallLamyEraser { get; }
 
+    public ReactiveCommand<Unit, Unit> CommandInstallWebInterfaceOnBoot { get; }
+
     public ReactiveCommand<Unit, Unit> CommandManageTemplates { get; }
 
     public ReactiveCommand<Unit, Unit> CommandOpenItem { get; }
@@ -495,6 +513,7 @@ Would you like to restart your reMarkable tablet now?");
             if (this.Jobs.HasFlag(Job.Description.UploadTemplate)) { jobs.Add("Uploading Template"); }
             if (this.Jobs.HasFlag(Job.Description.ManageTemplates)) { jobs.Add("Managing Templates"); }
             if (this.Jobs.HasFlag(Job.Description.InstallLamyEraser)) { jobs.Add("Installing Lamy Eraser"); }
+            if (this.Jobs.HasFlag(Job.Description.InstallWebInterfaceOnBoot)) { jobs.Add("Installing WebInterface-OnBoot"); }
 
             return (jobs.Count > 0) ? String.Join(" and ", jobs) : null;
         }
@@ -529,7 +548,8 @@ Would you like to restart your reMarkable tablet now?");
             ManageTemplates = 0x0040,
             SetSyncTargetDirectory = 0x0080,
             InstallLamyEraser = 0x0100,
-            Settings = 0x0200
+            InstallWebInterfaceOnBoot = 0x0200,
+            Settings = 0x0400
         }
 
         private readonly Description description;

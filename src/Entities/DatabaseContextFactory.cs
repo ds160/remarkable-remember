@@ -6,8 +6,6 @@ using ReMarkableRemember.Helper;
 
 namespace ReMarkableRemember.Entities;
 
-#pragma warning disable CA1812
-
 internal sealed class DatabaseContextFactory : IDesignTimeDbContextFactory<DatabaseContext>
 {
     public DatabaseContext CreateDbContext(String[] args)
@@ -25,5 +23,3 @@ internal sealed class DatabaseContextFactory : IDesignTimeDbContextFactory<Datab
         return dataSource;
     }
 }
-
-#pragma warning restore CA1812

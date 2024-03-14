@@ -144,6 +144,12 @@
                             <TextBlock Text="Install&#x0a;Lamy Eraser"/>
                         </StackPanel>
                     </Button>
+                    <Button Command="{Binding CommandInstallWebInterfaceOnBoot}">
+                        <StackPanel>
+                            <Image Source="/Assets/Menu/InstallWebInterfaceOnBoot.png"/>
+                            <TextBlock Text="Install&#x0a;Web-OnBoot"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </TabItem>
 
