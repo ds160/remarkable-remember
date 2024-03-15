@@ -170,7 +170,10 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
     private IObservable<Boolean> InstallLamyEraser_CanExecute()
     {
-        return this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.InstallLamyEraser));
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.InstallLamyEraser));
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
+
+        return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
     }
 
     private async Task InstallWebInterfaceOnBoot()
@@ -178,11 +181,16 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         using Job job = new Job(Job.Description.InstallWebInterfaceOnBoot, this);
 
         await this.controller.InstallWebInterfaceOnBoot().ConfigureAwait(true);
+
+        await this.Restart(job).ConfigureAwait(true);
     }
 
     private IObservable<Boolean> InstallWebInterfaceOnBoot_CanExecute()
     {
-        return this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.InstallWebInterfaceOnBoot));
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.InstallWebInterfaceOnBoot));
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
+
+        return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
     }
 
     private async Task ManageTemplates()
@@ -201,9 +209,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
 
             if (restartRequired || templates.RestartRequired)
             {
-                job.Done();
-
-                await this.Restart().ConfigureAwait(true);
+                await this.Restart(job).ConfigureAwait(true);
             }
         }
         else
@@ -236,13 +242,21 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         return this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => Path.Exists(item?.SyncPath));
     }
 
-    private async Task Restart()
+    private async Task Restart(Job job)
     {
-        MessageViewModel message = MessageViewModel.Question("Restart",
-@"The template information has been changed. A restart is required for the changes to take effect.
-Please save your work on your tablet by going to the main screen before restarting.
+        job.Done();
 
-Would you like to restart your reMarkable tablet now?");
+        String reason = String.Empty;
+        if (job.HasFlag(Job.Description.ManageTemplates) || job.HasFlag(Job.Description.UploadTemplate))
+        {
+            reason = "The template information has been changed. ";
+        }
+
+        MessageViewModel message = MessageViewModel.Question("Restart", String.Join(Environment.NewLine,
+            $"{reason}A restart is required for the changes to take effect.",
+            "Please save your work on your tablet by going to the main screen before restarting.",
+            "",
+            "Would you like to restart your reMarkable tablet now?"));
 
         if (await this.ShowDialog.Handle(message))
         {
@@ -422,7 +436,7 @@ Would you like to restart your reMarkable tablet now?");
         {
             TabletTemplate tabletTemplate = new TabletTemplate(this.controller, template.Name, template.Category, template.Icon.Code, template.SourceFilePath);
             await tabletTemplate.Upload().ConfigureAwait(true);
-            await this.Restart().ConfigureAwait(true);
+            await this.Restart(job).ConfigureAwait(true);
         }
     }
 
@@ -578,6 +592,11 @@ Would you like to restart your reMarkable tablet now?");
         {
             IDisposable disposable = this;
             disposable.Dispose();
+        }
+
+        public Boolean HasFlag(Description flag)
+        {
+            return this.description.HasFlag(flag);
         }
     }
 }
