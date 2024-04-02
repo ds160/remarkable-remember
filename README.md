@@ -1,4 +1,3 @@
-[![rm1](https://img.shields.io/badge/rM1-supported-green)](https://remarkable.com/store/remarkable)
 [![rm2](https://img.shields.io/badge/rM2-supported-green)](https://remarkable.com/store/remarkable-2)
 
 # reMarkable Remember
@@ -63,3 +62,4 @@ Thanks to the developers for their beautiful work.
 
 - [Awesome reMarkable](https://github.com/reHackable/awesome-reMarkable)
 - [Toltec](https://toltec-dev.org/)
+- [Information about reMarkable 2](https://remarkable.jms1.info/)
