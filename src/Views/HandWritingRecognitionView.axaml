@@ -12,7 +12,17 @@
         <vm:HandWritingRecognitionViewModel/>
     </Design.DataContext>
 
-    <StackPanel>
-        <TextBox Text="{Binding Text}" IsReadOnly="True" MaxHeight="700"/>
+    <StackPanel Margin="0, 0, 0, 8">
+        <Grid Margin="0, 0, 0, 8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <CheckBox Grid.Column="0" IsChecked="{Binding RemoveLineEndings}">Remove Line Endings</CheckBox>
+            <Button Grid.Column="2" Command="{Binding CommandCopyTextToClipboard}" Content="Copy To Clipboard"/>
+        </Grid>
+
+        <TextBox Text="{Binding Text}" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="700" MaxWidth="700"/>
     </StackPanel>
 </UserControl>

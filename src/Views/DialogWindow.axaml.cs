@@ -17,6 +17,19 @@ public sealed partial class DialogWindow : ReactiveWindow<DialogWindowModel>
         this.WhenActivated(this.Subscribe);
     }
 
+    private async Task CopyToClipboardHandler(InteractionContext<String, Boolean> context)
+    {
+        if (this.Clipboard != null)
+        {
+            await this.Clipboard.SetTextAsync(context.Input);
+            context.SetOutput(true);
+        }
+        else
+        {
+            context.SetOutput(false);
+        }
+    }
+
     private async Task OpenFilePickerHandler(InteractionContext<FilePickerOpenOptions, IEnumerable<String>?> context)
     {
         IReadOnlyList<IStorageFile> files = await this.StorageProvider.OpenFilePickerAsync(context.Input).ConfigureAwait(true);
@@ -36,6 +49,7 @@ public sealed partial class DialogWindow : ReactiveWindow<DialogWindowModel>
 
         action(this.ViewModel.CommandCancel.Subscribe(result => this.Close(result)));
         action(this.ViewModel.CommandClose.Subscribe(result => this.Close(result)));
+        action(this.ViewModel.CopyToClipboard.RegisterHandler(this.CopyToClipboardHandler));
         action(this.ViewModel.OpenFilePicker.RegisterHandler(this.OpenFilePickerHandler));
         action(this.ViewModel.OpenFolderPicker.RegisterHandler(this.OpenFolderPickerHandler));
     }

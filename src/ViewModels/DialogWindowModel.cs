@@ -13,6 +13,7 @@ public abstract class DialogWindowModel : ViewModelBase
         this.CommandCancel = ReactiveCommand.Create(() => { return false; });
         this.CommandClose = ReactiveCommand.Create(() => { return true; });
 
+        this.CopyToClipboard = new Interaction<String, Boolean>();
         this.OpenFilePicker = new Interaction<FilePickerOpenOptions, IEnumerable<String>?>();
         this.OpenFolderPicker = new Interaction<String, String?>();
 
@@ -26,6 +27,8 @@ public abstract class DialogWindowModel : ViewModelBase
     public ReactiveCommand<Unit, Boolean> CommandClose { get; }
 
     public Object Content { get { return this; } }
+
+    public Interaction<String, Boolean> CopyToClipboard { get; }
 
     public Interaction<FilePickerOpenOptions, IEnumerable<String>?> OpenFilePicker { get; }
 
