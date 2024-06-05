@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
@@ -546,6 +547,11 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
     public Interaction<String, String?> OpenFolderPicker { get; }
 
     public Interaction<DialogWindowModel, Boolean> ShowDialog { get; }
+
+    public static String Title
+    {
+        get { return $"reMarkable Remember - {Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)}"; }
+    }
 
     private sealed class Job : IDisposable
     {

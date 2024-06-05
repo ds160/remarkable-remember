@@ -10,7 +10,7 @@
         MinHeight="600"
         MinWidth="1086"
         RenderOptions.BitmapInterpolationMode="HighQuality"
-        Title="reMarkable Remember"
+        Title="{Binding Source={x:Static vm:MainWindowModel.Title}}"
         Width="1086"
         WindowStartupLocation="CenterScreen">
 
