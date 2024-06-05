@@ -20,7 +20,9 @@
 
     <Window.Styles>
         <Style Selector="TabControl.Menu">
-            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}"/>
+            <Setter Property="Background">
+                <Setter.Value><SolidColorBrush Color="{DynamicResource SystemBaseLowColor}" Opacity="0.5"/></Setter.Value>
+            </Setter>
             <Setter Property="Height" Value="192"/>
         </Style>
         <Style Selector="TabControl.Menu>TabItem">
@@ -50,9 +52,10 @@
             <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
         <Style Selector="TabControl.Menu>TabItem>StackPanel>Rectangle">
-            <Setter Property="Fill" Value="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+            <Setter Property="Fill">
+                <Setter.Value><SolidColorBrush Color="{DynamicResource SystemBaseMediumColor}" Opacity="0.5"/></Setter.Value>
+            </Setter>
             <Setter Property="Margin" Value="4"/>
-            <Setter Property="Opacity" Value="0.5"/>
             <Setter Property="VerticalAlignment" Value="Stretch"/>
             <Setter Property="Width" Value="1"/>
         </Style>
