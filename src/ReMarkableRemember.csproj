@@ -9,20 +9,16 @@
     <Version>1.5.3</Version>
     <PackageDescription>A cross-platform managenment application for the reMarkable tablet</PackageDescription>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
-
-  <!-- <ItemGroup>
-    <Content Include="Assets\Logo.png" CopyToPublishDirectory="PreserveNewest">
-      <LinuxPath>/usr/share/icons/hicolor/48x48/apps/ReMarkableRemember.png</LinuxPath>
-    </Content>
-	<Content Include="Assets\Linux.desktop" CopyToPublishDirectory="PreserveNewest">
-      <LinuxPath>/usr/share/applications/ReMarkableRemember.desktop</LinuxPath>
-	</Content>
-  </ItemGroup> -->
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.0.10" />

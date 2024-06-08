@@ -25,11 +25,11 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Build
-      run: dotnet publish ReMarkableRemember.sln -c Release -r ${{ matrix.arch }} -p:PublishReadyToRun=true --self-contained
+      run: dotnet publish ReMarkableRemember.sln -c Release -r ${{ matrix.arch }} --self-contained -p:PublishReadyToRun=true -p:DebugType=None -p:DebugSymbols=false
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.arch }}
-        path: "./bin/Release/net8.0/${{ matrix.arch }}/publish/"
+        path: "./src/bin/Release/net8.0/${{ matrix.arch }}/publish/"
         retention-days: 3
