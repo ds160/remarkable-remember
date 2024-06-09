@@ -9,10 +9,8 @@ on:
 jobs:
 
   build:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        arch: ["win-x64", "linux-x64", "osx-x64"]
+    runs-on: ubuntu-latest
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -25,12 +23,28 @@ jobs:
     - name: Install PupNet Deploy
       run: dotnet tool install -g KuiperZone.PupNet
 
-    - name: Build
-      run: dotnet publish ReMarkableRemember.sln -c Release -r ${{ matrix.arch }} --self-contained -p:PublishReadyToRun=true -p:DebugType=None -p:DebugSymbols=false
+    - name: Build AppImage
+      run: pupnet -y -k AppImage
 
-    - name: Upload build artifacts
+    - name: Build Windows
+      run: dotnet publish ReMarkableRemember.sln -c Release -r win-x64 --self-contained -p:PublishReadyToRun=true -p:DebugType=None -p:DebugSymbols=false
+
+    - name: Build MacOS
+      run: dotnet publish ReMarkableRemember.sln -c Release -r osx-x64 --self-contained -p:PublishReadyToRun=true -p:DebugType=None -p:DebugSymbols=false
+
+    - name: Upload AppImage
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.arch }}
-        path: "./src/bin/Release/net8.0/${{ matrix.arch }}/publish/"
-        retention-days: 3
+        path: "deploy/reMarkableRemember.x86_64.AppImage"
+
+    - name: Upload Windows
+      uses: actions/upload-artifact@v4
+      with:
+        name: reMarkableRemember.win-x64
+        path: "src/bin/Release/net8.0/win-x64/publish/"
+
+    - name: Upload MacOS
+      uses: actions/upload-artifact@v4
+      with:
+        name: reMarkableRemember.osx-x64
+        path: "src/bin/Release/net8.0/osx-x64/publish/"
