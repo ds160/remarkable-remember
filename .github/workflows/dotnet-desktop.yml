@@ -50,13 +50,20 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Install PupNet Deploy
+        run: dotnet tool install -g KuiperZone.PupNet
+
+      - name: Install Inno Setup
+        uses: pwall2222/inno-setup-download@v0.0.4
+
       - name: Build
-        run: dotnet publish src/ReMarkableRemember.csproj -c Release -r win-x64 --self-contained -p:PublishReadyToRun=true -p:DebugType=None -p:DebugSymbols=false
+        run: pupnet -y -k setup -r win-x64
+
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: win-x64
-          path: "src/bin/Release/net8.0/win-x64/publish/"
+          path: "deploy/Output/"
 
   build-macos:
     runs-on: ubuntu-latest
