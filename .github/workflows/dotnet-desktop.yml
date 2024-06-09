@@ -7,10 +7,8 @@ on:
     branches: [ "main" ]
 
 jobs:
-
-  build:
+  build-linux:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -29,25 +27,47 @@ jobs:
     - name: Build AppImage
       run: pupnet -y -k AppImage
 
-    - name: Build Windows
-      run: dotnet publish ReMarkableRemember.sln -c Release -r win-x64 --self-contained -p:PublishReadyToRun=true -p:DebugType=None -p:DebugSymbols=false
-
-    - name: Build MacOS
-      run: dotnet publish ReMarkableRemember.sln -c Release -r osx-x64 --self-contained -p:PublishReadyToRun=true -p:DebugType=None -p:DebugSymbols=false
-
-    - name: Upload AppImage
+    - name: Upload
       uses: actions/upload-artifact@v4
       with:
-        path: "deploy/reMarkableRemember.x86_64.AppImage"
+        name: linux-x64
+        path: "deploy/Output/"
 
-    - name: Upload Windows
-      uses: actions/upload-artifact@v4
-      with:
-        name: reMarkableRemember.win-x64
-        path: "src/bin/Release/net8.0/win-x64/publish/"
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Upload MacOS
-      uses: actions/upload-artifact@v4
-      with:
-        name: reMarkableRemember.osx-x64
-        path: "src/bin/Release/net8.0/osx-x64/publish/"
+      - name: Install .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build
+        run: dotnet publish src/ReMarkableRemember.csproj -c Release -r win-x64 --self-contained -p:PublishReadyToRun=true -p:DebugType=None -p:DebugSymbols=false
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-x64
+          path: "src/bin/Release/net8.0/win-x64/publish/"
+
+  build-macos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+            dotnet-version: 8.0.x
+
+      - name: Build
+        run: dotnet publish src/ReMarkableRemember.csproj -c Release -r osx-x64 --self-contained -p:PublishReadyToRun=true -p:DebugType=None -p:DebugSymbols=false
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+            name: osx-x64
+            path: "src/bin/Release/net8.0/osx-x64/publish/"
