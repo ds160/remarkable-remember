@@ -24,7 +24,7 @@ jobs:
       run: dotnet tool install -g KuiperZone.PupNet
 
     - name: Install libfuse2 for AppImage
-      run: sudo apt install libfuse2
+      run: sudo apt-get install -y libfuse2
 
     - name: Build AppImage
       run: pupnet -y -k AppImage
