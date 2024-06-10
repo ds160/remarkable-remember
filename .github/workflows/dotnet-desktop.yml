@@ -10,30 +10,31 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
+    -
+      name: Checkout
       uses: actions/checkout@v4
-
-    - name: Install .NET Core
+    -
+      name: Install .NET Core
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
-
-    - name: Install PupNet Deploy
+    -
+      name: Install PupNet Deploy
       run: dotnet tool install -g KuiperZone.PupNet
-
-    - name: Install PupNet Deploy dependencies
+    -
+      name: Install PupNet Deploy dependencies
       run: sudo apt-get install -y libfuse2 dpkg rpm
-
-    - name: Build AppImage
+    -
+      name: Build AppImage
       run: pupnet -y -k AppImage
-
-    - name: Build DEB
+    -
+      name: Build DEB
       run: pupnet -y -k DEB
-
-    - name: Build RPM
+    -
+      name: Build RPM
       run: pupnet -y -k RPM
-
-    - name: Upload
+    -
+      name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: linux-x64
@@ -42,18 +43,19 @@ jobs:
   build-windows:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      -
+        name: Checkout
         uses: actions/checkout@v4
-
-      - name: Install .NET Core
+      -
+        name: Install .NET Core
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-
-      - name: Build
+      -
+        name: Build
         run: dotnet publish src/ReMarkableRemember.csproj -c Release -r win-x64 --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false
-
-      - name: Upload
+      -
+        name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: win-x64
@@ -62,18 +64,19 @@ jobs:
   build-macos:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      -
+        name: Checkout
         uses: actions/checkout@v4
-
-      - name: Install .NET Core
+      -
+        name: Install .NET Core
         uses: actions/setup-dotnet@v4
         with:
             dotnet-version: 8.0.x
-
-      - name: Build
+      -
+        name: Build
         run: dotnet publish src/ReMarkableRemember.csproj -c Release -r osx-x64 --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false
-
-      - name: Upload
+      -
+        name: Upload
         uses: actions/upload-artifact@v4
         with:
             name: osx-x64
