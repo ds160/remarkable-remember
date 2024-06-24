@@ -15,13 +15,28 @@ internal sealed class DatabaseContext : DbContext
         configurationBuilder.Properties<DateTime>().HaveConversion<DateTimeToStringConverter>();
     }
 
-    public DbSet<Backup> Backups { get; private set; }
+    public DbSet<Backup> Backups
+    {
+        get { return this.Set<Backup>(); }
+    }
 
-    public DbSet<Setting> Settings { get; private set; }
+    public DbSet<Setting> Settings
+    {
+        get { return this.Set<Setting>(); }
+    }
 
-    public DbSet<SyncConfiguration> SyncConfigurations { get; private set; }
+    public DbSet<SyncConfiguration> SyncConfigurations
+    {
+        get { return this.Set<SyncConfiguration>(); }
+    }
 
-    public DbSet<Sync> Syncs { get; private set; }
+    public DbSet<Sync> Syncs
+    {
+        get { return this.Set<Sync>(); }
+    }
 
-    public DbSet<Template> Templates { get; private set; }
+    public DbSet<Template> Templates
+    {
+        get { return this.Set<Template>(); }
+    }
 }
