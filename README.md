@@ -56,6 +56,8 @@ I'm using the [Lamy Eraser](https://github.com/isaacwisdom/RemarkableLamyEraser/
 
 I'm using the [WebInterface-OnBoot](https://github.com/rM-self-serve/webinterface-onboot) sources that eliminates the need to switch on the `USB web interface` setting after connecting the USB cable.
 
+I'm using [PupNet Deploy](https://github.com/kuiperzone/PupNet-Deploy) for the deployment. 
+
 Thanks to the developers for their beautiful work.
 
 ## Links
