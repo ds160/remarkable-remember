@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/ReMarkableRemember.sln",
+                "${workspaceFolder}/ReMarkableRemember.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/ReMarkableRemember.sln",
+                "${workspaceFolder}/ReMarkableRemember.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/ReMarkableRemember.sln"
+                "${workspaceFolder}/ReMarkableRemember.csproj"
             ],
             "problemMatcher": "$msCompile"
         }

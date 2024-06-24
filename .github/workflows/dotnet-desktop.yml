@@ -38,7 +38,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: linux-x64
-        path: "deploy/Output/"
+        path: "Deploy/Output/"
 
   build-windows:
     runs-on: ubuntu-latest
@@ -53,13 +53,13 @@ jobs:
           dotnet-version: 8.0.x
       -
         name: Build
-        run: dotnet publish src/ReMarkableRemember.csproj -c Release -r win-x64 --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false
+        run: dotnet publish ReMarkableRemember.csproj -c Release -r win-x64 --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false
       -
         name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: win-x64
-          path: "src/bin/Release/net8.0/win-x64/publish/"
+          path: "bin/Release/net8.0/win-x64/publish/"
 
   build-macos:
     runs-on: ubuntu-latest
@@ -74,10 +74,10 @@ jobs:
             dotnet-version: 8.0.x
       -
         name: Build
-        run: dotnet publish src/ReMarkableRemember.csproj -c Release -r osx-x64 --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false
+        run: dotnet publish ReMarkableRemember.csproj -c Release -r osx-x64 --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false
       -
         name: Upload
         uses: actions/upload-artifact@v4
         with:
             name: osx-x64
-            path: "src/bin/Release/net8.0/osx-x64/publish/"
+            path: "bin/Release/net8.0/osx-x64/publish/"
