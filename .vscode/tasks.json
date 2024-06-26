@@ -7,19 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/ReMarkableRemember.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary;ForceNoAlign"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "publish",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "publish",
-                "${workspaceFolder}/ReMarkableRemember.csproj",
+                "${workspaceFolder}/ReMarkableRemember.sln",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -33,7 +21,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/ReMarkableRemember.csproj"
+                "${workspaceFolder}/src/ReMarkableRemember/ReMarkableRemember.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
