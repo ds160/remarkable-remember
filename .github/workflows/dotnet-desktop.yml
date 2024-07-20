@@ -14,16 +14,11 @@ jobs:
       name: Checkout
       uses: actions/checkout@v4
     -
-      name: Install .NET Core
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-    -
       name: Install PupNet Deploy
       run: dotnet tool install -g KuiperZone.PupNet
     -
       name: Install PupNet Deploy dependencies
-      run: sudo apt-get install -y libfuse2 dpkg rpm
+      run: sudo apt-get install -y libfuse2
     -
       name: Build AppImage
       run: pupnet -y -k AppImage
@@ -41,25 +36,23 @@ jobs:
         path: "bin/"
 
   build-windows:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       -
         name: Checkout
         uses: actions/checkout@v4
       -
-        name: Install .NET Core
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
+        name: Install PupNet Deploy
+        run: dotnet tool install -g KuiperZone.PupNet
       -
-        name: Build
-        run: dotnet publish src/ReMarkableRemember/ReMarkableRemember.csproj -c Release -r win-x64 --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false
+        name: Build Setup
+        run: pupnet -y -k Setup
       -
         name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: win-x64
-          path: "src/ReMarkableRemember/bin/Release/net8.0/win-x64/publish/"
+          path: "bin/"
 
   build-macos:
     runs-on: ubuntu-latest
@@ -67,11 +60,6 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v4
-      -
-        name: Install .NET Core
-        uses: actions/setup-dotnet@v4
-        with:
-            dotnet-version: 8.0.x
       -
         name: Build
         run: dotnet publish src/ReMarkableRemember/ReMarkableRemember.csproj -c Release -r osx-x64 --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false
