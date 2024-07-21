@@ -1,8 +1,8 @@
 using System;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using ReactiveUI;
 using ReMarkableRemember.Models;
 
@@ -34,7 +34,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         this.WhenAnyValue(vm => vm.TabletPassword).Subscribe(this.CheckTabletPassword);
     }
 
-    public ReactiveCommand<Unit, Unit> CommandSetBackup { get; }
+    public ICommand CommandSetBackup { get; }
 
     public String Backup { get { return this.backup; } private set { this.RaiseAndSetIfChanged(ref this.backup, value); } }
 

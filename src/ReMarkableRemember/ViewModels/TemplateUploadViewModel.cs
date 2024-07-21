@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
 
@@ -32,7 +32,7 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
         this.WhenAnyValue(vm => vm.SourceFilePath).Subscribe(value => this.CheckProperty(value, nameof(this.SourceFilePath), "Source File"));
     }
 
-    public ReactiveCommand<Unit, Unit> CommandSetSourceFilePath { get; }
+    public ICommand CommandSetSourceFilePath { get; }
 
     public String Category { get { return this.category; } set { this.RaiseAndSetIfChanged(ref this.category, value); } }
 

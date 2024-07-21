@@ -163,6 +163,12 @@
                             <TextBlock Text="Settings"/>
                         </StackPanel>
                     </Button>
+                    <Button Command="{Binding CommandAbout}">
+                        <StackPanel>
+                            <Image Source="/Assets/Menu/About.png"/>
+                            <TextBlock Text="About"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </TabItem>
         </TabControl>

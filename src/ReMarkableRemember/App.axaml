@@ -1,7 +1,10 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ReMarkableRemember.App"
              xmlns:templates="using:ReMarkableRemember.Templates"
+             xmlns:vm="using:ReMarkableRemember.ViewModels"
+             x:Class="ReMarkableRemember.App"
+             x:DataType="vm:IAppModel"
+             Name="reMarkable Remember"
              RequestedThemeVariant="Default">
 
     <Application.DataTemplates>
@@ -12,4 +15,14 @@
         <FluentTheme/>
         <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml"/>
     </Application.Styles>
+
+    <Design.DataContext>
+        <vm:IAppModel/>
+    </Design.DataContext>
+
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="About reMarkable Remember" Command="{Binding CommandAbout}"/>
+        </NativeMenu>
+    </NativeMenu.Menu>
 </Application>

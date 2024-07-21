@@ -1,7 +1,7 @@
 using System;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using ReactiveUI;
 
 namespace ReMarkableRemember.ViewModels;
@@ -28,7 +28,7 @@ public sealed class HandWritingRecognitionViewModel : DialogWindowModel
         await this.CopyToClipboard.Handle(this.Text);
     }
 
-    public ReactiveCommand<Unit, Unit> CommandCopyTextToClipboard { get; }
+    public ICommand CommandCopyTextToClipboard { get; }
 
     public Boolean RemoveLineEndings
     {

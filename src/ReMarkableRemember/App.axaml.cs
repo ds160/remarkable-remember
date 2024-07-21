@@ -22,6 +22,7 @@ public partial class App : Application
         {
             String dataSource = DatabaseContextFactory.GetDataSource(desktop.Args?.FirstOrDefault());
             desktop.MainWindow = new MainWindow() { DataContext = new MainWindowModel(dataSource) };
+            this.DataContext = desktop.MainWindow.DataContext;
         }
 
         base.OnFrameworkInitializationCompleted();

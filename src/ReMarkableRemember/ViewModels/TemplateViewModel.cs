@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Reactive;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Avalonia.Media.Imaging;
 using ReactiveUI;
 using ReMarkableRemember.Models;
@@ -29,7 +29,7 @@ public sealed class TemplateViewModel
         this.CommandDelete = ReactiveCommand.CreateFromTask(this.Delete);
     }
 
-    public ReactiveCommand<Unit, Unit> CommandDelete { get; }
+    public ICommand CommandDelete { get; }
 
     public String Category { get { return this.template.Category; } }
 

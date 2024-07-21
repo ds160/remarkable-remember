@@ -9,13 +9,14 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
 using ReMarkableRemember.Models;
 
 namespace ReMarkableRemember.ViewModels;
 
-public sealed class MainWindowModel : ViewModelBase, IDisposable
+public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
 {
     private static readonly FilePickerFileType FileTypeEpub = new FilePickerFileType("EPUB e-book")
     {
@@ -47,6 +48,7 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.jobs = Job.Description.None;
         this.myScriptLanguage = this.MyScriptLanguages.Single(language => String.CompareOrdinal(language.Code, this.controller.Settings.MyScriptLanguage) == 0);
 
+        this.CommandAbout = ReactiveCommand.CreateFromTask(this.About);
         this.CommandBackup = ReactiveCommand.CreateFromTask(this.Backup, this.Backup_CanExecute());
         this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
         this.CommandInstallLamyEraser = ReactiveCommand.CreateFromTask(this.InstallLamyEraser, this.InstallLamyEraser_CanExecute());
@@ -64,6 +66,14 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         this.WhenAnyValue(vm => vm.MyScriptLanguage).Subscribe(this.SaveMyScriptLanguage);
 
         RxApp.MainThreadScheduler.Schedule(this.Update);
+    }
+
+    private async Task About()
+    {
+        if (await this.ShowDialog.Handle(new AboutViewModel()))
+        {
+            Process.Start(new ProcessStartInfo("https://github.com/ds160/remarkable-remember") { UseShellExecute = true });
+        }
     }
 
     private async Task Backup()
@@ -449,27 +459,29 @@ public sealed class MainWindowModel : ViewModelBase, IDisposable
         return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
     }
 
-    public ReactiveCommand<Unit, Unit> CommandBackup { get; }
+    public ICommand CommandAbout { get; }
 
-    public ReactiveCommand<Unit, Unit> CommandHandWritingRecognition { get; }
+    public ICommand CommandBackup { get; }
 
-    public ReactiveCommand<Unit, Unit> CommandInstallLamyEraser { get; }
+    public ICommand CommandHandWritingRecognition { get; }
 
-    public ReactiveCommand<Unit, Unit> CommandInstallWebInterfaceOnBoot { get; }
+    public ICommand CommandInstallLamyEraser { get; }
 
-    public ReactiveCommand<Unit, Unit> CommandManageTemplates { get; }
+    public ICommand CommandInstallWebInterfaceOnBoot { get; }
 
-    public ReactiveCommand<Unit, Unit> CommandOpenItem { get; }
+    public ICommand CommandManageTemplates { get; }
 
-    public ReactiveCommand<Unit, Unit> CommandSettings { get; }
+    public ICommand CommandOpenItem { get; }
 
-    public ReactiveCommand<Unit, Unit> CommandSync { get; }
+    public ICommand CommandSettings { get; }
+
+    public ICommand CommandSync { get; }
 
     public ReactiveCommand<String, Unit> CommandSyncTargetDirectory { get; }
 
-    public ReactiveCommand<Unit, Unit> CommandUploadFile { get; }
+    public ICommand CommandUploadFile { get; }
 
-    public ReactiveCommand<Unit, Unit> CommandUploadTemplate { get; }
+    public ICommand CommandUploadTemplate { get; }
 
     public TabletConnectionError? ConnectionStatus
     {

@@ -16,7 +16,7 @@ The application is a cross-platform managenment tool for your reMarkable tablet.
 
 ## Installation
 
-The application is available for Windows, Linux, and OSX. Executables are available under [Releases](https://github.com/ds160/remarkable-remember/releases).
+The application is available for Linux, MacOS, and Windows. Executables are available under [Releases](https://github.com/ds160/remarkable-remember/releases).
 
 ## Settings
 
