@@ -11,10 +11,10 @@
         <vm:AboutViewModel/>
     </Design.DataContext>
 
-    <StackPanel HorizontalAlignment="Center" Margin="0, 0, 0, 16" Spacing="32">
+    <StackPanel HorizontalAlignment="Center" Margin="0, 0, 0, 24" Spacing="32">
         <Image Source="/Assets/About.png" Width="128"/>
         <StackPanel>
-            <TextBlock FontSize="24" FontWeight="Bold" HorizontalAlignment="Center">reMarkable Remember</TextBlock>
+            <TextBlock Text="reMarkable Remember" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
             <TextBlock Text="{Binding Source={x:Static vm:AboutViewModel.Version}}" HorizontalAlignment="Center"/>
         </StackPanel>
         <TextBlock>A cross-platform managenment application for the reMarkable tablet.</TextBlock>

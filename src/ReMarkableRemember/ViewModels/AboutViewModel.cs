@@ -5,7 +5,7 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class AboutViewModel : DialogWindowModel
 {
-    public AboutViewModel() : base("About reMarkable Remember", "GitHub", "Close")
+    public AboutViewModel() : base("About", "GitHub", "Close")
     {
     }
 
