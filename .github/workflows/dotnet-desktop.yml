@@ -56,24 +56,26 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: ["osx-x64", "osx-arm64"]
     steps:
       -
         name: Checkout
         uses: actions/checkout@v4
       -
         name: Build
-        run: dotnet publish src/ReMarkableRemember/ReMarkableRemember.csproj -c Release -r osx-arm64 --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o "bin/reMarkable Remember.app/Contents/MacOS"
+        run: dotnet publish src/ReMarkableRemember/ReMarkableRemember.csproj -c Release -r ${{ matrix.arch }} --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o "bin/reMarkable Remember.app/Contents/MacOS"
       -
         name: Prepare Package Contents
         run: |
           mkdir "bin/reMarkable Remember.app/Contents/Resources"
-          cp "assets/deployment/osx-arm64.plist" "bin/reMarkable Remember.app/Contents/Info.plist"
+          cp "assets/deployment/${{ matrix.arch }}.plist" "bin/reMarkable Remember.app/Contents/Info.plist"
           cp "assets/deployment/icon.icns" "bin/reMarkable Remember.app/Contents/Resources/icon.icns"
-          chmod +x "bin/reMarkable Remember.app/Contents/MacOS/ReMarkableRemember"
           rm "bin/reMarkable Remember.app/Contents/MacOS/ReMarkableRemember.xml"
       -
         name: Upload
         uses: actions/upload-artifact@v4
         with:
-            name: osx-arm64
+            name: ${{ matrix.arch }}
             path: "bin/"
