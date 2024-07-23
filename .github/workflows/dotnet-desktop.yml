@@ -66,10 +66,11 @@ jobs:
       -
         name: Prepare Package Contents
         run: |
-          rm "bin/reMarkable Remember.app/Contents/MacOS/ReMarkableRemember.xml"
           mkdir "bin/reMarkable Remember.app/Contents/Resources"
-          cp "assets/deployment/macos.arm64.plist" "bin/reMarkable Remember.app/Contents/Info.plist"
+          cp "assets/deployment/osx-arm64.plist" "bin/reMarkable Remember.app/Contents/Info.plist"
           cp "assets/deployment/icon.icns" "bin/reMarkable Remember.app/Contents/Resources/icon.icns"
+          chmod +x "bin/reMarkable Remember.app/Contents/MacOS/ReMarkableRemember"
+          rm "bin/reMarkable Remember.app/Contents/MacOS/ReMarkableRemember.xml"
       -
         name: Upload
         uses: actions/upload-artifact@v4
