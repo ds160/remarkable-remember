@@ -55,17 +55,24 @@ jobs:
           path: "bin/"
 
   build-macos:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       -
         name: Checkout
         uses: actions/checkout@v4
       -
         name: Build
-        run: dotnet publish src/ReMarkableRemember/ReMarkableRemember.csproj -c Release -r osx-x64 --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false
+        run: dotnet publish src/ReMarkableRemember/ReMarkableRemember.csproj -c Release -r osx-arm64 --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o "bin/reMarkable Remember.app/Contents/MacOS"
+      -
+        name: Prepare Package Contents
+        run: |
+          rm "bin/reMarkable Remember.app/Contents/MacOS/ReMarkableRemember.xml"
+          mkdir "bin/reMarkable Remember.app/Contents/Resources"
+          cp "$assets/deployment/macos.arm64.plist" "bin/reMarkable Remember.app/Contents/Info.plist"
+          cp "assets/deployment/icon.icns" "bin/reMarkable Remember.app/Contents/Resources/icon.icns"
       -
         name: Upload
         uses: actions/upload-artifact@v4
         with:
-            name: osx-x64
-            path: "src/ReMarkableRemember/bin/Release/net8.0/osx-x64/publish/"
+            name: osx-arm64
+            path: "bin/"
