@@ -5,4 +5,6 @@ namespace ReMarkableRemember.ViewModels;
 public interface IAppModel
 {
     ICommand CommandAbout { get; }
+
+    ICommand CommandSettings { get; }
 }

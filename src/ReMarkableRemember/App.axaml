@@ -23,6 +23,8 @@
     <NativeMenu.Menu>
         <NativeMenu>
             <NativeMenuItem Header="About reMarkable Remember" Command="{Binding CommandAbout}"/>
+            <NativeMenuItemSeparator/>
+            <NativeMenuItem Header="Settings..." Command="{Binding CommandSettings}"/>
         </NativeMenu>
     </NativeMenu.Menu>
 </Application>
