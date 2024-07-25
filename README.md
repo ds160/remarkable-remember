@@ -63,5 +63,4 @@ Thanks to the developers for their beautiful work.
 ## Links
 
 - [Awesome reMarkable](https://github.com/reHackable/awesome-reMarkable)
-- [Toltec](https://toltec-dev.org/)
 - [Information about reMarkable 2](https://remarkable.jms1.info/)
