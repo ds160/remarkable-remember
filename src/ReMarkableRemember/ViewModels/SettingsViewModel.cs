@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -13,6 +15,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
     private String backup;
     private String myScriptApplicationKey;
     private String myScriptHmacKey;
+    private MyScriptLanguageViewModel myScriptLanguage;
     private String tabletIp;
     private String tabletPassword;
 
@@ -20,11 +23,14 @@ public sealed partial class SettingsViewModel : DialogWindowModel
 
     internal SettingsViewModel(Settings settings) : base("Settings", "Save", "Cancel")
     {
+        this.MyScriptLanguages = MyScriptLanguageViewModel.GetLanguages();
+
         this.settings = settings;
 
         this.backup = this.settings.Backup;
         this.myScriptApplicationKey = this.settings.MyScriptApplicationKey;
         this.myScriptHmacKey = this.settings.MyScriptHmacKey;
+        this.myScriptLanguage = this.MyScriptLanguages.Single(language => String.CompareOrdinal(language.Code, this.settings.MyScriptLanguage) == 0);
         this.tabletIp = this.settings.TabletIp;
         this.tabletPassword = this.settings.TabletPassword;
 
@@ -41,6 +47,10 @@ public sealed partial class SettingsViewModel : DialogWindowModel
     public String MyScriptApplicationKey { get { return this.myScriptApplicationKey; } set { this.RaiseAndSetIfChanged(ref this.myScriptApplicationKey, value); } }
 
     public String MyScriptHmacKey { get { return this.myScriptHmacKey; } set { this.RaiseAndSetIfChanged(ref this.myScriptHmacKey, value); } }
+
+    public MyScriptLanguageViewModel MyScriptLanguage { get { return this.myScriptLanguage; } set { this.RaiseAndSetIfChanged(ref this.myScriptLanguage, value); } }
+
+    public IEnumerable<MyScriptLanguageViewModel> MyScriptLanguages { get; }
 
     public String TabletIp { get { return this.tabletIp; } set { this.RaiseAndSetIfChanged(ref this.tabletIp, value); } }
 
@@ -71,6 +81,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         this.settings.Backup = this.Backup;
         this.settings.MyScriptApplicationKey = this.MyScriptApplicationKey;
         this.settings.MyScriptHmacKey = this.MyScriptHmacKey;
+        this.settings.MyScriptLanguage = this.MyScriptLanguage.Code;
         this.settings.TabletIp = this.TabletIp;
         this.settings.TabletPassword = this.TabletPassword;
 
