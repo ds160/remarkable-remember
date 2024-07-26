@@ -71,7 +71,7 @@ jobs:
         run: |
           mkdir "bin/reMarkable Remember.app/Contents/Resources"
           cp "assets/deployment/${{ matrix.arch }}.plist" "bin/reMarkable Remember.app/Contents/Info.plist"
-          cp "assets/deployment/icon.icns" "bin/reMarkable Remember.app/Contents/Resources/icon.icns"
+          cp "assets/deployment/osx.icns" "bin/reMarkable Remember.app/Contents/Resources/icon.icns"
           rm "bin/reMarkable Remember.app/Contents/MacOS/ReMarkableRemember.xml"
       -
         name: Upload
