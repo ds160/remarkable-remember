@@ -9,6 +9,9 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: ["linux-x64"]
     steps:
     -
       name: Checkout
@@ -21,22 +24,25 @@ jobs:
       run: sudo apt-get install -y libfuse2
     -
       name: Build AppImage
-      run: pupnet -y -k AppImage
+      run: pupnet -y -k appimage -r ${{ matrix.arch }}
     -
       name: Build DEB
-      run: pupnet -y -k DEB
+      run: pupnet -y -k deb -r ${{ matrix.arch }}
     -
       name: Build RPM
-      run: pupnet -y -k RPM
+      run: pupnet -y -k rpm -r ${{ matrix.arch }}
     -
       name: Upload
       uses: actions/upload-artifact@v4
       with:
-        name: linux-x64
+        name: ${{ matrix.arch }}
         path: "bin/"
 
   build-windows:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: ["win-x64"]
     steps:
       -
         name: Checkout
@@ -46,12 +52,12 @@ jobs:
         run: dotnet tool install -g KuiperZone.PupNet
       -
         name: Build Setup
-        run: pupnet -y -k Setup
+        run: pupnet -y -k setup -r ${{ matrix.arch }}
       -
         name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: win-x64
+          name: ${{ matrix.arch }}
           path: "bin/"
 
   build-macos:
