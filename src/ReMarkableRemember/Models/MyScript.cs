@@ -95,9 +95,9 @@ internal sealed class MyScript
 
     public static IEnumerable<String> SupportedLanguages { get { return supportedLanguages; } }
 
-    public async Task<String> Recognize(Notebook.Page page)
+    public async Task<String> Recognize(Notebook.Page page, String? language = null)
     {
-        String language = this.settings.MyScriptLanguage;
+        language ??= this.settings.MyScriptLanguage;
         if (!supportedLanguages.Contains(language)) { throw new MyScriptException($"Language is not supported by MyScript: {language}"); }
 
         String requestBody = BuildRequestBody(page, language);

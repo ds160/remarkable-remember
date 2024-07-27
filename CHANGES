@@ -1,6 +1,12 @@
++ 1.6.1;2024-07-27
+- Option to change language for hand writing recognition via split button
+- MacOS application icon
+
 + 1.6.0;2024-07-25
 - Sidebar buttons in material design (instead of ribbon menu)
 - Built against Avalonia 11.1.0
+
+
 
 + 1.5.5;2024-07-20
 - About dialog
@@ -13,7 +19,7 @@
 
 + 1.5.3;2024-06-09
 - Built against Avalonia 11.0.10
-- information in window title
+- Version information in window title
 
 + 1.5.2;2024-06-05
 - Fix for contrast problems in Dark Mode

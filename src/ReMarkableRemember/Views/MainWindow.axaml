@@ -30,17 +30,19 @@
             <Setter Property="Margin" Value="8"/>
             <Setter Property="Spacing" Value="8"/>
         </Style>
-        <Style Selector="SplitView>Grid.Menu>StackPanel>Button">
+        <Style Selector="SplitView>Grid.Menu>StackPanel>:is(ContentControl)">
             <Setter Property="FontFamily" Value="{StaticResource MaterialIconsFont}"/>
             <Setter Property="FontSize" Value="24"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="ToolTip.ShowOnDisabled" Value="True"/>
+            <Setter Property="Width" Value="72"/>
         </Style>
         <Style Selector="TextBlock.Icon">
             <Setter Property="FontFamily" Value="{StaticResource MaterialIconsFont}"/>
         </Style>
     </Window.Styles>
 
-    <SplitView CompactPaneLength="58" DisplayMode="CompactInline" PanePlacement="Left">
+    <SplitView CompactPaneLength="88" DisplayMode="CompactInline" PanePlacement="Left">
         <SplitView.Pane>
             <Grid Classes="Menu" RowDefinitions="*, Auto">
                 <StackPanel Grid.Row="0">
@@ -49,7 +51,22 @@
                     <Button ToolTip.Tip="Upload File" Command="{Binding CommandUploadFile}">&#xf09b;</Button>
                 
                     <Button ToolTip.Tip="Open" Command="{Binding CommandOpenItem}" Margin="0, 16, 0, 0">&#xe89e;</Button>
-                    <Button ToolTip.Tip="Hand Writing Recognition" Command="{Binding CommandHandWritingRecognition}">&#xe5fa;</Button>
+                    <SplitButton ToolTip.Tip="Hand Writing Recognition" Command="{Binding CommandHandWritingRecognition}" Content="&#xe5fa;">
+                        <SplitButton.Flyout>
+                            <Flyout Placement="RightEdgeAlignedTop">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Language (Hand Writing Recognition)"/>
+                                    <ComboBox ItemsSource="{Binding MyScriptLanguages}" SelectedItem="{Binding MyScriptLanguage}" Width="275">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding DisplayName}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+                            </Flyout>
+                        </SplitButton.Flyout>
+                    </SplitButton>
                 
                     <Button ToolTip.Tip="Set Sync Directory" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="True" Margin="0, 16, 0, 0">&#xe2cc;</Button>
                     <Button ToolTip.Tip="Reset Sync Directory" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="False">&#xeb83;</Button>

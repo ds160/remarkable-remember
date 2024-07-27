@@ -31,10 +31,12 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
     private Boolean hasBackupDirectory;
     private Boolean hasItems;
     private Job.Description jobs;
+    private MyScriptLanguageViewModel myScriptLanguage;
 
     public MainWindowModel(String dataSource)
     {
         this.ItemsTree = new ItemsTreeViewModel();
+        this.MyScriptLanguages = MyScriptLanguageViewModel.GetLanguages();
         this.OpenFilePicker = new Interaction<FilePickerOpenOptions, IEnumerable<String>?>();
         this.OpenFolderPicker = new Interaction<String, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
@@ -44,6 +46,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         this.hasBackupDirectory = Path.Exists(this.controller.Settings.Backup);
         this.hasItems = false;
         this.jobs = Job.Description.None;
+        this.myScriptLanguage = this.MyScriptLanguages.Single(language => String.CompareOrdinal(language.Code, this.controller.Settings.MyScriptLanguage) == 0);
 
         this.CommandAbout = ReactiveCommand.CreateFromTask(this.About);
         this.CommandBackup = ReactiveCommand.CreateFromTask(this.Backup, this.Backup_CanExecute());
@@ -60,6 +63,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
 
         this.WhenAnyValue(vm => vm.ConnectionStatus).Subscribe(status => this.RaisePropertyChanged(nameof(this.ConnectionStatusText)));
         this.WhenAnyValue(vm => vm.Jobs).Subscribe(jobs => this.RaisePropertyChanged(nameof(this.JobsText)));
+        this.WhenAnyValue(vm => vm.MyScriptLanguage).Subscribe(this.SaveMyScriptLanguage);
 
         RxApp.MainThreadScheduler.Schedule(this.Update);
     }
@@ -271,6 +275,12 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         }
     }
 
+    private void SaveMyScriptLanguage(MyScriptLanguageViewModel language)
+    {
+        this.controller.Settings.MyScriptLanguage = language.Code;
+        this.controller.Settings.SaveChanges();
+    }
+
     private async Task Settings()
     {
         using Job job = new Job(Job.Description.Settings, this);
@@ -282,6 +292,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         }
 
         this.HasBackupDirectory = Path.Exists(this.controller.Settings.Backup);
+        this.MyScriptLanguage = this.MyScriptLanguages.Single(language => String.CompareOrdinal(language.Code, this.controller.Settings.MyScriptLanguage) == 0);
     }
 
     private IObservable<Boolean> Settings_CanExecute()
@@ -535,6 +546,14 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
             return (jobs.Count > 0) ? String.Join(" and ", jobs) : null;
         }
     }
+
+    public MyScriptLanguageViewModel MyScriptLanguage
+    {
+        get { return this.myScriptLanguage; }
+        set { this.RaiseAndSetIfChanged(ref this.myScriptLanguage, value); }
+    }
+
+    public IEnumerable<MyScriptLanguageViewModel> MyScriptLanguages { get; }
 
     public Interaction<FilePickerOpenOptions, IEnumerable<String>?> OpenFilePicker { get; }
 
