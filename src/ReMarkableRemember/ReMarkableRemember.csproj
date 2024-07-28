@@ -7,7 +7,7 @@
     <ApplicationManifest>App.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\Logo.ico</ApplicationIcon>
     <Version>1.6.1</Version>
-    <PackageDescription>A cross-platform managenment application for the reMarkable tablet</PackageDescription>
+    <PackageDescription>A cross-platform management application for the reMarkable tablet</PackageDescription>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>

@@ -51,11 +51,11 @@
                     <Button ToolTip.Tip="Upload File" Command="{Binding CommandUploadFile}">&#xf09b;</Button>
                 
                     <Button ToolTip.Tip="Open" Command="{Binding CommandOpenItem}" Margin="0, 16, 0, 0">&#xe89e;</Button>
-                    <SplitButton ToolTip.Tip="Hand Writing Recognition" Command="{Binding CommandHandWritingRecognition}" Content="&#xe5fa;">
+                    <SplitButton ToolTip.Tip="Handwriting Recognition" Command="{Binding CommandHandwritingRecognition}" Content="&#xe5fa;">
                         <SplitButton.Flyout>
                             <Flyout Placement="RightEdgeAlignedTop">
                                 <StackPanel Spacing="8">
-                                    <TextBlock Text="Language (Hand Writing Recognition)"/>
+                                    <TextBlock Text="Language for Handwriting Recognition"/>
                                     <ComboBox ItemsSource="{Binding MyScriptLanguages}" SelectedItem="{Binding MyScriptLanguage}" Width="275">
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate>
@@ -91,7 +91,7 @@
                         <MenuItem Header="Open" Command="{Binding CommandOpenItem}">
                             <MenuItem.Icon><TextBlock Classes="Icon">&#xe89e;</TextBlock></MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="Hand Writing Recognition" Command="{Binding CommandHandWritingRecognition}">
+                        <MenuItem Header="Handwriting Recognition" Command="{Binding CommandHandwritingRecognition}">
                             <MenuItem.Icon><TextBlock Classes="Icon">&#xe5fa;</TextBlock></MenuItem.Icon>
                         </MenuItem>
                         <Separator/>

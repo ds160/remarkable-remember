@@ -50,7 +50,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
 
         this.CommandAbout = ReactiveCommand.CreateFromTask(this.About);
         this.CommandBackup = ReactiveCommand.CreateFromTask(this.Backup, this.Backup_CanExecute());
-        this.CommandHandWritingRecognition = ReactiveCommand.CreateFromTask(this.HandWritingRecognition, this.HandWritingRecognition_CanExecute());
+        this.CommandHandwritingRecognition = ReactiveCommand.CreateFromTask(this.HandwritingRecognition, this.HandwritingRecognition_CanExecute());
         this.CommandInstallLamyEraser = ReactiveCommand.CreateFromTask(this.InstallLamyEraser, this.InstallLamyEraser_CanExecute());
         this.CommandInstallWebInterfaceOnBoot = ReactiveCommand.CreateFromTask(this.InstallWebInterfaceOnBoot, this.InstallWebInterfaceOnBoot_CanExecute());
         this.CommandManageTemplates = ReactiveCommand.CreateFromTask(this.ManageTemplates, this.ManageTemplates_CanExecute());
@@ -106,7 +106,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         IObservable<Boolean> backupDirectory = this.WhenAnyValue(vm => vm.HasBackupDirectory);
         IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.Backup));
         IObservable<Boolean> items = this.WhenAnyValue(vm => vm.HasItems);
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandwritingRecognition);
 
         return Observable.CombineLatest(backupDirectory, connectionStatus, items, jobs, (value1, value2, value3, value4) => value1 && value2 && value3 && value4);
     }
@@ -122,7 +122,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
 
             case Job.Description.GetItems:
             case Job.Description.Backup:
-            case Job.Description.HandWritingRecognition:
+            case Job.Description.HandwritingRecognition:
             case Job.Description.UploadTemplate:
             case Job.Description.ManageTemplates:
             case Job.Description.InstallLamyEraser:
@@ -145,24 +145,24 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private async Task HandWritingRecognition()
+    private async Task HandwritingRecognition()
     {
         ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
         if (selectedItem != null)
         {
-            using Job job = new Job(Job.Description.HandWritingRecognition, this);
+            using Job job = new Job(Job.Description.HandwritingRecognition, this);
 
-            String text = await selectedItem.Source.HandWritingRecognition().ConfigureAwait(true);
+            String text = await selectedItem.Source.HandwritingRecognition().ConfigureAwait(true);
 
             job.Done();
 
-            await this.ShowDialog.Handle(new HandWritingRecognitionViewModel(text));
+            await this.ShowDialog.Handle(new HandwritingRecognitionViewModel(text));
         }
     }
 
-    private IObservable<Boolean> HandWritingRecognition_CanExecute()
+    private IObservable<Boolean> HandwritingRecognition_CanExecute()
     {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.HandWritingRecognition));
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.HandwritingRecognition));
         IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
 
         return Observable.CombineLatest(connectionStatus, treeSelection, (value1, value2) => value1 && value2);
@@ -297,7 +297,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
 
     private IObservable<Boolean> Settings_CanExecute()
     {
-        return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
+        return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandwritingRecognition);
     }
 
     private async Task Sync()
@@ -329,7 +329,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
     {
         IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.Sync));
         IObservable<Boolean> items = this.WhenAnyValue(vm => vm.HasItems);
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandwritingRecognition);
 
         return Observable.CombineLatest(connectionStatus, items, jobs, (value1, value2, value3) => value1 && value2 && value3);
     }
@@ -360,7 +360,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
 
     private IObservable<Boolean> SyncTargetDirectory_CanExecute()
     {
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandWritingRecognition);
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandwritingRecognition);
         IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null);
 
         return Observable.CombineLatest(jobs, treeSelection, (value1, value2) => value1 && value2);
@@ -384,7 +384,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         {
             if (CheckConnectionStatusForJob(this.ConnectionStatus, Job.Description.GetItems))
             {
-                if (this.Jobs is Job.Description.None or Job.Description.HandWritingRecognition)
+                if (this.Jobs is Job.Description.None or Job.Description.HandwritingRecognition)
                 {
                     using Job? job = this.HasItems ? null : new Job(Job.Description.GetItems, this);
 
@@ -464,7 +464,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
 
     public ICommand CommandBackup { get; }
 
-    public ICommand CommandHandWritingRecognition { get; }
+    public ICommand CommandHandwritingRecognition { get; }
 
     public ICommand CommandInstallLamyEraser { get; }
 
@@ -536,7 +536,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
             if (this.Jobs.HasFlag(Job.Description.GetItems)) { jobs.Add("Getting Items"); }
             if (this.Jobs.HasFlag(Job.Description.Sync)) { jobs.Add("Syncing"); }
             if (this.Jobs.HasFlag(Job.Description.Backup)) { jobs.Add("Backup"); }
-            if (this.Jobs.HasFlag(Job.Description.HandWritingRecognition)) { jobs.Add("Hand Writing Recognition"); }
+            if (this.Jobs.HasFlag(Job.Description.HandwritingRecognition)) { jobs.Add("Handwriting Recognition"); }
             if (this.Jobs.HasFlag(Job.Description.Upload)) { jobs.Add("Uploading File"); }
             if (this.Jobs.HasFlag(Job.Description.UploadTemplate)) { jobs.Add("Uploading Template"); }
             if (this.Jobs.HasFlag(Job.Description.ManageTemplates)) { jobs.Add("Managing Templates"); }
@@ -575,7 +575,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
             GetItems = 0x0001,
             Sync = 0x0002,
             Backup = 0x0004,
-            HandWritingRecognition = 0x0008,
+            HandwritingRecognition = 0x0008,
             Upload = 0x0010,
             UploadTemplate = 0x0020,
             ManageTemplates = 0x0040,

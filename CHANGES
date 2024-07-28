@@ -1,5 +1,5 @@
 + 1.6.1;2024-07-27
-- Option to change language for hand writing recognition via split button
+- Option to change language for handwriting recognition via split button
 - MacOS application icon
 
 + 1.6.0;2024-07-25
@@ -25,7 +25,7 @@
 - Fix for contrast problems in Dark Mode
 
 + 1.5.1;2024-05-31
-- Option to copy hand writing recognition text to clipboard
+- Option to copy handwriting recognition text to clipboard
 - Option to restart the tablet after installing the 'WebInterface-OnBoot' program
 
 + 1.5.0;2024-03-14
@@ -66,4 +66,4 @@
 - Sync PDF documents via USB
 - Backup notebooks and folders
 - Upload of templates
-- Hand writing recognition via MyScript
+- Handwriting recognition via MyScript

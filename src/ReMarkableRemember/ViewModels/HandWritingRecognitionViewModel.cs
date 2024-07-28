@@ -6,13 +6,13 @@ using ReactiveUI;
 
 namespace ReMarkableRemember.ViewModels;
 
-public sealed class HandWritingRecognitionViewModel : DialogWindowModel
+public sealed class HandwritingRecognitionViewModel : DialogWindowModel
 {
     private readonly String originalText;
     private Boolean removeLineEndings;
     private String text;
 
-    public HandWritingRecognitionViewModel(String text) : base("Hand Writing Recognition", "Close")
+    public HandwritingRecognitionViewModel(String text) : base("Handwriting Recognition", "Close")
     {
         this.CommandCopyTextToClipboard = ReactiveCommand.CreateFromTask(this.CopyTextToClipboard);
 

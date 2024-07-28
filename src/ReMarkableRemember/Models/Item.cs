@@ -78,7 +78,7 @@ public sealed class Item
         return true;
     }
 
-    public async Task<String> HandWritingRecognition()
+    public async Task<String> HandwritingRecognition()
     {
         Notebook notebook = await this.controller.Tablet.GetNotebook(this.Id).ConfigureAwait(false);
         IEnumerable<String> myScriptPages = await Task.WhenAll(notebook.Pages.Select(page => this.controller.MyScript.Recognize(page))).ConfigureAwait(false);
