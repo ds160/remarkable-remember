@@ -3,8 +3,6 @@ name: .NET Core Desktop
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
   build-linux:
@@ -37,13 +35,13 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.arch }}
-        path: "bin/"
+        path: bin/
 
   build-windows:
     runs-on: windows-latest
     strategy:
       matrix:
-        arch: ["win-x64"]
+        arch: ["win-x64", "win-arm64"]
     steps:
       -
         name: Checkout
@@ -59,7 +57,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.arch }}
-          path: "bin/"
+          path: bin/
 
   build-macos:
     runs-on: macos-latest
@@ -85,4 +83,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
             name: ${{ matrix.arch }}
-            path: "bin/"
+            path: bin/
