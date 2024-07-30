@@ -7,7 +7,7 @@
         x:Class="ReMarkableRemember.Views.MainWindow"
         x:DataType="vm:MainWindowModel"
         Icon="/Assets/Logo.ico"
-        MinHeight="700"
+        MinHeight="640"
         MinWidth="1000"
         RenderOptions.BitmapInterpolationMode="HighQuality"
         Title="{Binding Source={x:Static vm:MainWindowModel.Title}}"
