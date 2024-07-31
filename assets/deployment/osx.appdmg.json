@@ -2,23 +2,19 @@
     "title": "reMarkable Remember Installer",
     "contents": [
         {
-            "x": 368,
+            "x": 360,
             "y": 96,
             "type": "link",
             "path": "/Applications"
         },
         {
-            "x": 144,
+            "x": 120,
             "y": 96,
             "type": "file",
             "path": "../../bin/reMarkable Remember.app"
         }
     ],
     "window": {
-        "position": {
-            "x": 100,
-            "y": 100
-        },
         "size": {
             "width": 480,
             "height": 240
