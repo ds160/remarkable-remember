@@ -95,20 +95,8 @@ jobs:
           xcrun notarytool submit "bin/reMarkable Remember.zip" --keychain-profile "notarytool" --wait
           xcrun stapler staple "bin/reMarkable Remember.app"
           rm "bin/reMarkable Remember.zip"
-      -
-        name: Install Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
-      -
-        name: Create Installer
-        run: |
-          brew install create-dmg
-          create-dmg --volname "reMarkable Remember Installer" --window-pos 200 120 --window-size 800 400 --icon-size 100 --icon "bin/reMarkable Remember.app" 200 190 --hide-extension "bin/reMarkable Remember.app" --app-drop-link 600 185 "bin/reMarkable Remember.dmg" "bin/reMarkable Remember.app"
+          ditto -c -k --keepParent "bin/reMarkable Remember.app" "bin/reMarkable Remember.zip"
           rm -r "bin/reMarkable Remember.app"
-      -
-        name: Notarize Installer
-        run: |
-          xcrun notarytool submit "bin/reMarkable Remember.dmg" --keychain-profile "notarytool" --wait
-          xcrun stapler staple "bin/reMarkable Remember.dmg"
       -
         name: Upload
         uses: actions/upload-artifact@v4
