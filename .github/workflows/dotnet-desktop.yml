@@ -109,7 +109,6 @@ jobs:
           --icon "bin/reMarkable Remember.app" 200 190
           --hide-extension "bin/reMarkable Remember.app"
           --app-drop-link 600 185
-          --sandbox-safe
           --skip-jenkins
           "bin/reMarkable Remember.dmg"
           "bin/reMarkable Remember.app"
