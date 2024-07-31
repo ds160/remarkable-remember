@@ -72,23 +72,29 @@ jobs:
         name: Build
         run: dotnet publish src/ReMarkableRemember/ReMarkableRemember.csproj -c Release -r ${{ matrix.arch }} --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o "bin/reMarkable Remember.app/Contents/MacOS"
       -
-        name: Prepare
+        name: Prepare Application Package Contents
         run: |
           mkdir "bin/reMarkable Remember.app/Contents/Resources"
           cp "assets/deployment/${{ matrix.arch }}.plist" "bin/reMarkable Remember.app/Contents/Info.plist"
           cp "assets/deployment/osx.icns" "bin/reMarkable Remember.app/Contents/Resources/icon.icns"
           rm "bin/reMarkable Remember.app/Contents/MacOS/ReMarkableRemember.xml"
       -
-        name: Sign and Notarize
-        uses: toitlang/action-macos-sign-notarize@v1.2.0
-        with:
-          certificate: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_P12 }}
-          certificate-password: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_P12_PASSWORD }}
-          username: ${{ secrets.APPLE_NOTARIZE_USERNAME }}
-          password: ${{ secrets.APPLE_NOTARIZE_PASSWORD }}
-          apple-team-id: ${{ secrets.APPLE_NOTARIZE_TEAM_ID }}
-          app-path: "bin/reMarkable Remember.app"
-          entitlements-path: "assets/deployment/osx.entitlements"
+        name: Import Apple Developer ID Certificate
+        uses: apple-actions/import-codesign-certs@v3
+        with: 
+          p12-file-base64: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_P12 }}
+          p12-password: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_P12_PASSWORD }}
+      -
+        name: Sign
+        run: codesign --deep --force --timestamp --options=runtime --entitlements "assets/deployment/osx.entitlements" --verbose --sign "${{ secrets.APPLE_DEVELOPER_ID }}" "bin/reMarkable Remember.app"
+      -
+        name: Notarize
+        run: |
+          ditto -c -k --keepParent "bin/reMarkable Remember.app" "bin/reMarkableRemember.zip"
+          xcrun notarytool store-credentials "notarytool" --apple-id "${{ secrets.APPLE_NOTARIZE_USERNAME }}" --password "${{ secrets.APPLE_NOTARIZE_PASSWORD }}" --team-id "${{ secrets.APPLE_NOTARIZE_TEAM_ID }}"
+          xcrun notarytool submit "bin/reMarkableRemember.zip" --keychain-profile "notarytool" --wait
+          xcrun stapler staple "bin/reMarkable Remember.app"
+          rm "bin/reMarkableRemember.zip"
       -
         name: Upload
         uses: actions/upload-artifact@v4
