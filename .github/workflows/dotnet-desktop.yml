@@ -86,7 +86,7 @@ jobs:
           p12-password: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_P12_PASSWORD }}
       -
         name: Sign Application
-        run: codesign --deep --force --timestamp --options=runtime --entitlements "assets/deployment/osx.entitlements" --verbose --sign ${{ secrets.APPLE_DEVELOPER_ID_SIGNING_ID }} "bin/reMarkable Remember.app"
+        run: codesign --deep --force --timestamp --options=runtime --entitlements "assets/deployment/osx.entitlements" --verbose --sign "${{ secrets.APPLE_DEVELOPER_ID_SIGNING_ID }}" "bin/reMarkable Remember.app"
       -
         name: Notarize Application
         run: |
