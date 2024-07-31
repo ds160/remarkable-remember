@@ -95,6 +95,8 @@ jobs:
           xcrun notarytool submit "bin/reMarkableRemember.zip" --keychain-profile "notarytool" --wait
           xcrun stapler staple "bin/reMarkable Remember.app"
           rm "bin/reMarkableRemember.zip"
+          ditto -c -k --keepParent "bin/reMarkable Remember.app" "bin/reMarkableRemember.zip"
+          rm "bin/reMarkableRemember.app"
       -
         name: Upload
         uses: actions/upload-artifact@v4
