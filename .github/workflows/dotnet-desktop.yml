@@ -90,13 +90,13 @@ jobs:
       -
         name: Notarize
         run: |
-          ditto -c -k --keepParent "bin/reMarkable Remember.app" "bin/reMarkableRemember.zip"
+          ditto -c -k --keepParent "bin/reMarkable Remember.app" "bin/reMarkable Remember.zip"
           xcrun notarytool store-credentials "notarytool" --apple-id "${{ secrets.APPLE_NOTARIZE_USERNAME }}" --password "${{ secrets.APPLE_NOTARIZE_PASSWORD }}" --team-id "${{ secrets.APPLE_NOTARIZE_TEAM_ID }}"
-          xcrun notarytool submit "bin/reMarkableRemember.zip" --keychain-profile "notarytool" --wait
+          xcrun notarytool submit "bin/reMarkable Remember.zip" --keychain-profile "notarytool" --wait
           xcrun stapler staple "bin/reMarkable Remember.app"
-          rm "bin/reMarkableRemember.zip"
-          ditto -c -k --keepParent "bin/reMarkable Remember.app" "bin/reMarkableRemember.zip"
-          rm "bin/reMarkableRemember.app"
+          rm "bin/reMarkable Remember.zip"
+          ditto -c -k --keepParent "bin/reMarkable Remember.app" "bin/reMarkable Remember.zip"
+          rm "bin/reMarkable Remember.app"
       -
         name: Upload
         uses: actions/upload-artifact@v4
