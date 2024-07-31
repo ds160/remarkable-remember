@@ -72,30 +72,23 @@ jobs:
         name: Build
         run: dotnet publish src/ReMarkableRemember/ReMarkableRemember.csproj -c Release -r ${{ matrix.arch }} --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o "bin/reMarkable Remember.app/Contents/MacOS"
       -
-        name: Prepare Application Package Contents
+        name: Prepare
         run: |
           mkdir "bin/reMarkable Remember.app/Contents/Resources"
           cp "assets/deployment/${{ matrix.arch }}.plist" "bin/reMarkable Remember.app/Contents/Info.plist"
           cp "assets/deployment/osx.icns" "bin/reMarkable Remember.app/Contents/Resources/icon.icns"
           rm "bin/reMarkable Remember.app/Contents/MacOS/ReMarkableRemember.xml"
       -
-        name: Import Apple Developer ID Certificate
-        uses: apple-actions/import-codesign-certs@v3
-        with: 
-          p12-file-base64: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_P12 }}
-          p12-password: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_P12_PASSWORD }}
-      -
-        name: Sign Application
-        run: codesign --deep --force --timestamp --options=runtime --entitlements "assets/deployment/osx.entitlements" --verbose --sign "${{ secrets.APPLE_DEVELOPER_ID_SIGNING_ID }}" "bin/reMarkable Remember.app"
-      -
-        name: Notarize Application
-        uses: GuillaumeFalourd/notary-tools@v1
+        name: Sign and Notarize
+        uses: toitlang/action-macos-sign-notarize@v1.2.0
         with:
-          product_path: "bin/reMarkable Remember.app"
-          apple_id: ${{ secrets.APPLE_ID }}
-          password: ${{ secrets.APPLE_NOTARY_PASSWORD }}
-          team_id: ${{ secrets.APPLE_TEAM_ID }}
-          staple: true
+          certificate: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_P12 }}
+          certificate-password: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_P12_PASSWORD }}
+          username: ${{ secrets.APPLE_NOTARIZE_USERNAME }}
+          password: ${{ secrets.APPLE_NOTARIZE_PASSWORD }}
+          apple-team-id: ${{ secrets.APPLE_NOTARIZE_TEAM_ID }}
+          app-path: "bin/reMarkable Remember.app"
+          entitlements-path: "assets/deployment/osx.entitlements"
       -
         name: Upload
         uses: actions/upload-artifact@v4
