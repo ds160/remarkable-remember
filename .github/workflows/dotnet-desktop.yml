@@ -79,11 +79,14 @@ jobs:
           cp "assets/deployment/osx.icns" "bin/reMarkable Remember.app/Contents/Resources/icon.icns"
           rm "bin/reMarkable Remember.app/Contents/MacOS/ReMarkableRemember.xml"
       -
-        name: Import Apple Developer ID Certificate
+        name: Import Developer ID Certificate
         uses: apple-actions/import-codesign-certs@v3
         with: 
           p12-file-base64: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_P12 }}
           p12-password: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_P12_PASSWORD }}
+      -
+        name: Store Notarization Credentials
+        run: xcrun notarytool store-credentials "notarytool" --apple-id "${{ secrets.APPLE_NOTARIZE_USERNAME }}" --password "${{ secrets.APPLE_NOTARIZE_PASSWORD }}" --team-id "${{ secrets.APPLE_NOTARIZE_TEAM_ID }}"
       -
         name: Sign Application
         run: codesign --deep --force --timestamp --options=runtime --entitlements "assets/deployment/osx.entitlements" --verbose --sign "${{ secrets.APPLE_DEVELOPER_ID }}" "bin/reMarkable Remember.app"
@@ -91,7 +94,6 @@ jobs:
         name: Notarize Application
         run: |
           ditto -c -k --keepParent "bin/reMarkable Remember.app" "bin/reMarkable Remember.zip"
-          xcrun notarytool store-credentials "notarytool" --apple-id "${{ secrets.APPLE_NOTARIZE_USERNAME }}" --password "${{ secrets.APPLE_NOTARIZE_PASSWORD }}" --team-id "${{ secrets.APPLE_NOTARIZE_TEAM_ID }}"
           xcrun notarytool submit "bin/reMarkable Remember.zip" --keychain-profile "notarytool" --wait
           xcrun stapler staple "bin/reMarkable Remember.app"
           rm "bin/reMarkable Remember.zip"
