@@ -69,7 +69,7 @@ jobs:
         name: Checkout
         uses: actions/checkout@v4
       -
-        name: Build
+        name: Build Application
         run: dotnet publish src/ReMarkableRemember/ReMarkableRemember.csproj -c Release -r ${{ matrix.arch }} --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o "bin/reMarkable Remember.app/Contents/MacOS"
       -
         name: Prepare Application Package Contents
@@ -85,18 +85,30 @@ jobs:
           p12-file-base64: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_P12 }}
           p12-password: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_P12_PASSWORD }}
       -
-        name: Sign
+        name: Sign Application
         run: codesign --deep --force --timestamp --options=runtime --entitlements "assets/deployment/osx.entitlements" --verbose --sign "${{ secrets.APPLE_DEVELOPER_ID }}" "bin/reMarkable Remember.app"
       -
-        name: Notarize
+        name: Notarize Application
         run: |
           ditto -c -k --keepParent "bin/reMarkable Remember.app" "bin/reMarkable Remember.zip"
           xcrun notarytool store-credentials "notarytool" --apple-id "${{ secrets.APPLE_NOTARIZE_USERNAME }}" --password "${{ secrets.APPLE_NOTARIZE_PASSWORD }}" --team-id "${{ secrets.APPLE_NOTARIZE_TEAM_ID }}"
           xcrun notarytool submit "bin/reMarkable Remember.zip" --keychain-profile "notarytool" --wait
           xcrun stapler staple "bin/reMarkable Remember.app"
           rm "bin/reMarkable Remember.zip"
-          ditto -c -k --keepParent "bin/reMarkable Remember.app" "bin/reMarkable Remember.zip"
+      -
+        name: Install Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+      -
+        name: Create Installer
+        run: |
+          brew install create-dmg
+          create-dmg --volname "reMarkable Remember Installer" --window-pos 200 120 --window-size 800 400 --icon-size 100 --icon "bin/reMarkable Remember.app" 200 190 --hide-extension "bin/reMarkable Remember.app" --app-drop-link 600 185 "bin/reMarkable Remember.dmg" "bin/reMarkable Remember.app"
           rm -r "bin/reMarkable Remember.app"
+      -
+        name: Notarize Installer
+        run: |
+          xcrun notarytool submit "bin/reMarkable Remember.dmg" --keychain-profile "notarytool" --wait
+          xcrun stapler staple "bin/reMarkable Remember.dmg"
       -
         name: Upload
         uses: actions/upload-artifact@v4
