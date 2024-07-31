@@ -96,28 +96,16 @@ jobs:
           xcrun stapler staple "bin/reMarkable Remember.app"
           rm "bin/reMarkable Remember.zip"
       -
-        name: Install Disk Image Creator
-        run: brew install create-dmg
-      -
         name: Build Disk Image
-        run: >
-          create-dmg
-          --volname "reMarkable Remember Installer"
-          --window-pos 200 120
-          --window-size 800 400
-          --icon-size 100
-          --icon "bin/reMarkable Remember.app" 200 190
-          --hide-extension "bin/reMarkable Remember.app"
-          --app-drop-link 600 185
-          --skip-jenkins
-          "bin/reMarkable Remember.dmg"
-          "bin/reMarkable Remember.app"
+        run: |
+          npm install -g appdmg
+          appdmg "assets/deployment/osx.appdmg.json" "bin/reMarkable Remember.dmg"
+          rm -r "bin/reMarkable Remember.app"
       -
         name: Notarize Disk Image
         run: |
           xcrun notarytool submit "bin/reMarkable Remember.dmg" --keychain-profile "notarytool" --wait
           xcrun stapler staple "bin/reMarkable Remember.dmg"
-          rm -r "bin/reMarkable Remember.app"
       -
         name: Upload
         uses: actions/upload-artifact@v4
