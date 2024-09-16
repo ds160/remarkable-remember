@@ -1,5 +1,6 @@
 + 1.6.2;2024-09-16
 - Combine sync and backup items in a split button
+- Check if connected tablet is supported
 - Update application icon
 - Built against Avalonia 11.1.3
 - Built against .NET Core 8.0.8
