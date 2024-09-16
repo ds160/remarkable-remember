@@ -24,9 +24,11 @@ internal sealed class Tablet : IDisposable
     private const String PATH_NOTEBOOKS = "/home/root/.local/share/remarkable/xochitl/";
     private const String PATH_TEMPLATES = "/usr/share/remarkable/templates/";
     private const String PATH_TEMPLATES_FILE = "templates.json";
+    private const String PATH_VERSION_INFORMATION = "/etc/motd";
     private const Int32 SSH_TIMEOUT = 2;
     private const String SSH_USER = "root";
     private const Int32 USB_TIMEOUT = 1;
+    private const String VERSION_INFORMATION_RM2 = "\u001b[0;1;34;94mｒｅＭａｒｋａｂ\u001b[0;34mｌｅ\u001b[0m\n\u001b[0;1;35;95m╺━\u001b[0;1;31;91m┓┏\u001b[0;1;33;93m━╸\u001b[0;1;32;92m┏━\u001b[0;1;36;96m┓┏\u001b[0;1;34;94m━┓\u001b[0m   \u001b[0;1;31;91m┏\u001b[0;1;33;93m━┓\u001b[0;1;32;92m╻\u001b[0m \u001b[0;1;36;96m╻┏\u001b[0;1;34;94m━╸\u001b[0;1;35;95m┏━\u001b[0;1;31;91m┓┏\u001b[0;1;33;93m━┓\u001b[0m\n\u001b[0;1;31;91m┏━\u001b[0;1;33;93m┛┣\u001b[0;1;32;92m╸\u001b[0m \u001b[0;1;36;96m┣┳\u001b[0;1;34;94m┛┃\u001b[0m \u001b[0;1;35;95m┃\u001b[0m   \u001b[0;1;33;93m┗\u001b[0;1;32;92m━┓\u001b[0;1;36;96m┃\u001b[0m \u001b[0;1;34;94m┃┃\u001b[0;1;35;95m╺┓\u001b[0;1;31;91m┣━\u001b[0;1;33;93m┫┣\u001b[0;1;32;92m┳┛\u001b[0m\n\u001b[0;1;33;93m┗━\u001b[0;1;32;92m╸┗\u001b[0;1;36;96m━╸\u001b[0;1;34;94m╹┗\u001b[0;1;35;95m╸┗\u001b[0;1;31;91m━┛\u001b[0m   \u001b[0;1;32;92m┗\u001b[0;1;36;96m━┛\u001b[0;1;34;94m┗━\u001b[0;1;35;95m┛┗\u001b[0;1;31;91m━┛\u001b[0;1;33;93m╹\u001b[0m \u001b[0;1;32;92m╹╹\u001b[0;1;36;96m┗╸\u001b[0m\n";
 
     private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true };
 
@@ -240,7 +242,7 @@ internal sealed class Tablet : IDisposable
         }
     }
 
-    public async Task InstallWebInterfaceOnBoot(Boolean applyHack = true, String release = "v1.2.3")
+    public async Task InstallWebInterfaceOnBoot(Boolean applyHack = true, String release = "v1.2.4")
     {
         await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -364,6 +366,10 @@ internal sealed class Tablet : IDisposable
     {
         SftpClient client = new SftpClient(this.CreateSshConnectionInfo());
         await ConnectClient(client).ConfigureAwait(false);
+
+        String versionInformation = await Task.Run(() => client.ReadAllText(PATH_VERSION_INFORMATION)).ConfigureAwait(false);
+        if (String.CompareOrdinal(versionInformation, VERSION_INFORMATION_RM2) != 0) { throw new TabletException(TabletConnectionError.NotSupported, "The connected reMarkable is not supported."); }
+
         return client;
     }
 

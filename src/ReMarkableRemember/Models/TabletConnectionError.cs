@@ -6,5 +6,6 @@ public enum TabletConnectionError
     SshNotConfigured,
     SshNotConnected,
     UsbNotConnected,
-    UsbNotActived
+    UsbNotActived,
+    NotSupported,
 }

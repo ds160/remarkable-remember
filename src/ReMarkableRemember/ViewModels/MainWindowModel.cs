@@ -127,7 +127,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
             case Job.Description.ManageTemplates:
             case Job.Description.InstallLamyEraser:
             case Job.Description.InstallWebInterfaceOnBoot:
-                return status is null or (not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected);
+                return status is null or (not TabletConnectionError.NotSupported and not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected);
 
             case Job.Description.Sync:
             case Job.Description.Upload:
@@ -497,12 +497,13 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
             switch (this.ConnectionStatus)
             {
                 case null: return "Connected";
-                case TabletConnectionError.Unknown: return "Unknown connection error";
+                case TabletConnectionError.NotSupported: return "Connected reMarkable not supported";
+                case TabletConnectionError.Unknown: return "Not connected";
                 case TabletConnectionError.SshNotConfigured: return "SSH protocol information are not configured or wrong";
                 case TabletConnectionError.SshNotConnected: return "Not connected via WiFi or USB";
                 case TabletConnectionError.UsbNotActived: return "USB web interface is not activated";
                 case TabletConnectionError.UsbNotConnected: return "Not connected via USB";
-                default: return "Unknown connection error";
+                default: return "Not connected";
             }
         }
     }

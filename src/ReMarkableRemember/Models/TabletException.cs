@@ -10,6 +10,8 @@ public sealed class TabletException : Exception
 
     public TabletException(String message, Exception innerException) : base(message, innerException) { }
 
+    public TabletException(TabletConnectionError error, String message) : base(message) { this.Error = error; }
+
     public TabletException(TabletConnectionError error, String message, Exception innerException) : base(message, innerException) { this.Error = error; }
 
     public TabletConnectionError Error { get; }
