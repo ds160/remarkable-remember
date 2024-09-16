@@ -46,8 +46,18 @@
         <SplitView.Pane>
             <Grid Classes="Menu" RowDefinitions="*, Auto">
                 <StackPanel Grid.Row="0">
-                    <Button ToolTip.Tip="Sync Items" Command="{Binding CommandSync}">&#xe627;</Button>
-                    <Button ToolTip.Tip="Backup Items" Command="{Binding CommandBackup}">&#xf090;</Button>
+                    <SplitButton ToolTip.Tip="Sync &amp; Backup Items" Command="{Binding CommandExecute}" Content="&#xe627;">
+                        <SplitButton.Flyout>
+                            <MenuFlyout Placement="RightEdgeAlignedTop">
+                                <MenuItem Header="Sync Items" Command="{Binding CommandSync}">
+                                    <MenuItem.Icon><TextBlock Classes="Icon">&#xe627;</TextBlock></MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Backup Items" Command="{Binding CommandBackup}">
+                                    <MenuItem.Icon><TextBlock Classes="Icon">&#xf090;</TextBlock></MenuItem.Icon>
+                                </MenuItem>
+                            </MenuFlyout>
+                        </SplitButton.Flyout>
+                    </SplitButton>
                     <Button ToolTip.Tip="Upload File" Command="{Binding CommandUploadFile}">&#xf09b;</Button>
                 
                     <Button ToolTip.Tip="Open" Command="{Binding CommandOpenItem}" Margin="0, 16, 0, 0">&#xe89e;</Button>

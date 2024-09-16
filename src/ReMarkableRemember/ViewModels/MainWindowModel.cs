@@ -49,14 +49,15 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         this.myScriptLanguage = this.MyScriptLanguages.Single(language => String.CompareOrdinal(language.Code, this.controller.Settings.MyScriptLanguage) == 0);
 
         this.CommandAbout = ReactiveCommand.CreateFromTask(this.About);
-        this.CommandBackup = ReactiveCommand.CreateFromTask(this.Backup, this.Backup_CanExecute());
+        this.CommandBackup = ReactiveCommand.CreateFromTask(() => this.Execute(Job.Description.Backup), this.Execute_CanExecute(Job.Description.Backup));
+        this.CommandExecute = ReactiveCommand.CreateFromTask(() => this.Execute(Job.Description.Backup | Job.Description.Sync), this.Execute_CanExecute(Job.Description.Backup | Job.Description.Sync));
         this.CommandHandwritingRecognition = ReactiveCommand.CreateFromTask(this.HandwritingRecognition, this.HandwritingRecognition_CanExecute());
         this.CommandInstallLamyEraser = ReactiveCommand.CreateFromTask(this.InstallLamyEraser, this.InstallLamyEraser_CanExecute());
         this.CommandInstallWebInterfaceOnBoot = ReactiveCommand.CreateFromTask(this.InstallWebInterfaceOnBoot, this.InstallWebInterfaceOnBoot_CanExecute());
         this.CommandManageTemplates = ReactiveCommand.CreateFromTask(this.ManageTemplates, this.ManageTemplates_CanExecute());
         this.CommandOpenItem = ReactiveCommand.Create(this.OpenItem, this.OpenItem_CanExecute());
         this.CommandSettings = ReactiveCommand.CreateFromTask(this.Settings, this.Settings_CanExecute());
-        this.CommandSync = ReactiveCommand.CreateFromTask(this.Sync, this.Sync_CanExecute());
+        this.CommandSync = ReactiveCommand.CreateFromTask(() => this.Execute(Job.Description.Sync), this.Execute_CanExecute(Job.Description.Sync));
         this.CommandSyncTargetDirectory = ReactiveCommand.CreateFromTask<String>(this.SyncTargetDirectory, this.SyncTargetDirectory_CanExecute());
         this.CommandUploadFile = ReactiveCommand.CreateFromTask(this.UploadFile, this.UploadFile_CanExecute());
         this.CommandUploadTemplate = ReactiveCommand.CreateFromTask(this.UploadTemplate, this.UploadTemplate_CanExecute());
@@ -74,41 +75,6 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         {
             Process.Start(new ProcessStartInfo("https://github.com/ds160/remarkable-remember") { UseShellExecute = true });
         }
-    }
-
-    private async Task Backup()
-    {
-        using Job job = new Job(Job.Description.Backup, this);
-
-        List<ItemViewModel> items = this.ItemsTree.Items.ToList();
-        foreach (ItemViewModel item in items)
-        {
-            await Backup(item).ConfigureAwait(true);
-        }
-    }
-
-    private static async Task Backup(ItemViewModel item)
-    {
-        if (item.Collection != null)
-        {
-            foreach (ItemViewModel childItem in item.Collection)
-            {
-                await Backup(childItem).ConfigureAwait(true);
-            }
-        }
-
-        Boolean changed = await item.Source.Backup().ConfigureAwait(true);
-        if (changed) { item.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Parent); }
-    }
-
-    private IObservable<Boolean> Backup_CanExecute()
-    {
-        IObservable<Boolean> backupDirectory = this.WhenAnyValue(vm => vm.HasBackupDirectory);
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.Backup));
-        IObservable<Boolean> items = this.WhenAnyValue(vm => vm.HasItems);
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandwritingRecognition);
-
-        return Observable.CombineLatest(backupDirectory, connectionStatus, items, jobs, (value1, value2, value3, value4) => value1 && value2 && value3 && value4);
     }
 
     private static Boolean CheckConnectionStatusForJob(TabletConnectionError? status, Job.Description job)
@@ -143,6 +109,45 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         this.controller.Dispose();
 
         GC.SuppressFinalize(this);
+    }
+
+    private async Task Execute(Job.Description jobDescription)
+    {
+        using Job job = new Job(jobDescription, this);
+
+        List<ItemViewModel> items = this.ItemsTree.Items.ToList();
+        foreach (ItemViewModel item in items)
+        {
+            await this.Execute(item, jobDescription).ConfigureAwait(true);
+        }
+    }
+
+    private async Task Execute(ItemViewModel item, Job.Description job)
+    {
+        TabletConnectionError? status = this.ConnectionStatus;
+
+        if (item.Collection != null)
+        {
+            foreach (ItemViewModel childItem in item.Collection)
+            {
+                await this.Execute(childItem, job).ConfigureAwait(true);
+            }
+        }
+
+        Boolean changed = false;
+        if (job.HasFlag(Job.Description.Backup) && CheckConnectionStatusForJob(status, Job.Description.Backup)) { changed |= await item.Source.Backup().ConfigureAwait(true); }
+        if (job.HasFlag(Job.Description.Sync) && CheckConnectionStatusForJob(status, Job.Description.Sync)) { changed |= await item.Source.Sync().ConfigureAwait(true); }
+        if (changed) { item.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Parent); }
+    }
+
+    private IObservable<Boolean> Execute_CanExecute(Job.Description jobDescription)
+    {
+        IObservable<Boolean> backupDirectory = this.WhenAnyValue(vm => vm.HasBackupDirectory).Select(hasBackupDirectory => jobDescription != Job.Description.Backup || hasBackupDirectory);
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, (jobDescription == Job.Description.Sync) ? Job.Description.Sync : Job.Description.Backup));
+        IObservable<Boolean> items = this.WhenAnyValue(vm => vm.HasItems);
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandwritingRecognition);
+
+        return Observable.CombineLatest(backupDirectory, connectionStatus, items, jobs, (value1, value2, value3, value4) => value1 && value2 && value3 && value4);
     }
 
     private async Task HandwritingRecognition()
@@ -300,40 +305,6 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandwritingRecognition);
     }
 
-    private async Task Sync()
-    {
-        using Job job = new Job(Job.Description.Sync, this);
-
-        List<ItemViewModel> items = this.ItemsTree.Items.ToList();
-        foreach (ItemViewModel item in items)
-        {
-            await Sync(item).ConfigureAwait(true);
-        }
-    }
-
-    private static async Task Sync(ItemViewModel item)
-    {
-        if (item.Collection != null)
-        {
-            foreach (ItemViewModel childItem in item.Collection)
-            {
-                await Sync(childItem).ConfigureAwait(true);
-            }
-        }
-
-        Boolean changed = await item.Source.Sync().ConfigureAwait(true);
-        if (changed) { item.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Parent); }
-    }
-
-    private IObservable<Boolean> Sync_CanExecute()
-    {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.Sync));
-        IObservable<Boolean> items = this.WhenAnyValue(vm => vm.HasItems);
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandwritingRecognition);
-
-        return Observable.CombineLatest(connectionStatus, items, jobs, (value1, value2, value3) => value1 && value2 && value3);
-    }
-
     private async Task SyncTargetDirectory(String setString)
     {
         ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
@@ -463,6 +434,8 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
     public ICommand CommandAbout { get; }
 
     public ICommand CommandBackup { get; }
+
+    public ICommand CommandExecute { get; }
 
     public ICommand CommandHandwritingRecognition { get; }
 
