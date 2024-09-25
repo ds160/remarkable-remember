@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using ReMarkableRemember.Helper;
 using Renci.SshNet;
 using Renci.SshNet.Common;
@@ -33,6 +34,7 @@ internal sealed class Tablet : IDisposable
     private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true };
 
     private readonly HttpClient gitHubClient;
+    private readonly Logger logger;
     private readonly Settings settings;
     private readonly SemaphoreSlim sshSemaphore;
     private readonly HttpClient usbClient;
@@ -42,6 +44,7 @@ internal sealed class Tablet : IDisposable
     public Tablet(Settings settings)
     {
         this.gitHubClient = new HttpClient();
+        this.logger = LogManager.GetCurrentClassLogger();
         this.settings = settings;
         this.sshSemaphore = new SemaphoreSlim(1, 1);
         this.usbClient = new HttpClient();
@@ -368,7 +371,11 @@ internal sealed class Tablet : IDisposable
         await ConnectClient(client).ConfigureAwait(false);
 
         String versionInformation = await Task.Run(() => client.ReadAllText(PATH_VERSION_INFORMATION)).ConfigureAwait(false);
-        if (String.CompareOrdinal(versionInformation, VERSION_INFORMATION_RM2) != 0) { throw new TabletException(TabletConnectionError.NotSupported, "The connected reMarkable is not supported."); }
+        if (String.CompareOrdinal(versionInformation, VERSION_INFORMATION_RM2) != 0)
+        {
+            this.logger.Warn($"The connected reMarkable is not supported, the version information is '{versionInformation}'");
+            // throw new TabletException(TabletConnectionError.NotSupported, "The connected reMarkable is not supported.");
+        }
 
         return client;
     }

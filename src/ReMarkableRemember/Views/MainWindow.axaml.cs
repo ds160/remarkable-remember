@@ -5,6 +5,7 @@ using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using Avalonia.ReactiveUI;
+using NLog;
 using ReactiveUI;
 using ReMarkableRemember.ViewModels;
 
@@ -12,12 +13,24 @@ namespace ReMarkableRemember.Views;
 
 public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
 {
+    private readonly Logger logger;
+
     public MainWindow()
     {
+        this.logger = LogManager.GetCurrentClassLogger();
+
         this.InitializeComponent();
         this.WhenActivated(this.Subscribe);
 
-        RxApp.DefaultExceptionHandler = Observer.Create<Exception>(this.ShowExceptionDialog, this.ShowExceptionDialog);
+        RxApp.DefaultExceptionHandler = Observer.Create<Exception>(this.ExceptionHandler, this.ExceptionHandler);
+    }
+
+    private async void ExceptionHandler(Exception exception)
+    {
+        this.logger.Error(exception);
+
+        DialogWindow dialog = new DialogWindow() { DataContext = MessageViewModel.Error(exception) };
+        await dialog.ShowDialog<Boolean?>(this).ConfigureAwait(true);
     }
 
     private async Task OpenFilePickerHandler(InteractionContext<FilePickerOpenOptions, IEnumerable<String>?> context)
@@ -38,12 +51,6 @@ public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
         DialogWindow dialog = new DialogWindow() { DataContext = context.Input };
         Boolean? result = await dialog.ShowDialog<Boolean?>(this).ConfigureAwait(true);
         context.SetOutput(result == true);
-    }
-
-    private async void ShowExceptionDialog(Exception exception)
-    {
-        DialogWindow dialog = new DialogWindow() { DataContext = MessageViewModel.Error(exception) };
-        await dialog.ShowDialog<Boolean?>(this).ConfigureAwait(true);
     }
 
     private void Subscribe(Action<IDisposable> action)

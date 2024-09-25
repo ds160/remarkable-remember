@@ -8,11 +8,17 @@ internal static class FileSystem
     public static FileStream Create(String path)
     {
         CreateDirectory(path);
-
         return File.Create(path);
     }
 
-    public static void CreateDirectory(String path)
+    public static String CreateApplicationDataFilePath(String fileName)
+    {
+        String path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), nameof(ReMarkableRemember), fileName);
+        CreateDirectory(path);
+        return path;
+    }
+
+    private static void CreateDirectory(String path)
     {
         String? directory = Path.GetDirectoryName(path);
         if (!String.IsNullOrEmpty(directory))

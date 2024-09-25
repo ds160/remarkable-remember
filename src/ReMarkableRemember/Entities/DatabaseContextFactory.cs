@@ -18,8 +18,6 @@ internal sealed class DatabaseContextFactory : IDesignTimeDbContextFactory<Datab
     {
         if (File.Exists(arg)) { return arg; }
 
-        String dataSource = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), nameof(ReMarkableRemember), "database.db");
-        FileSystem.CreateDirectory(dataSource);
-        return dataSource;
+        return FileSystem.CreateApplicationDataFilePath("database.db");
     }
 }
