@@ -11,7 +11,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using NLog;
 using ReMarkableRemember.Helper;
 using Renci.SshNet;
 using Renci.SshNet.Common;
@@ -25,16 +24,18 @@ internal sealed class Tablet : IDisposable
     private const String PATH_NOTEBOOKS = "/home/root/.local/share/remarkable/xochitl/";
     private const String PATH_TEMPLATES = "/usr/share/remarkable/templates/";
     private const String PATH_TEMPLATES_FILE = "templates.json";
-    private const String PATH_VERSION_INFORMATION = "/etc/motd";
+    private const String PATH_UPDATE_CONFIG_FILE = "/usr/share/remarkable/update.conf";
+    private const String PATH_VERSION_INFORMATION_FILE = "/proc/version";
+    private const String SOFTWARE_VERSION_INFORMATION = "REMARKABLE_RELEASE_VERSION=";
     private const Int32 SSH_TIMEOUT = 2;
     private const String SSH_USER = "root";
     private const Int32 USB_TIMEOUT = 1;
-    private const String VERSION_INFORMATION_RM2 = "\u001b[0;1;34;94mｒｅＭａｒｋａｂ\u001b[0;34mｌｅ\u001b[0m\n\u001b[0;1;35;95m╺━\u001b[0;1;31;91m┓┏\u001b[0;1;33;93m━╸\u001b[0;1;32;92m┏━\u001b[0;1;36;96m┓┏\u001b[0;1;34;94m━┓\u001b[0m   \u001b[0;1;31;91m┏\u001b[0;1;33;93m━┓\u001b[0;1;32;92m╻\u001b[0m \u001b[0;1;36;96m╻┏\u001b[0;1;34;94m━╸\u001b[0;1;35;95m┏━\u001b[0;1;31;91m┓┏\u001b[0;1;33;93m━┓\u001b[0m\n\u001b[0;1;31;91m┏━\u001b[0;1;33;93m┛┣\u001b[0;1;32;92m╸\u001b[0m \u001b[0;1;36;96m┣┳\u001b[0;1;34;94m┛┃\u001b[0m \u001b[0;1;35;95m┃\u001b[0m   \u001b[0;1;33;93m┗\u001b[0;1;32;92m━┓\u001b[0;1;36;96m┃\u001b[0m \u001b[0;1;34;94m┃┃\u001b[0;1;35;95m╺┓\u001b[0;1;31;91m┣━\u001b[0;1;33;93m┫┣\u001b[0;1;32;92m┳┛\u001b[0m\n\u001b[0;1;33;93m┗━\u001b[0;1;32;92m╸┗\u001b[0;1;36;96m━╸\u001b[0;1;34;94m╹┗\u001b[0;1;35;95m╸┗\u001b[0;1;31;91m━┛\u001b[0m   \u001b[0;1;32;92m┗\u001b[0;1;36;96m━┛\u001b[0;1;34;94m┗━\u001b[0;1;35;95m┛┗\u001b[0;1;31;91m━┛\u001b[0;1;33;93m╹\u001b[0m \u001b[0;1;32;92m╹╹\u001b[0;1;36;96m┗╸\u001b[0m\n";
+    private const String VERSION_INFORMATION_RM1 = "-rm10x ";
+    private const String VERSION_INFORMATION_RM2 = "-rm11x ";
 
     private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true };
 
     private readonly HttpClient gitHubClient;
-    private readonly Logger logger;
     private readonly Settings settings;
     private readonly SemaphoreSlim sshSemaphore;
     private readonly HttpClient usbClient;
@@ -44,7 +45,6 @@ internal sealed class Tablet : IDisposable
     public Tablet(Settings settings)
     {
         this.gitHubClient = new HttpClient();
-        this.logger = LogManager.GetCurrentClassLogger();
         this.settings = settings;
         this.sshSemaphore = new SemaphoreSlim(1, 1);
         this.usbClient = new HttpClient();
@@ -245,7 +245,7 @@ internal sealed class Tablet : IDisposable
         }
     }
 
-    public async Task InstallWebInterfaceOnBoot(Boolean applyHack = true, String release = "v1.2.4")
+    public async Task InstallWebInterfaceOnBoot(String release = "v1.2.4")
     {
         await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -253,6 +253,9 @@ internal sealed class Tablet : IDisposable
         {
             using SftpClient sftpClient = await this.CreateSftpClient().ConfigureAwait(false);
             using SshClient sshClient = await this.CreateSshClient().ConfigureAwait(false);
+
+            Version softwareVersion = await GetSoftwareVersion(sftpClient).ConfigureAwait(false);
+            Boolean applyHack = softwareVersion.Major >= 2 && softwareVersion.Minor >= 15;
 
             await ExecuteSshCommand(sshClient, "systemctl disable --now webinterface-onboot.service", false).ConfigureAwait(false);
 
@@ -370,14 +373,11 @@ internal sealed class Tablet : IDisposable
         SftpClient client = new SftpClient(this.CreateSshConnectionInfo());
         await ConnectClient(client).ConfigureAwait(false);
 
-        String versionInformation = await Task.Run(() => client.ReadAllText(PATH_VERSION_INFORMATION)).ConfigureAwait(false);
-        if (String.CompareOrdinal(versionInformation, VERSION_INFORMATION_RM2) != 0)
-        {
-            this.logger.Warn($"The connected reMarkable is not supported, the version information is '{versionInformation}'");
-            // throw new TabletException(TabletConnectionError.NotSupported, "The connected reMarkable is not supported.");
-        }
+        String versionInformation = await Task.Run(() => client.ReadAllText(PATH_VERSION_INFORMATION_FILE)).ConfigureAwait(false);
+        if (versionInformation.Contains(VERSION_INFORMATION_RM1)) { return client; }
+        if (versionInformation.Contains(VERSION_INFORMATION_RM2)) { return client; }
 
-        return client;
+        throw new TabletException(TabletConnectionError.NotSupported, "The connected reMarkable is not supported.");
     }
 
     private async Task<SshClient> CreateSshClient()
@@ -497,6 +497,13 @@ internal sealed class Tablet : IDisposable
         {
             throw new NotSupportedException();
         }
+    }
+
+    private static async Task<Version> GetSoftwareVersion(SftpClient client)
+    {
+        String[] updateInformation = await Task.Run(() => client.ReadAllLines(PATH_UPDATE_CONFIG_FILE)).ConfigureAwait(false);
+        String softwareVersionInformation = updateInformation.Single(line => line.StartsWith(SOFTWARE_VERSION_INFORMATION, StringComparison.Ordinal));
+        return new Version(softwareVersionInformation[SOFTWARE_VERSION_INFORMATION.Length..]);
     }
 
     private static String InstallLamyEraserOptions(String serviceText, Boolean press, Boolean undo, Boolean leftHanded)
