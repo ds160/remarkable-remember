@@ -54,7 +54,7 @@ jobs:
         run: pupnet -y -k setup -r ${{ matrix.arch }}
       -
         name: Rename Setup
-        run: ren "bin/reMarkableRemember.*.exe" "bin/reMarkableRemember-${{ matrix.arch }}.exe"
+        run: ren "bin/reMarkableRemember.*.exe" "reMarkableRemember-${{ matrix.arch }}.exe"
       -
         name: Upload
         uses: actions/upload-artifact@v4
