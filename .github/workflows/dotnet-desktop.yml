@@ -24,9 +24,7 @@ jobs:
       name: Build AppImage
       run: |
         pupnet -y -k appimage -r ${{ matrix.arch }}
-        cd bin
-        ls -Ashl
-        mv "reMarkableRemember.*.AppImage" "reMarkableRemember-${{ matrix.arch }}.AppImage"
+        for file in bin/*.AppImage; do mv "$file" "bin/reMarkableRemember-${{ matrix.arch }}.AppImage"; done
     -
       name: Build DEB
       run: |
