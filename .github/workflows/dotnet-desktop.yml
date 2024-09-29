@@ -29,13 +29,13 @@ jobs:
       name: Build DEB
       run: |
         pupnet -y -k deb -r ${{ matrix.arch }}
-        mv "bin/*.deb" "bin/reMarkableRemember-${{ matrix.arch }}.deb"
+        for file in bin/*.deb; do mv "$file" "bin/reMarkableRemember-${{ matrix.arch }}.deb"; done
     -
       name: Build RPM
       if: matrix.arch == 'linux-x64'
       run: |
         pupnet -y -k rpm -r ${{ matrix.arch }}
-        mv "bin/*.rpm" "bin/reMarkableRemember-${{ matrix.arch }}.rpm"
+        for file in bin/*.rpm; do mv "$file" "bin/reMarkableRemember-${{ matrix.arch }}.rpm"; done
     -
       name: Upload
       uses: actions/upload-artifact@v4
