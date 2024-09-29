@@ -22,14 +22,20 @@ jobs:
       run: sudo apt-get install -y libfuse2
     -
       name: Build AppImage
-      run: pupnet -y -k appimage -r ${{ matrix.arch }}
+      run: |
+        pupnet -y -k appimage -r ${{ matrix.arch }}
+        mv "bin/*.AppImage" "bin/reMarkableRemember-${{ matrix.arch }}.AppImage"
     -
       name: Build DEB
-      run: pupnet -y -k deb -r ${{ matrix.arch }}
+      run: |
+        pupnet -y -k deb -r ${{ matrix.arch }}
+        mv "bin/*.deb" "bin/reMarkableRemember-${{ matrix.arch }}.deb"
     -
       name: Build RPM
       if: matrix.arch == 'linux-x64'
-      run: pupnet -y -k rpm -r ${{ matrix.arch }}
+      run: |
+        pupnet -y -k rpm -r ${{ matrix.arch }}
+        mv "bin/*.rpm" "bin/reMarkableRemember-${{ matrix.arch }}.rpm"
     -
       name: Upload
       uses: actions/upload-artifact@v4
@@ -51,10 +57,9 @@ jobs:
         run: dotnet tool install -g KuiperZone.PupNet
       -
         name: Build Setup
-        run: pupnet -y -k setup -r ${{ matrix.arch }}
-      -
-        name: Rename Setup
-        run: ren "bin/reMarkableRemember.*.exe" "reMarkableRemember-${{ matrix.arch }}.exe"
+        run: |
+          pupnet -y -k setup -r ${{ matrix.arch }}
+          ren "bin/reMarkableRemember.*.exe" "reMarkableRemember-${{ matrix.arch }}.exe"
       -
         name: Upload
         uses: actions/upload-artifact@v4
