@@ -53,6 +53,9 @@ jobs:
         name: Build Setup
         run: pupnet -y -k setup -r ${{ matrix.arch }}
       -
+        name: Rename Setup
+        run: RENAME "bin/reMarkableRemember.*.exe" "bin/reMarkableRemember-${{ matrix.arch }}.exe"
+      -
         name: Upload
         uses: actions/upload-artifact@v4
         with:
@@ -108,6 +111,7 @@ jobs:
         run: |
           xcrun notarytool submit "bin/reMarkable Remember.dmg" --keychain-profile "notarytool" --wait
           xcrun stapler staple "bin/reMarkable Remember.dmg"
+          mv "bin/reMarkable Remember.dmg" "bin/reMarkableRemember-${{ matrix.arch }}.dmg"
       -
         name: Upload
         uses: actions/upload-artifact@v4
