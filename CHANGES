@@ -1,3 +1,8 @@
++ 1.6.3;2024-10-01
+- Support of reMarkable 1 (rm10x)
+- Check of current reMarkable software version before installing WebInterface-OnBoot
+- Logging of unhandled exceptions
+
 + 1.6.2;2024-09-16
 - Combine sync and backup items in a split button
 - Check if connected tablet is supported
