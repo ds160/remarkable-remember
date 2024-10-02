@@ -10,11 +10,23 @@ on:
 jobs:
   release-on-tag:
     runs-on: ubuntu-latest
+    outputs:
+      release_upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - 
-        name: Print Tag
+        name: Create Release
         if: github.ref_type == 'tag'
-        run: echo ${{github.ref_name}}
+        uses: actions/create-release@v1
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          body: |
+            Release with following new features:
+            - Changes
+          draft: true
 
   build-linux:
     needs: release-on-tag
@@ -46,11 +58,22 @@ jobs:
       name: Rename
       run: for file in bin/*.*; do mv "$file" "bin/reMarkableRemember-${{ matrix.arch }}.${file##*.}"; done
     -
-      name: Upload
+      name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.arch }}
         path: bin/
+    - 
+      name: Upload Release Asset - AppImage
+      if: github.ref_type == 'tag'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ needs.release-on-tag.outputs.release_upload_url }}
+        asset_path: bin/reMarkableRemember-${{ matrix.arch }}.AppImage
+        asset_name: reMarkableRemember-${{ matrix.arch }}.AppImage
+        #asset_content_type: application/gzip
 
   build-windows:
     needs: release-on-tag
@@ -71,7 +94,7 @@ jobs:
           pupnet -y -k setup -r ${{ matrix.arch }}
           ren "bin/reMarkableRemember.*.exe" "reMarkableRemember-${{ matrix.arch }}.exe"
       -
-        name: Upload
+        name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.arch }}
@@ -129,7 +152,7 @@ jobs:
           xcrun stapler staple "bin/reMarkable Remember.dmg"
           mv "bin/reMarkable Remember.dmg" "bin/reMarkableRemember-${{ matrix.arch }}.dmg"
       -
-        name: Upload
+        name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
             name: ${{ matrix.arch }}
