@@ -8,7 +8,7 @@ on:
       - '*'
 
 jobs:
-  release-on-tag:
+  check-tag:
     runs-on: ubuntu-latest
     outputs:
       release_upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -29,7 +29,7 @@ jobs:
           draft: true
 
   build-linux:
-    needs: release-on-tag
+    needs: check-tag
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -70,13 +70,13 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
-        upload_url: ${{ needs.release-on-tag.outputs.release_upload_url }}
+        upload_url: ${{ needs.check-tag.outputs.release_upload_url }}
         asset_path: bin/reMarkableRemember-${{ matrix.arch }}.AppImage
         asset_name: reMarkableRemember-${{ matrix.arch }}.AppImage
-        #asset_content_type: application/gzip
+        asset_content_type: application/octet-stream
 
   build-windows:
-    needs: release-on-tag
+    needs: check-tag
     runs-on: windows-latest
     strategy:
       matrix:
@@ -101,7 +101,7 @@ jobs:
           path: bin/
 
   build-macos:
-    needs: release-on-tag
+    needs: check-tag
     runs-on: macos-latest
     strategy:
       matrix:
