@@ -5,7 +5,19 @@ on:
     branches: [ "main" ]
 
 jobs:
+  release-on-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        name: Print Tag
+        run: echo ${{github.ref_name}}
+      -
+        name: Execute on tag only
+        if: ${{ github.ref_name != '' }}
+        run: echo ${{github.ref_name}}
+
   build-linux:
+    needs: release-on-tag
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -41,6 +53,7 @@ jobs:
         path: bin/
 
   build-windows:
+    needs: release-on-tag
     runs-on: windows-latest
     strategy:
       matrix:
@@ -65,6 +78,7 @@ jobs:
           path: bin/
 
   build-macos:
+    needs: release-on-tag
     runs-on: macos-latest
     strategy:
       matrix:
