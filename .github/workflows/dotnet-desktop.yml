@@ -8,7 +8,7 @@ on:
       - '*'
 
 jobs:
-  check-tag:
+  create-release-on-tag:
     runs-on: ubuntu-latest
     outputs:
       release_upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -29,7 +29,7 @@ jobs:
           draft: true
 
   build-linux:
-    needs: check-tag
+    needs: create-release-on-tag
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -70,13 +70,35 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
-        upload_url: ${{ needs.check-tag.outputs.release_upload_url }}
+        upload_url: ${{ needs.create-release-on-tag.outputs.release_upload_url }}
         asset_path: bin/reMarkableRemember-${{ matrix.arch }}.AppImage
         asset_name: reMarkableRemember-${{ matrix.arch }}.AppImage
         asset_content_type: application/octet-stream
-
+    - 
+      name: Upload Release Asset - DEB
+      if: github.ref_type == 'tag'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ needs.create-release-on-tag.outputs.release_upload_url }}
+        asset_path: bin/reMarkableRemember-${{ matrix.arch }}.deb
+        asset_name: reMarkableRemember-${{ matrix.arch }}.deb
+        asset_content_type: application/octet-stream
+    - 
+      name: Upload Release Asset - RPM
+      if: matrix.arch == 'linux-x64' && github.ref_type == 'tag'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ needs.create-release-on-tag.outputs.release_upload_url }}
+        asset_path: bin/reMarkableRemember-${{ matrix.arch }}.rpm
+        asset_name: reMarkableRemember-${{ matrix.arch }}.rpm
+        asset_content_type: application/octet-stream
+    
   build-windows:
-    needs: check-tag
+    needs: create-release-on-tag
     runs-on: windows-latest
     strategy:
       matrix:
@@ -99,9 +121,20 @@ jobs:
         with:
           name: ${{ matrix.arch }}
           path: bin/
+      - 
+        name: Upload Release Asset
+        if: github.ref_type == 'tag'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ needs.create-release-on-tag.outputs.release_upload_url }}
+          asset_path: bin/reMarkableRemember-${{ matrix.arch }}.exe
+          asset_name: reMarkableRemember-${{ matrix.arch }}.exe
+          asset_content_type: application/octet-stream
 
   build-macos:
-    needs: check-tag
+    needs: create-release-on-tag
     runs-on: macos-latest
     strategy:
       matrix:
@@ -157,3 +190,14 @@ jobs:
         with:
             name: ${{ matrix.arch }}
             path: bin/
+      - 
+        name: Upload Release Asset
+        if: github.ref_type == 'tag'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ needs.create-release-on-tag.outputs.release_upload_url }}
+          asset_path: bin/reMarkableRemember-${{ matrix.arch }}.dmg
+          asset_name: reMarkableRemember-${{ matrix.arch }}.dmg
+          asset_content_type: application/octet-stream
