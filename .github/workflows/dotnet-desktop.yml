@@ -10,10 +10,10 @@ on:
 jobs:
   release-on-tag:
     runs-on: ubuntu-latest
+    if: github.ref_type == 'tag'
     steps:
       - 
         name: Print Tag
-        if: github.ref_type == 'tag'
         run: echo ${{github.ref_name}}
 
   build-linux:
