@@ -10,10 +10,7 @@ jobs:
     steps:
       - 
         name: Print Tag
-        run: echo ${{github.ref_name}}
-      -
-        name: Execute on tag only
-        if: ${{ github.ref_name != '' }}
+        if: github.ref_type == 'tag'
         run: echo ${{github.ref_name}}
 
   build-linux:
