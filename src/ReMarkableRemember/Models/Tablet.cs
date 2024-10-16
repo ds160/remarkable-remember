@@ -579,7 +579,7 @@ internal sealed class Tablet : IDisposable
             this.Collection = (type == "CollectionType") ? new List<Item>() : null;
             this.Id = id;
             this.Modified = DateTime.UnixEpoch.AddMilliseconds(Double.Parse(lastModified, CultureInfo.InvariantCulture));
-            this.Name = (type == "DocumentType") ? $"{visibleName}.pdf" : visibleName;
+            this.Name = (type == "DocumentType" && !visibleName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) ? $"{visibleName}.pdf" : visibleName;
             this.ParentCollectionId = parent;
             this.Trashed = parent == "trash";
         }
