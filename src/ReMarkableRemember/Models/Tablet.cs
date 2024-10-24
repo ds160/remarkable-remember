@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -299,10 +300,13 @@ internal sealed class Tablet : IDisposable
             await ExecuteHttp(() => this.usbClient.GetStringAsync(new Uri($"http://{IP}/documents/{parentId}"))).ConfigureAwait(false);
 
             FileInfo file = new FileInfo(path);
+            String fileName = Encoding.GetEncoding("ISO-8859-1").GetString(Encoding.UTF8.GetBytes(file.Name));
             String mediaType = UploadFileCheck(file);
 
             using StreamContent fileContent = new StreamContent(File.OpenRead(path));
-            fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data") { Name = "\"file\"", FileName = $"\"{file.Name}\"" };
+            fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+            fileContent.Headers.ContentDisposition.Parameters.Add(new NameValueHeaderValue("name", "\"file\""));
+            fileContent.Headers.ContentDisposition.Parameters.Add(new NameValueHeaderValue("filename", $"\"{fileName}\""));
             fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(mediaType);
 
             using MultipartFormDataContent multipartContent = new MultipartFormDataContent() { { fileContent } };
