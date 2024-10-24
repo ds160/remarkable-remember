@@ -392,10 +392,9 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
     {
         using Job job = new Job(Job.Description.Upload, this);
 
-        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = false, Title = "File", FileTypeFilter = new[] { FileTypePdf, FileTypeEpub } };
+        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = true, FileTypeFilter = new[] { FileTypePdf, FileTypeEpub } };
         IEnumerable<String>? files = await this.OpenFilePicker.Handle(options);
-        String? file = files?.SingleOrDefault();
-        if (file != null)
+        foreach (String file in files)
         {
             ItemViewModel? parentItem = this.ItemsTree.RowSelection!.SelectedItem;
             await this.controller.UploadFile(file, parentItem?.Source).ConfigureAwait(true);
