@@ -13,6 +13,10 @@ jobs:
     outputs:
       release_upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
+      -
+        name: Checkout
+        if: github.ref_type == 'tag'
+        uses: actions/checkout@v4
       - 
         name: Create Release
         if: github.ref_type == 'tag'
@@ -23,10 +27,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
-          body: |
-            Release with following new features:
-            - Changes
-          draft: true
+          body_path: CHANGES.md
 
   build-linux:
     needs: create-release-on-tag
