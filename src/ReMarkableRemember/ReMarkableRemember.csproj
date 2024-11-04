@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.1.4" />
+    <PackageReference Include="Avalonia" Version="11.2.0" />
     <PackageReference Include="Avalonia.Controls.TreeDataGrid" Version="11.0.10" />
     <PackageReference Include="Avalonia.Desktop" Version="11.1.4" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.1.4" />
