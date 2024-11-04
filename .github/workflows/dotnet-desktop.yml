@@ -28,6 +28,7 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
           body_path: CHANGES.md
+          draft: true
 
   build-linux:
     needs: create-release-on-tag
