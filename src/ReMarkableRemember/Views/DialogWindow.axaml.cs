@@ -17,7 +17,7 @@ public sealed partial class DialogWindow : ReactiveWindow<DialogWindowModel>
         this.WhenActivated(this.Subscribe);
     }
 
-    private async Task CopyToClipboardHandler(InteractionContext<String, Boolean> context)
+    private async Task CopyToClipboardHandler(IInteractionContext<String, Boolean> context)
     {
         if (this.Clipboard != null)
         {
@@ -30,13 +30,13 @@ public sealed partial class DialogWindow : ReactiveWindow<DialogWindowModel>
         }
     }
 
-    private async Task OpenFilePickerHandler(InteractionContext<FilePickerOpenOptions, IEnumerable<String>?> context)
+    private async Task OpenFilePickerHandler(IInteractionContext<FilePickerOpenOptions, IEnumerable<String>?> context)
     {
         IReadOnlyList<IStorageFile> files = await this.StorageProvider.OpenFilePickerAsync(context.Input).ConfigureAwait(true);
         context.SetOutput(files?.Select(file => file.Path.LocalPath).ToArray());
     }
 
-    private async Task OpenFolderPickerHandler(InteractionContext<String, String?> context)
+    private async Task OpenFolderPickerHandler(IInteractionContext<String, String?> context)
     {
         FolderPickerOpenOptions options = new FolderPickerOpenOptions() { AllowMultiple = false, Title = context.Input };
         IReadOnlyList<IStorageFolder> folders = await this.StorageProvider.OpenFolderPickerAsync(options).ConfigureAwait(true);

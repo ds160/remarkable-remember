@@ -33,20 +33,20 @@ public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
         await dialog.ShowDialog<Boolean?>(this).ConfigureAwait(true);
     }
 
-    private async Task OpenFilePickerHandler(InteractionContext<FilePickerOpenOptions, IEnumerable<String>?> context)
+    private async Task OpenFilePickerHandler(IInteractionContext<FilePickerOpenOptions, IEnumerable<String>?> context)
     {
         IReadOnlyList<IStorageFile> files = await this.StorageProvider.OpenFilePickerAsync(context.Input).ConfigureAwait(true);
         context.SetOutput(files?.Select(file => file.Path.LocalPath).ToArray());
     }
 
-    private async Task OpenFolderPickerHandler(InteractionContext<String, String?> context)
+    private async Task OpenFolderPickerHandler(IInteractionContext<String, String?> context)
     {
         FolderPickerOpenOptions options = new FolderPickerOpenOptions() { AllowMultiple = false, Title = context.Input };
         IReadOnlyList<IStorageFolder> folders = await this.StorageProvider.OpenFolderPickerAsync(options).ConfigureAwait(true);
         context.SetOutput(folders?.Select(folder => folder.Path.LocalPath).SingleOrDefault());
     }
 
-    private async Task ShowDialogHandler(InteractionContext<DialogWindowModel, Boolean> context)
+    private async Task ShowDialogHandler(IInteractionContext<DialogWindowModel, Boolean> context)
     {
         DialogWindow dialog = new DialogWindow() { DataContext = context.Input };
         Boolean? result = await dialog.ShowDialog<Boolean?>(this).ConfigureAwait(true);
