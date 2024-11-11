@@ -210,7 +210,10 @@ internal sealed class Tablet : IDisposable
                 Byte[] pageBuffer = await Task.Run(() => client.ReadAllBytes($"{PATH_NOTEBOOKS}{id}/{page}.rm")).ConfigureAwait(false);
                 pageBuffers.Add(pageBuffer);
             }
-            return new Notebook(pageBuffers, contentFile.Orientation == "portrait");
+
+            Int32 height = (contentFile.Orientation == "portrait") ? 1872 : 1404;
+            Int32 width = (contentFile.Orientation == "portrait") ? 1404 : 1872;
+            return new Notebook(pageBuffers, height, width, 226);
         }
         finally
         {

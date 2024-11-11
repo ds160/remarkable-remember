@@ -148,7 +148,7 @@ internal sealed class MyScript
             }
         }
 
-        BatchInput batchInput = new BatchInput(page.PortraitMode, language, strokes);
+        BatchInput batchInput = new BatchInput(page, language, strokes);
         return JsonSerializer.Serialize(batchInput, jsonSerializerOptions);
     }
 
@@ -161,14 +161,14 @@ internal sealed class MyScript
 
     private sealed class BatchInput
     {
-        public BatchInput(Boolean portraitMode, String lang, List<Stroke> strokes)
+        public BatchInput(Notebook.Page page, String language, List<Stroke> strokes)
         {
-            this.Configuration = new { Lang = lang };
+            this.Configuration = new { Lang = language };
             this.ContentType = "Text";
-            this.Height = portraitMode ? 1872 : 1404;
-            this.Width = portraitMode ? 1404 : 1872;
-            this.XDPI = 226;
-            this.YDPI = 226;
+            this.Height = page.Height;
+            this.Width = page.Width;
+            this.XDPI = page.Resolution;
+            this.YDPI = page.Resolution;
 
             this.StrokeGroups = new List<Object>() { new { Strokes = strokes } };
         }

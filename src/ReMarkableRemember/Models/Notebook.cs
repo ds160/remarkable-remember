@@ -8,19 +8,21 @@ namespace ReMarkableRemember.Models;
 
 internal sealed class Notebook
 {
-    public Notebook(IEnumerable<Byte[]> pageBuffers, Boolean portraitMode)
+    public Notebook(IEnumerable<Byte[]> pageBuffers, Int32 height, Int32 width, Int32 resolution)
     {
-        this.Pages = pageBuffers.Select((pageBuffer, pageIndex) => new Page(pageBuffer, pageIndex, portraitMode)).ToArray();
+        this.Pages = pageBuffers.Select((pageBuffer, pageIndex) => new Page(pageBuffer, pageIndex, height, width, resolution)).ToArray();
     }
 
     public IEnumerable<Page> Pages { get; }
 
     internal sealed class Page
     {
-        public Page(Byte[] buffer, Int32 index, Boolean portraitMode)
+        public Page(Byte[] buffer, Int32 index, Int32 height, Int32 width, Int32 resolution)
         {
+            this.Height = height;
             this.Index = index;
-            this.PortraitMode = portraitMode;
+            this.Resolution = resolution;
+            this.Width = width;
 
             PageBuffer pageBuffer = new PageBuffer(buffer);
             String header = pageBuffer.ReadString(43);
@@ -37,11 +39,15 @@ internal sealed class Notebook
             }
         }
 
+        public Int32 Height { get; }
+
         public Int32 Index { get; }
 
         public IEnumerable<Line> Lines { get; }
 
-        public Boolean PortraitMode { get; }
+        public Int32 Resolution { get; }
+
+        public Int32 Width { get; }
 
         private static List<Line> V5Parse(PageBuffer buffer)
         {
@@ -211,12 +217,17 @@ internal sealed class Notebook
                 Black = 0,
                 Grey = 1,
                 White = 2,
-                Yellow = 3,
-                Green = 4,
+                Yellow1 = 3,
+                Green1 = 4,
                 Pink = 5,
                 Blue = 6,
                 Red = 7,
-                GrayOverlap = 8
+                GrayOverlap = 8,
+                Highlight = 9,
+                Green2 = 10,
+                Cyan = 11,
+                Magenta = 12,
+                Yellow2 = 13
             }
 
             internal enum PenType
@@ -237,7 +248,8 @@ internal sealed class Notebook
                 Marker2 = 16,
                 Fineliner2 = 17,
                 Highlighter2 = 18,
-                Caligraphy = 21
+                Caligraphy = 21,
+                Shader = 23
             }
 
             public Line(PenColor color, PenType type, List<Point> points)
