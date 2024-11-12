@@ -8,21 +8,19 @@ namespace ReMarkableRemember.Models;
 
 internal sealed class Notebook
 {
-    public Notebook(IEnumerable<Byte[]> pageBuffers, Int32 height, Int32 width, Int32 resolution)
+    public Notebook(IEnumerable<Byte[]> pageBuffers, Int32 resolution)
     {
-        this.Pages = pageBuffers.Select((pageBuffer, pageIndex) => new Page(pageBuffer, pageIndex, height, width, resolution)).ToArray();
+        this.Pages = pageBuffers.Select((pageBuffer, pageIndex) => new Page(pageBuffer, pageIndex, resolution)).ToArray();
     }
 
     public IEnumerable<Page> Pages { get; }
 
     internal sealed class Page
     {
-        public Page(Byte[] buffer, Int32 index, Int32 height, Int32 width, Int32 resolution)
+        public Page(Byte[] buffer, Int32 index, Int32 resolution)
         {
-            this.Height = height;
             this.Index = index;
             this.Resolution = resolution;
-            this.Width = width;
 
             PageBuffer pageBuffer = new PageBuffer(buffer);
             String header = pageBuffer.ReadString(43);
@@ -39,15 +37,11 @@ internal sealed class Notebook
             }
         }
 
-        public Int32 Height { get; }
-
         public Int32 Index { get; }
 
         public IEnumerable<Line> Lines { get; }
 
         public Int32 Resolution { get; }
-
-        public Int32 Width { get; }
 
         private static List<Line> V5Parse(PageBuffer buffer)
         {

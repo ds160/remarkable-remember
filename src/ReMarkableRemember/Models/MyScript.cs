@@ -165,8 +165,6 @@ internal sealed class MyScript
         {
             this.Configuration = new { Lang = language };
             this.ContentType = "Text";
-            this.Height = page.Height;
-            this.Width = page.Width;
             this.XDPI = page.Resolution;
             this.YDPI = page.Resolution;
 
@@ -175,9 +173,7 @@ internal sealed class MyScript
 
         public Object Configuration { get; }
         public String ContentType { get; }
-        public Int32 Height { get; }
         public IEnumerable<Object> StrokeGroups { get; }
-        public Int32 Width { get; }
         [JsonPropertyName("xDPI")]
         public Int32 XDPI { get; }
         [JsonPropertyName("yDPI")]

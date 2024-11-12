@@ -211,9 +211,8 @@ internal sealed class Tablet : IDisposable
                 pageBuffers.Add(pageBuffer);
             }
 
-            Int32 height = (contentFile.Orientation == "portrait") ? 1872 : 1404;
-            Int32 width = (contentFile.Orientation == "portrait") ? 1404 : 1872;
-            return new Notebook(pageBuffers, height, width, 226);
+            Type type = await GetType(client).ConfigureAwait(false);
+            return new Notebook(pageBuffers, (type == Type.rMPaperPro) ? 229 : 226);
         }
         finally
         {
@@ -379,12 +378,8 @@ internal sealed class Tablet : IDisposable
     {
         SftpClient client = new SftpClient(this.CreateSshConnectionInfo());
         await ConnectClient(client).ConfigureAwait(false);
-
-        String versionInformation = await Task.Run(() => client.ReadAllText(PATH_VERSION_INFORMATION_FILE)).ConfigureAwait(false);
-        if (versionInformation.Contains(VERSION_INFORMATION_RM1)) { return client; }
-        if (versionInformation.Contains(VERSION_INFORMATION_RM2)) { return client; }
-
-        throw new TabletException(TabletConnectionError.NotSupported, "The connected reMarkable is not supported.");
+        await GetType(client).ConfigureAwait(false);
+        return client;
     }
 
     private async Task<SshClient> CreateSshClient()
@@ -513,6 +508,16 @@ internal sealed class Tablet : IDisposable
         return new Version(softwareVersionInformation[SOFTWARE_VERSION_INFORMATION.Length..]);
     }
 
+    private static async Task<Type> GetType(SftpClient client)
+    {
+        String versionInformation = await Task.Run(() => client.ReadAllText(PATH_VERSION_INFORMATION_FILE)).ConfigureAwait(false);
+
+        if (versionInformation.Contains(VERSION_INFORMATION_RM1)) { return Type.rM1; }
+        if (versionInformation.Contains(VERSION_INFORMATION_RM2)) { return Type.rM2; }
+
+        throw new TabletException(TabletConnectionError.NotSupported, "The connected reMarkable is not supported.");
+    }
+
     private static String InstallLamyEraserOptions(String serviceText, Boolean press, Boolean undo, Boolean leftHanded)
     {
         String pressText = press ? " --press" : " --toggle";
@@ -555,7 +560,6 @@ internal sealed class Tablet : IDisposable
         public PagesContainer CPages { get; set; }
         public String FileType { get; set; }
         public Int32 FormatVersion { get; set; }
-        public String Orientation { get; set; }
         public IEnumerable<String> Pages { get; set; }
 
         public struct PagesContainer
@@ -623,5 +627,12 @@ internal sealed class Tablet : IDisposable
                 };
             }
         }
+    }
+
+    private enum Type
+    {
+        rM1,
+        rM2,
+        rMPaperPro
     }
 }
