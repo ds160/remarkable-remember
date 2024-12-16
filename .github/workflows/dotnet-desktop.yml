@@ -139,6 +139,7 @@ jobs:
     needs: create-release-on-tag
     runs-on: macos-latest
     strategy:
+      max-parallel: 1
       matrix:
         arch: ["osx-x64", "osx-arm64"]
     steps:
