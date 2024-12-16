@@ -33,6 +33,7 @@ internal sealed class Tablet : IDisposable
     private const Int32 USB_TIMEOUT = 1;
     private const String VERSION_INFORMATION_RM1 = "-rm10x ";
     private const String VERSION_INFORMATION_RM2 = "-rm11x ";
+    private const String VERSION_INFORMATION_RMPP = "aarch64-remarkable-linux-gcc ";
 
     private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true };
 
@@ -514,6 +515,7 @@ internal sealed class Tablet : IDisposable
 
         if (versionInformation.Contains(VERSION_INFORMATION_RM1)) { return Type.rM1; }
         if (versionInformation.Contains(VERSION_INFORMATION_RM2)) { return Type.rM2; }
+        if (versionInformation.Contains(VERSION_INFORMATION_RMPP)) { return Type.rMPaperPro; }
 
         throw new TabletException(TabletConnectionError.NotSupported, "The connected reMarkable is not supported.");
     }
