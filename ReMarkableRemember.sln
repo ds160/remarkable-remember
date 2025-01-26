@@ -5,6 +5,22 @@ VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReMarkableRemember", "src\ReMarkableRemember\ReMarkableRemember.csproj", "{3EDB16B8-4BDE-4D74-B84F-E11F2049FB8A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReMarkableRemember.Services", "ReMarkableRemember.Services", "{23D9AEB1-BAE3-417A-9635-E8C18C8E1FE4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReMarkableRemember.Services.DataService", "src\ReMarkableRemember.Services\DataService\ReMarkableRemember.Services.DataService.csproj", "{EEC07E2A-E93C-4F09-A2DF-DAF9A3E6D7C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReMarkableRemember.Services.TabletService", "src\ReMarkableRemember.Services\TabletService\ReMarkableRemember.Services.TabletService.csproj", "{53B8169B-5122-46C8-B68E-9998FBC40E3F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReMarkableRemember.Common", "ReMarkableRemember.Common", "{09660EE0-D2C5-4043-9B64-A202C8929511}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReMarkableRemember.Services.HandWritingRecognition", "src\ReMarkableRemember.Services\HandWritingRecognition\ReMarkableRemember.Services.HandWritingRecognition.csproj", "{7FF8A9D0-0DC0-4355-933B-9BB26E7A8BB6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReMarkableRemember.Common.FileSystem", "src\ReMarkableRemember.Common\FileSystem\ReMarkableRemember.Common.FileSystem.csproj", "{51A94A3A-EC62-4559-8634-7E042B387A2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReMarkableRemember.Common.Notebook", "src\ReMarkableRemember.Common\Notebook\ReMarkableRemember.Common.Notebook.csproj", "{63EBECA2-5B38-484F-B511-40935D5CE2DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReMarkableRemember.Services.ConfigurationService", "src\ReMarkableRemember.Services\ConfigurationService\ReMarkableRemember.Services.ConfigurationService.csproj", "{169FB811-D9FA-4186-A1B6-A7EF7324A750}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,9 +31,41 @@ Global
 		{3EDB16B8-4BDE-4D74-B84F-E11F2049FB8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EDB16B8-4BDE-4D74-B84F-E11F2049FB8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EDB16B8-4BDE-4D74-B84F-E11F2049FB8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEC07E2A-E93C-4F09-A2DF-DAF9A3E6D7C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEC07E2A-E93C-4F09-A2DF-DAF9A3E6D7C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEC07E2A-E93C-4F09-A2DF-DAF9A3E6D7C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEC07E2A-E93C-4F09-A2DF-DAF9A3E6D7C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53B8169B-5122-46C8-B68E-9998FBC40E3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53B8169B-5122-46C8-B68E-9998FBC40E3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53B8169B-5122-46C8-B68E-9998FBC40E3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53B8169B-5122-46C8-B68E-9998FBC40E3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FF8A9D0-0DC0-4355-933B-9BB26E7A8BB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FF8A9D0-0DC0-4355-933B-9BB26E7A8BB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FF8A9D0-0DC0-4355-933B-9BB26E7A8BB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FF8A9D0-0DC0-4355-933B-9BB26E7A8BB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51A94A3A-EC62-4559-8634-7E042B387A2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51A94A3A-EC62-4559-8634-7E042B387A2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51A94A3A-EC62-4559-8634-7E042B387A2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51A94A3A-EC62-4559-8634-7E042B387A2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63EBECA2-5B38-484F-B511-40935D5CE2DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63EBECA2-5B38-484F-B511-40935D5CE2DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63EBECA2-5B38-484F-B511-40935D5CE2DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63EBECA2-5B38-484F-B511-40935D5CE2DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{169FB811-D9FA-4186-A1B6-A7EF7324A750}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{169FB811-D9FA-4186-A1B6-A7EF7324A750}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{169FB811-D9FA-4186-A1B6-A7EF7324A750}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{169FB811-D9FA-4186-A1B6-A7EF7324A750}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EEC07E2A-E93C-4F09-A2DF-DAF9A3E6D7C8} = {23D9AEB1-BAE3-417A-9635-E8C18C8E1FE4}
+		{53B8169B-5122-46C8-B68E-9998FBC40E3F} = {23D9AEB1-BAE3-417A-9635-E8C18C8E1FE4}
+		{7FF8A9D0-0DC0-4355-933B-9BB26E7A8BB6} = {23D9AEB1-BAE3-417A-9635-E8C18C8E1FE4}
+		{51A94A3A-EC62-4559-8634-7E042B387A2E} = {09660EE0-D2C5-4043-9B64-A202C8929511}
+		{63EBECA2-5B38-484F-B511-40935D5CE2DD} = {09660EE0-D2C5-4043-9B64-A202C8929511}
+		{169FB811-D9FA-4186-A1B6-A7EF7324A750} = {23D9AEB1-BAE3-417A-9635-E8C18C8E1FE4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4A55C1DA-E129-4DAD-8F71-B8DD4A70DEDF}

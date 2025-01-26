@@ -11,12 +11,19 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Platform.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
-using ReMarkableRemember.Models;
+using ReMarkableRemember.Services.DataService;
+using ReMarkableRemember.Services.DataService.Models;
+using ReMarkableRemember.Services.HandWritingRecognition;
+using ReMarkableRemember.Services.HandWritingRecognition.Configuration;
+using ReMarkableRemember.Services.TabletService;
+using ReMarkableRemember.Services.TabletService.Exceptions;
+using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.ViewModels;
 
-public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
+public sealed class MainWindowModel : ViewModelBase, IAppModel
 {
     private static readonly FilePickerFileType FileTypeEpub = new FilePickerFileType("EPUB e-book")
     {
@@ -26,27 +33,37 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
     };
     private static readonly FilePickerFileType FileTypePdf = FilePickerFileTypes.Pdf;
 
-    private TabletConnectionError? connectionStatus;
-    private readonly Controller controller;
+    private readonly ServiceProvider services;
+
+    private readonly IDataService dataService;
+    private readonly IHandWritingRecognitionService handWritingRecognitionService;
+    private readonly ITabletService tabletService;
+
+    private TabletError? connectionStatus;
+    private HandWritingRecognitionLanguageViewModel handWritingRecognitionLanguage;
     private Boolean hasBackupDirectory;
     private Boolean hasItems;
     private Job.Description jobs;
-    private MyScriptLanguageViewModel myScriptLanguage;
 
-    public MainWindowModel(String dataSource)
+    public MainWindowModel(ServiceProvider services)
     {
+        this.services = services;
+
+        this.dataService = this.services.GetRequiredService<IDataService>();
+        this.handWritingRecognitionService = this.services.GetRequiredService<IHandWritingRecognitionService>();
+        this.tabletService = this.services.GetRequiredService<ITabletService>();
+
         this.ItemsTree = new ItemsTreeViewModel();
-        this.MyScriptLanguages = MyScriptLanguageViewModel.GetLanguages();
+        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.handWritingRecognitionService);
         this.OpenFilePicker = new Interaction<FilePickerOpenOptions, IEnumerable<String>?>();
         this.OpenFolderPicker = new Interaction<String, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
 
-        this.connectionStatus = TabletConnectionError.SshNotConnected;
-        this.controller = new Controller(dataSource);
-        this.hasBackupDirectory = Path.Exists(this.controller.Settings.Backup);
+        this.connectionStatus = TabletError.SshNotConnected;
+        this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.CompareOrdinal(language.Code, this.handWritingRecognitionService.Configuration.Language) == 0);
+        this.hasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
         this.hasItems = false;
         this.jobs = Job.Description.None;
-        this.myScriptLanguage = this.MyScriptLanguages.Single(language => String.CompareOrdinal(language.Code, this.controller.Settings.MyScriptLanguage) == 0);
 
         this.CommandAbout = ReactiveCommand.CreateFromTask(this.About);
         this.CommandBackup = ReactiveCommand.CreateFromTask(() => this.Execute(Job.Description.Backup), this.Execute_CanExecute(Job.Description.Backup));
@@ -64,7 +81,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
 
         this.WhenAnyValue(vm => vm.ConnectionStatus).Subscribe(status => this.RaisePropertyChanged(nameof(this.ConnectionStatusText)));
         this.WhenAnyValue(vm => vm.Jobs).Subscribe(jobs => this.RaisePropertyChanged(nameof(this.JobsText)));
-        this.WhenAnyValue(vm => vm.MyScriptLanguage).Subscribe(this.SaveMyScriptLanguage);
+        this.WhenAnyValue(vm => vm.HandWritingRecognitionLanguage).Subscribe(this.SaveHandWritingRecognitionLanguage);
 
         RxApp.MainThreadScheduler.Schedule(this.Update);
     }
@@ -77,7 +94,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         }
     }
 
-    private static Boolean CheckConnectionStatusForJob(TabletConnectionError? status, Job.Description job)
+    private static Boolean CheckConnectionStatusForJob(TabletError? status, Job.Description job)
     {
         switch (job)
         {
@@ -93,7 +110,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
             case Job.Description.ManageTemplates:
             case Job.Description.InstallLamyEraser:
             case Job.Description.InstallWebInterfaceOnBoot:
-                return status is null or (not TabletConnectionError.NotSupported and not TabletConnectionError.Unknown and not TabletConnectionError.SshNotConfigured and not TabletConnectionError.SshNotConnected);
+                return status is null or (not TabletError.NotSupported and not TabletError.Unknown and not TabletError.SshNotConfigured and not TabletError.SshNotConnected);
 
             case Job.Description.Sync:
             case Job.Description.Upload:
@@ -102,13 +119,6 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
             default:
                 throw new NotImplementedException();
         }
-    }
-
-    public void Dispose()
-    {
-        this.controller.Dispose();
-
-        GC.SuppressFinalize(this);
     }
 
     private async Task Execute(Job.Description jobDescription)
@@ -124,7 +134,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
 
     private async Task Execute(ItemViewModel item, Job.Description job)
     {
-        TabletConnectionError? status = this.ConnectionStatus;
+        TabletError? status = this.ConnectionStatus;
 
         if (item.Collection != null)
         {
@@ -134,10 +144,8 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
             }
         }
 
-        Boolean changed = false;
-        if (job.HasFlag(Job.Description.Backup) && CheckConnectionStatusForJob(status, Job.Description.Backup)) { changed |= await item.Source.Backup().ConfigureAwait(true); }
-        if (job.HasFlag(Job.Description.Sync) && CheckConnectionStatusForJob(status, Job.Description.Sync)) { changed |= await item.Source.Sync().ConfigureAwait(true); }
-        if (changed) { item.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Parent); }
+        if (job.HasFlag(Job.Description.Backup) && CheckConnectionStatusForJob(status, Job.Description.Backup)) { await item.BackupAsync().ConfigureAwait(true); }
+        if (job.HasFlag(Job.Description.Sync) && CheckConnectionStatusForJob(status, Job.Description.Sync)) { await item.SyncAsync().ConfigureAwait(true); }
     }
 
     private IObservable<Boolean> Execute_CanExecute(Job.Description jobDescription)
@@ -157,7 +165,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         {
             using Job job = new Job(Job.Description.HandwritingRecognition, this);
 
-            String text = await selectedItem.Source.HandwritingRecognition().ConfigureAwait(true);
+            String text = await selectedItem.HandWritingRecognition().ConfigureAwait(true);
 
             job.Done();
 
@@ -180,7 +188,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         LamyEraserOptionsViewModel options = new LamyEraserOptionsViewModel();
         if (await this.ShowDialog.Handle(options))
         {
-            await this.controller.InstallLamyEraser(options.Press != 0, options.Undo != 0, options.LeftHanded != 0).ConfigureAwait(true);
+            await this.tabletService.InstallLamyEraser(options.Press != 0, options.Undo != 0, options.LeftHanded != 0).ConfigureAwait(true);
         }
     }
 
@@ -196,7 +204,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
     {
         using Job job = new Job(Job.Description.InstallWebInterfaceOnBoot, this);
 
-        await this.controller.InstallWebInterfaceOnBoot().ConfigureAwait(true);
+        await this.tabletService.InstallWebInterfaceOnBoot().ConfigureAwait(true);
 
         await this.Restart(job).ConfigureAwait(true);
     }
@@ -213,7 +221,9 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
     {
         using Job job = new Job(Job.Description.ManageTemplates, this);
 
-        TemplatesViewModel templates = new TemplatesViewModel(this.controller.GetTemplates());
+        IEnumerable<TemplateData> dataTemplates = await this.dataService.GetTemplates().ConfigureAwait(true);
+        IEnumerable<TabletTemplate> tabletTemplates = dataTemplates.Select(template => new TabletTemplate(template.Name, template.Category, template.IconCode, template.BytesPng, template.BytesPng)).ToArray();
+        TemplatesViewModel templates = new TemplatesViewModel(tabletTemplates, this.services);
         if (templates.Templates.Any())
         {
             Boolean restartRequired = false;
@@ -276,28 +286,29 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
 
         if (await this.ShowDialog.Handle(message))
         {
-            await this.controller.Restart().ConfigureAwait(true);
+            await this.tabletService.Restart().ConfigureAwait(true);
         }
     }
 
-    private void SaveMyScriptLanguage(MyScriptLanguageViewModel language)
+    private async void SaveHandWritingRecognitionLanguage(HandWritingRecognitionLanguageViewModel language)
     {
-        this.controller.Settings.MyScriptLanguage = language.Code;
-        this.controller.Settings.SaveChanges();
+        IHandWritingRecognitionConfiguration configuration = this.handWritingRecognitionService.Configuration;
+        configuration.Language = language.Code;
+        await configuration.Save().ConfigureAwait(true);
     }
 
     private async Task Settings()
     {
         using Job job = new Job(Job.Description.Settings, this);
 
-        SettingsViewModel settings = new SettingsViewModel(this.controller.Settings);
+        SettingsViewModel settings = new SettingsViewModel(this.services);
         if (await this.ShowDialog.Handle(settings))
         {
-            settings.SaveChanges();
+            await settings.Save().ConfigureAwait(true);
         }
 
-        this.HasBackupDirectory = Path.Exists(this.controller.Settings.Backup);
-        this.MyScriptLanguage = this.MyScriptLanguages.Single(language => String.CompareOrdinal(language.Code, this.controller.Settings.MyScriptLanguage) == 0);
+        this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
+        this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.CompareOrdinal(language.Code, this.handWritingRecognitionService.Configuration.Language) == 0);
     }
 
     private IObservable<Boolean> Settings_CanExecute()
@@ -317,14 +328,12 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
                 String? targetDirectory = await this.OpenFolderPicker.Handle("Sync Target Folder");
                 if (targetDirectory != null)
                 {
-                    selectedItem.Source.SetSyncTargetDirectory(targetDirectory);
-                    selectedItem.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Collection);
+                    await selectedItem.SetSyncTargetDirectory(targetDirectory).ConfigureAwait(true);
                 }
             }
             else
             {
-                selectedItem.Source.SetSyncTargetDirectory(null);
-                selectedItem.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Collection);
+                await selectedItem.SetSyncTargetDirectory(null).ConfigureAwait(true);
             }
         }
     }
@@ -341,7 +350,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
     {
         while (true)
         {
-            this.ConnectionStatus = await this.controller.GetConnectionStatus().ConfigureAwait(true);
+            this.ConnectionStatus = await this.tabletService.GetConnectionStatus().ConfigureAwait(true);
 
             Boolean updated = await this.UpdateItems().ConfigureAwait(true);
 
@@ -359,8 +368,10 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
                 {
                     using Job? job = this.HasItems ? null : new Job(Job.Description.GetItems, this);
 
-                    IEnumerable<Item> items = await this.controller.GetItems().ConfigureAwait(true);
-                    ItemViewModel.UpdateItems(items, this.ItemsTree.Items, null);
+                    IEnumerable<TabletItem> tabletItemsAll = await this.tabletService.GetItems().ConfigureAwait(true);
+                    IEnumerable<TabletItem> tabletItems = tabletItemsAll.Where(item => !item.Trashed).ToArray();
+
+                    await ItemViewModel.UpdateItems(tabletItems, this.ItemsTree.Items, null, this.services).ConfigureAwait(true);
 
                     this.ItemsTree.Sort(new Comparison<ItemViewModel>(ItemViewModel.Compare));
 
@@ -397,8 +408,24 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         foreach (String file in files)
         {
             ItemViewModel? parentItem = this.ItemsTree.RowSelection!.SelectedItem;
-            await this.controller.UploadFile(file, parentItem?.Source).ConfigureAwait(true);
+            String? parentId = UploadFileParentId(parentItem);
+            await this.tabletService.UploadFile(file, parentId).ConfigureAwait(true);
         }
+    }
+
+    private static String? UploadFileParentId(ItemViewModel? parentItem)
+    {
+        while (parentItem != null)
+        {
+            if (parentItem.Collection != null)
+            {
+                return parentItem.Id;
+            }
+
+            parentItem = parentItem.Parent;
+        }
+
+        return null;
     }
 
     private IObservable<Boolean> UploadFile_CanExecute()
@@ -416,8 +443,12 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         TemplateUploadViewModel template = new TemplateUploadViewModel();
         if (await this.ShowDialog.Handle(template))
         {
-            TabletTemplate tabletTemplate = new TabletTemplate(this.controller, template.Name, template.Category, template.Icon.Code, template.SourceFilePath);
-            await tabletTemplate.Upload().ConfigureAwait(true);
+            TabletTemplate tabletTemplate = new TabletTemplate(template.Name, template.Category, template.Icon.Code, template.SourceFilePath);
+            await this.tabletService.UploadTemplate(tabletTemplate).ConfigureAwait(true);
+
+            TemplateData dataTemplate = new TemplateData(tabletTemplate.Category, tabletTemplate.Name, tabletTemplate.IconCode, tabletTemplate.BytesPng, tabletTemplate.BytesSvg);
+            await this.dataService.SetTemplate(dataTemplate).ConfigureAwait(true);
+
             await this.Restart(job).ConfigureAwait(true);
         }
     }
@@ -456,7 +487,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
 
     public ICommand CommandUploadTemplate { get; }
 
-    public TabletConnectionError? ConnectionStatus
+    public TabletError? ConnectionStatus
     {
         get { return this.connectionStatus; }
         private set { this.RaiseAndSetIfChanged(ref this.connectionStatus, value); }
@@ -469,12 +500,12 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
             switch (this.ConnectionStatus)
             {
                 case null: return "Connected";
-                case TabletConnectionError.NotSupported: return "Connected reMarkable not supported";
-                case TabletConnectionError.Unknown: return "Not connected";
-                case TabletConnectionError.SshNotConfigured: return "SSH protocol information are not configured or wrong";
-                case TabletConnectionError.SshNotConnected: return "Not connected via WiFi or USB";
-                case TabletConnectionError.UsbNotActived: return "USB web interface is not activated";
-                case TabletConnectionError.UsbNotConnected: return "Not connected via USB";
+                case TabletError.NotSupported: return "Connected reMarkable not supported";
+                case TabletError.Unknown: return "Not connected";
+                case TabletError.SshNotConfigured: return "SSH protocol information are not configured or wrong";
+                case TabletError.SshNotConnected: return "Not connected via WiFi or USB";
+                case TabletError.UsbNotActived: return "USB web interface is not activated";
+                case TabletError.UsbNotConnected: return "Not connected via USB";
                 default: return "Not connected";
             }
         }
@@ -520,13 +551,13 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel, IDisposable
         }
     }
 
-    public MyScriptLanguageViewModel MyScriptLanguage
+    public HandWritingRecognitionLanguageViewModel HandWritingRecognitionLanguage
     {
-        get { return this.myScriptLanguage; }
-        set { this.RaiseAndSetIfChanged(ref this.myScriptLanguage, value); }
+        get { return this.handWritingRecognitionLanguage; }
+        set { this.RaiseAndSetIfChanged(ref this.handWritingRecognitionLanguage, value); }
     }
 
-    public IEnumerable<MyScriptLanguageViewModel> MyScriptLanguages { get; }
+    public IEnumerable<HandWritingRecognitionLanguageViewModel> HandWritingRecognitionLanguages { get; }
 
     public Interaction<FilePickerOpenOptions, IEnumerable<String>?> OpenFilePicker { get; }
 

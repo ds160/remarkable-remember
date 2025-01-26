@@ -66,7 +66,7 @@
                             <Flyout Placement="RightEdgeAlignedTop">
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="Language for Handwriting Recognition"/>
-                                    <ComboBox ItemsSource="{Binding MyScriptLanguages}" SelectedItem="{Binding MyScriptLanguage}" Width="275">
+                                    <ComboBox ItemsSource="{Binding HandWritingRecognitionLanguages}" SelectedItem="{Binding HandWritingRecognitionLanguage}" Width="275">
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding DisplayName}" />

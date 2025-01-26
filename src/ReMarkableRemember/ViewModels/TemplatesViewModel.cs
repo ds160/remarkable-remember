@@ -4,7 +4,8 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Linq;
-using ReMarkableRemember.Models;
+using Microsoft.Extensions.DependencyInjection;
+using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -12,13 +13,14 @@ public sealed class TemplatesViewModel : DialogWindowModel
 {
     private readonly ObservableCollection<TemplateViewModel> templates;
 
-    public TemplatesViewModel(IEnumerable<TabletTemplate> templates) : base("Templates", "Restore", "Cancel")
+    public TemplatesViewModel(IEnumerable<TabletTemplate> templates, ServiceProvider services)
+        : base("Templates", "Restore", "Cancel")
     {
         this.templates = new ObservableCollection<TemplateViewModel>();
 
         foreach (TabletTemplate template in templates.OrderBy(template => template.Name))
         {
-            this.templates.Add(new TemplateViewModel(template, this.templates));
+            this.templates.Add(new TemplateViewModel(template, this.templates, services));
         }
 
         this.templates.CollectionChanged += (s, e) => this.CheckTemplates(e.Action is NotifyCollectionChangedAction.Remove);

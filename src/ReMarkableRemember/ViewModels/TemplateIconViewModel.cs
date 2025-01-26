@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using ReMarkableRemember.Models;
+using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.ViewModels;
 

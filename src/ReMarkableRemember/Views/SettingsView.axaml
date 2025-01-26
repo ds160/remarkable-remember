@@ -19,14 +19,14 @@
         <TextBlock>reMarkable Password</TextBlock>
         <TextBox Text="{Binding TabletPassword}" Watermark="SSH protocol password, see 'Copyrights and licenses'" Margin="0, 8, 0, 48"/>
 
-        <TextBlock>MyScript Application Key</TextBlock>
-        <TextBox Text="{Binding MyScriptApplicationKey}" Margin="0, 8, 0, 16"/>
+        <TextBlock IsVisible="{Binding HasMyScript}">MyScript Application Key</TextBlock>
+        <TextBox IsVisible="{Binding HasMyScript}" Text="{Binding MyScriptApplicationKey}" Margin="0, 8, 0, 16"/>
 
-        <TextBlock>MyScript HMAC Key</TextBlock>
-        <TextBox Text="{Binding MyScriptHmacKey}" Margin="0, 8, 0, 16"/>
+        <TextBlock IsVisible="{Binding HasMyScript}">MyScript HMAC Key</TextBlock>
+        <TextBox IsVisible="{Binding HasMyScript}" Text="{Binding MyScriptHmacKey}" Margin="0, 8, 0, 16"/>
 
-        <TextBlock>MyScript Language for Handwriting Recognition</TextBlock>
-        <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding MyScriptLanguages}" SelectedItem="{Binding MyScriptLanguage}" Margin="0, 8, 0, 48">
+        <TextBlock>Language for Handwriting Recognition</TextBlock>
+        <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding HandWritingRecognitionLanguages}" SelectedItem="{Binding HandWritingRecognitionLanguage}" Margin="0, 8, 0, 48">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding DisplayName}" />

@@ -6,8 +6,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Media.Imaging;
+using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
-using ReMarkableRemember.Models;
+using ReMarkableRemember.Services.DataService;
+using ReMarkableRemember.Services.TabletService;
+using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -18,10 +21,16 @@ public sealed class TemplateViewModel
     private readonly TabletTemplate template;
     private readonly ObservableCollection<TemplateViewModel> templates;
 
-    internal TemplateViewModel(TabletTemplate template, ObservableCollection<TemplateViewModel> templates)
+    private readonly IDataService dataService;
+    private readonly ITabletService tabletService;
+
+    internal TemplateViewModel(TabletTemplate template, ObservableCollection<TemplateViewModel> templates, ServiceProvider services)
     {
         this.template = template;
         this.templates = templates;
+
+        this.dataService = services.GetRequiredService<IDataService>();
+        this.tabletService = services.GetRequiredService<ITabletService>();
 
         this.Icon = icons[template.IconCode];
         this.Image = new Bitmap(new MemoryStream(template.BytesPng));
@@ -41,13 +50,14 @@ public sealed class TemplateViewModel
 
     private async Task Delete()
     {
-        await this.template.Delete().ConfigureAwait(false);
+        await this.tabletService.DeleteTemplate(this.template).ConfigureAwait(false);
+        await this.dataService.DeleteTemplate(this.template.Category, this.template.Name).ConfigureAwait(false);
 
         this.templates.Remove(this);
     }
 
     public async Task Restore()
     {
-        await this.template.Restore().ConfigureAwait(false);
+        await this.tabletService.UploadTemplate(this.template).ConfigureAwait(false);
     }
 }
