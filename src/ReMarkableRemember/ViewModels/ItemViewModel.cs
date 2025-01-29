@@ -61,9 +61,21 @@ public sealed class ItemViewModel : ViewModelBase
         this.TabletItem = tabletItem;
     }
 
-    public DateTime? Backup { get { return this.DataItem?.BackupDate; } }
+    public DateTime? BackupDate { get { return this.DataItem?.BackupDate; } }
 
-    public Hint BackupHint { get; private set; }
+    public Hint BackupHint
+    {
+        get
+        {
+            if (!Path.Exists(this.tabletService.Configuration.Backup)) { return Hint.None; }
+            if (this.DataItem == null) { return Hint.None; }
+
+            if (this.DataItem.BackupDate == null) { return Hint.New; }
+            if (this.DataItem.BackupDate < this.Modified) { return Hint.Modified; }
+
+            return Hint.None;
+        }
+    }
 
     public ObservableCollection<ItemViewModel>? Collection { get; }
 
@@ -79,67 +91,39 @@ public sealed class ItemViewModel : ViewModelBase
 
     public ItemViewModel? Parent { get; }
 
-    public DateTime? Sync { get { return (this.SyncPath != null) ? this.DataItem?.SyncData : null; } }
+    public DateTime? SyncDate { get { return (this.SyncPath != null) ? this.DataItem?.SyncData : null; } }
 
-    public Hint SyncHint { get; private set; }
+    public Hint SyncHint
+    {
+        get
+        {
+            if (this.Collection != null) { return Hint.None; }
+            if (this.SyncPath == null) { return Hint.None; }
+            if (this.DataItem == null) { return Hint.None; }
+
+            if (this.DataItem.SyncPath == null && Path.Exists(this.SyncPath)) { return Hint.ExistsInTarget; }
+            if (this.DataItem.SyncPath == null) { return Hint.New; }
+            if (this.DataItem.SyncPath != this.SyncPath) { return Hint.SyncPathChanged; }
+            if (this.DataItem.SyncData < this.Modified) { return Hint.Modified; }
+            if (!Path.Exists(this.SyncPath)) { return Hint.NotFoundInTarget; }
+
+            return Hint.None;
+        }
+    }
 
     public String? SyncPath { get; private set; }
 
     private TabletItem TabletItem { get; set; }
 
-    internal async Task BackupAsync()
+    internal async Task Backup()
     {
         if (this.BackupHint is Hint.None or >= Hint.ExistsInTarget) { return; }
 
         await this.tabletService.Backup(this.Id).ConfigureAwait(true);
         this.DataItem = await this.dataService.SetItemBackup(this.Id, this.Modified).ConfigureAwait(true);
 
-        this.BackupHint = this.GetBackupHint();
         this.RaiseChanged(RaiseChangedAdditional.Parent);
     }
-
-    private Hint GetBackupHint()
-    {
-        if (!Path.Exists(this.tabletService.Configuration.Backup)) { return Hint.None; }
-        if (this.DataItem == null) { return Hint.None; }
-
-        if (this.DataItem.BackupDate == null) { return Hint.New; }
-        if (this.DataItem.BackupDate < this.Modified) { return Hint.Modified; }
-
-        return Hint.None;
-    }
-
-    private Hint GetSyncHint()
-    {
-        if (this.Collection != null) { return Hint.None; }
-        if (this.SyncPath == null) { return Hint.None; }
-        if (this.DataItem == null) { return Hint.None; }
-
-        if (this.DataItem.SyncPath == null && Path.Exists(this.SyncPath)) { return Hint.ExistsInTarget; }
-        if (this.DataItem.SyncPath == null) { return Hint.New; }
-        if (this.DataItem.SyncPath != this.SyncPath) { return Hint.SyncPathChanged; }
-        if (this.DataItem.SyncData < this.Modified) { return Hint.Modified; }
-        if (!Path.Exists(this.SyncPath)) { return Hint.NotFoundInTarget; }
-
-        return Hint.None;
-    }
-
-    private String? GetSyncPath()
-    {
-        String? targetDirectory = null;
-
-        if (this.DataItem != null && this.DataItem.SyncTargetDirectory != null)
-        {
-            targetDirectory = this.DataItem.SyncTargetDirectory;
-        }
-        else if (this.Parent != null && this.Parent.SyncPath != null)
-        {
-            targetDirectory = (this.Collection != null) ? Path.Combine(this.Parent.SyncPath, this.Name) : this.Parent.SyncPath;
-        }
-
-        return (targetDirectory != null && this.Collection == null) ? Path.Combine(targetDirectory, this.Name) : targetDirectory;
-    }
-
 
     internal async Task<String> HandWritingRecognition()
     {
@@ -164,23 +148,7 @@ public sealed class ItemViewModel : ViewModelBase
         this.RaiseChanged(RaiseChangedAdditional.Parent);
     }
 
-    private async Task Update()
-    {
-        this.DataItem = await this.dataService.GetItem(this.Id);
-
-        this.SyncPath = this.GetSyncPath();
-        this.BackupHint = this.GetBackupHint();
-        this.SyncHint = this.GetSyncHint();
-
-        this.RaiseChanged(RaiseChangedAdditional.None);
-
-        if (this.Collection != null)
-        {
-            await Task.WhenAll(this.Collection.Select(childItem => childItem.Update())).ConfigureAwait(true);
-        }
-    }
-
-    internal async Task SyncAsync()
+    internal async Task Sync()
     {
         if (this.SyncHint is Hint.None or >= Hint.ExistsInTarget) { return; }
         if (this.SyncPath == null) { return; }
@@ -193,8 +161,30 @@ public sealed class ItemViewModel : ViewModelBase
         await this.tabletService.Download(this.Id, this.SyncPath).ConfigureAwait(true);
         this.DataItem = await this.dataService.SetItemSync(this.Id, this.Modified, this.SyncPath).ConfigureAwait(true);
 
-        this.SyncHint = this.GetSyncHint();
         this.RaiseChanged(RaiseChangedAdditional.Parent);
+    }
+
+    private async Task Update()
+    {
+        this.DataItem = await this.dataService.GetItem(this.Id);
+
+        String? targetDirectory = null;
+        if (this.DataItem != null && this.DataItem.SyncTargetDirectory != null)
+        {
+            targetDirectory = this.DataItem.SyncTargetDirectory;
+        }
+        else if (this.Parent != null && this.Parent.SyncPath != null)
+        {
+            targetDirectory = (this.Collection != null) ? Path.Combine(this.Parent.SyncPath, this.Name) : this.Parent.SyncPath;
+        }
+        this.SyncPath = (targetDirectory != null && this.Collection == null) ? Path.Combine(targetDirectory, this.Name) : targetDirectory;
+
+        this.RaiseChanged(RaiseChangedAdditional.None);
+
+        if (this.Collection != null)
+        {
+            await Task.WhenAll(this.Collection.Select(childItem => childItem.Update())).ConfigureAwait(true);
+        }
     }
 
     internal static Int32 Compare(ItemViewModel itemA, ItemViewModel itemB)

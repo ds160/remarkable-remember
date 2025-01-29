@@ -144,8 +144,8 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
             }
         }
 
-        if (job.HasFlag(Job.Description.Backup) && CheckConnectionStatusForJob(status, Job.Description.Backup)) { await item.BackupAsync().ConfigureAwait(true); }
-        if (job.HasFlag(Job.Description.Sync) && CheckConnectionStatusForJob(status, Job.Description.Sync)) { await item.SyncAsync().ConfigureAwait(true); }
+        if (job.HasFlag(Job.Description.Backup) && CheckConnectionStatusForJob(status, Job.Description.Backup)) { await item.Backup().ConfigureAwait(true); }
+        if (job.HasFlag(Job.Description.Sync) && CheckConnectionStatusForJob(status, Job.Description.Sync)) { await item.Sync().ConfigureAwait(true); }
     }
 
     private IObservable<Boolean> Execute_CanExecute(Job.Description jobDescription)

@@ -15,8 +15,8 @@ public sealed class ItemsTreeViewModel : HierarchicalTreeDataGridSource<ItemView
         this.Columns.Add(new TextColumn<ItemViewModel, String>("Modified", item => item.Modified.ToDisplayString()));
         this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(item => null, item => item.CombinedHint)));
         this.Columns.Add(new TextColumn<ItemViewModel, String>("Sync Path", item => item.SyncPath));
-        this.Columns.Add(new TemplateColumn<ItemViewModel>("Sync Information", new ItemHintColumnTemplate(item => item.Sync, item => item.SyncHint)));
-        this.Columns.Add(new TemplateColumn<ItemViewModel>("Backup Information", new ItemHintColumnTemplate(item => item.Backup, item => item.BackupHint)));
+        this.Columns.Add(new TemplateColumn<ItemViewModel>("Sync Information", new ItemHintColumnTemplate(item => item.SyncDate, item => item.SyncHint)));
+        this.Columns.Add(new TemplateColumn<ItemViewModel>("Backup Information", new ItemHintColumnTemplate(item => item.BackupDate, item => item.BackupHint)));
     }
 
     public new ObservableCollection<ItemViewModel> Items
