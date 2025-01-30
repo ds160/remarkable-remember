@@ -222,7 +222,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         using Job job = new Job(Job.Description.ManageTemplates, this);
 
         IEnumerable<TemplateData> dataTemplates = await this.dataService.GetTemplates().ConfigureAwait(true);
-        IEnumerable<TabletTemplate> tabletTemplates = dataTemplates.Select(template => new TabletTemplate(template.Name, template.Category, template.IconCode, template.BytesPng, template.BytesPng)).ToArray();
+        IEnumerable<TabletTemplate> tabletTemplates = dataTemplates.Select(template => new TabletTemplate(template.Name, template.Category, template.IconCode, template.BytesPng, template.BytesSvg)).ToArray();
         TemplatesViewModel templates = new TemplatesViewModel(tabletTemplates, this.services);
         if (templates.Templates.Any())
         {
