@@ -102,9 +102,11 @@ public sealed class TabletTemplate
     {
         String directory = Path.GetDirectoryName(sourceFilePath) ?? String.Empty;
         String fileName = Path.GetFileNameWithoutExtension(sourceFilePath);
+        String fileNamePng = Path.Combine(directory, $"{fileName}.png");
+        String fileNameSvg = Path.Combine(directory, $"{fileName}.svg");
 
-        this.BytesPng = File.ReadAllBytes(Path.Combine(directory, $"{fileName}.png"));
-        this.BytesSvg = File.ReadAllBytes(Path.Combine(directory, $"{fileName}.svg"));
+        this.BytesPng = File.ReadAllBytes(fileNamePng);
+        this.BytesSvg = File.Exists(fileNameSvg) ? File.ReadAllBytes(fileNameSvg) : Array.Empty<Byte>();
         this.Category = category;
         this.IconCode = iconCode;
         this.Name = name;

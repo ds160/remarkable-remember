@@ -383,7 +383,7 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
             }
 
             await FileWrite(client, $"{PATH_TEMPLATES}{tabletTemplate.FileName}.png", tabletTemplate.BytesPng).ConfigureAwait(false);
-            await FileWrite(client, $"{PATH_TEMPLATES}{tabletTemplate.FileName}.svg", tabletTemplate.BytesSvg).ConfigureAwait(false);
+            if (tabletTemplate.BytesSvg.Length > 0) { await FileWrite(client, $"{PATH_TEMPLATES}{tabletTemplate.FileName}.svg", tabletTemplate.BytesSvg).ConfigureAwait(false); }
             await FileWrite(client, templatesFilePath, JsonSerializer.Serialize(templatesFile, jsonSerializerOptions)).ConfigureAwait(false);
         }
         finally
