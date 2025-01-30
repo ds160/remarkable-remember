@@ -202,7 +202,15 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
                 if (metaDataFile.Deleted != true)
                 {
                     String id = Path.GetFileNameWithoutExtension(file.Name);
-                    allItems.Add(new TabletItem(id, metaDataFile.LastModified, metaDataFile.Parent, metaDataFile.Type, metaDataFile.VisibleName));
+                    try
+                    {
+                        allItems.Add(new TabletItem(id, metaDataFile.LastModified, metaDataFile.Parent, metaDataFile.Type, metaDataFile.VisibleName));
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        Console.WriteLine(metaDataFileText);
+                        throw;
+                    }
                 }
             }
 
@@ -238,8 +246,8 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
                 pageBuffers.Add(pageBuffer);
             }
 
-            Type type = await GetType(client).ConfigureAwait(false);
-            return new Notebook(pageBuffers, type == Type.rMPaperPro ? 229 : 226);
+            TabletType tabletType = await GetType(client).ConfigureAwait(false);
+            return new Notebook(pageBuffers, tabletType == TabletType.rMPaperPro ? 229 : 226);
         }
         finally
         {
@@ -285,7 +293,7 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
             using SshClient sshClient = await this.CreateSshClient().ConfigureAwait(false);
 
             Version softwareVersion = await GetSoftwareVersion(sftpClient).ConfigureAwait(false);
-            Boolean applyHack = softwareVersion.Major >= 2 && softwareVersion.Minor >= 15;
+            if (softwareVersion.Major >= 3 && softwareVersion.Minor >= 16) { throw new TabletException(TabletError.NotSupported, "WebInterface-OnBoot is currently not supported by reMarkable software version 3.16 or higher."); }
 
             await ExecuteSshCommand(sshClient, "systemctl disable --now webinterface-onboot.service", false).ConfigureAwait(false);
 
@@ -296,7 +304,10 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
             await FileWrite(sftpClient, "/home/root/.local/bin/webinterface-onboot", serviceBytes).ConfigureAwait(false);
 
             await ExecuteSshCommand(sshClient, "chmod +x /home/root/.local/bin/webinterface-onboot").ConfigureAwait(false);
+
+            Boolean applyHack = softwareVersion.Major >= 2 && softwareVersion.Minor >= 15;
             if (applyHack) { await ExecuteSshCommand(sshClient, "/home/root/.local/bin/webinterface-onboot apply-hack -y").ConfigureAwait(false); }
+
             await ExecuteSshCommand(sshClient, "systemctl enable --now webinterface-onboot.service").ConfigureAwait(false);
         }
         finally
@@ -535,13 +546,13 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
         return new Version(softwareVersionInformation[SOFTWARE_VERSION_INFORMATION.Length..]);
     }
 
-    private static async Task<Type> GetType(SftpClient client)
+    private static async Task<TabletType> GetType(SftpClient client)
     {
         String versionInformation = await Task.Run(() => client.ReadAllText(PATH_VERSION_INFORMATION_FILE)).ConfigureAwait(false);
 
-        if (versionInformation.Contains(VERSION_INFORMATION_RM1)) { return Type.rM1; }
-        if (versionInformation.Contains(VERSION_INFORMATION_RM2)) { return Type.rM2; }
-        if (versionInformation.Contains(VERSION_INFORMATION_RMPP)) { return Type.rMPaperPro; }
+        if (versionInformation.Contains(VERSION_INFORMATION_RM1)) { return TabletType.rM1; }
+        if (versionInformation.Contains(VERSION_INFORMATION_RM2)) { return TabletType.rM2; }
+        if (versionInformation.Contains(VERSION_INFORMATION_RMPP)) { return TabletType.rMPaperPro; }
 
         throw new TabletException(TabletError.NotSupported, "The connected reMarkable is not supported.");
     }
@@ -635,12 +646,5 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
                 };
             }
         }
-    }
-
-    private enum Type
-    {
-        rM1,
-        rM2,
-        rMPaperPro
     }
 }
