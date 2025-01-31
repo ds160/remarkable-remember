@@ -29,7 +29,7 @@
         <ComboBox ItemsSource="{Binding Icons}" SelectedItem="{Binding Icon}" HorizontalAlignment="Stretch" Margin="0, 8, 0, 16">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal" Width="360">
                         <Image Source="{Binding Image}" Height="120"/>
                         <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="8, 0, 0, 0"/>
                         <TextBlock Text=" (Landscape)" VerticalAlignment="Center" IsVisible="{Binding Landscape}"/>
