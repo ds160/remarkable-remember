@@ -11,6 +11,8 @@ using ReactiveUI;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Services.TabletService.Models;
+using SkiaSharp;
+using Svg.Skia;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -33,7 +35,7 @@ public sealed class TemplateViewModel
         this.tabletService = services.GetRequiredService<ITabletService>();
 
         this.Icon = icons[template.IconCode];
-        this.Image = new Bitmap(new MemoryStream(template.BytesPng));
+        this.Image = LoadPng(template.BytesPng) ?? LoadSvg(template.BytesSvg);
 
         this.CommandDelete = ReactiveCommand.CreateFromTask(this.Delete);
     }
@@ -54,6 +56,23 @@ public sealed class TemplateViewModel
         await this.dataService.DeleteTemplate(this.template.Category, this.template.Name).ConfigureAwait(false);
 
         this.templates.Remove(this);
+    }
+
+    private static Bitmap? LoadPng(Byte[] bytesPng)
+    {
+        return (bytesPng.Length > 0) ? new Bitmap(new MemoryStream(bytesPng)) : null;
+    }
+
+    private static Bitmap LoadSvg(Byte[] bytesSvg)
+    {
+        using SKSvg svg = new SKSvg();
+        svg.Load(new MemoryStream(bytesSvg));
+
+        using MemoryStream pngStream = new MemoryStream();
+        svg.Save(pngStream, SKColors.Transparent);
+
+        pngStream.Position = 0;
+        return new Bitmap(pngStream);
     }
 
     public async Task Restore()

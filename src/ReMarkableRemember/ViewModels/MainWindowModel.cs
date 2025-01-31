@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -13,6 +13,7 @@ using System.Windows.Input;
 using Avalonia.Platform.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
+using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.DataService.Models;
 using ReMarkableRemember.Services.HandWritingRecognition;
@@ -25,14 +26,6 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class MainWindowModel : ViewModelBase, IAppModel
 {
-    private static readonly FilePickerFileType FileTypeEpub = new FilePickerFileType("EPUB e-book")
-    {
-        Patterns = new String[1] { "*.epub" },
-        AppleUniformTypeIdentifiers = new String[1] { "org.idpf.epub-container" },
-        MimeTypes = new String[1] { "application/epub+zip" }
-    };
-    private static readonly FilePickerFileType FileTypePdf = FilePickerFileTypes.Pdf;
-
     private readonly ServiceProvider services;
 
     private readonly IDataService dataService;
@@ -403,7 +396,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Job.Description.Upload, this);
 
-        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = true, FileTypeFilter = new[] { FileTypePdf, FileTypeEpub } };
+        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = true, FileTypeFilter = new[] { FilePickerFileTypes.Pdf, FilePickerFileTypesExtensions.Epub } };
         IEnumerable<String>? files = await this.OpenFilePicker.Handle(options);
         foreach (String file in files)
         {

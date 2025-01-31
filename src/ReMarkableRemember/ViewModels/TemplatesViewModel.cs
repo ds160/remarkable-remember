@@ -14,7 +14,7 @@ public sealed class TemplatesViewModel : DialogWindowModel
     private readonly ObservableCollection<TemplateViewModel> templates;
 
     public TemplatesViewModel(IEnumerable<TabletTemplate> templates, ServiceProvider services)
-        : base("Templates", "Restore", "Cancel")
+        : base("Templates", "Restore", "Close")
     {
         this.templates = new ObservableCollection<TemplateViewModel>();
 

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
+using ReMarkableRemember.Helper;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -56,7 +57,7 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
 
     private async Task SetSourceFilePath()
     {
-        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = false, Title = "Template", FileTypeFilter = new[] { FilePickerFileTypes.ImagePng } };
+        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = false, Title = "Template", FileTypeFilter = new[] { FilePickerFileTypes.ImagePng, FilePickerFileTypesExtensions.ImageSvg } };
         IEnumerable<String>? files = await this.OpenFilePicker.Handle(options);
         String? file = files?.SingleOrDefault();
         if (file != null)

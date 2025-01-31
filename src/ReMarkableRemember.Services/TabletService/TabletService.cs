@@ -13,7 +13,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ReMarkableRemember.Common.FileSystem;
 using ReMarkableRemember.Common.Notebook;
-using ReMarkableRemember.Common.Notebook.Exceptions;
 using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.ConfigurationService.Service;
 using ReMarkableRemember.Services.TabletService.Configuration;
@@ -235,8 +234,8 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
             String contentFileText = await Task.Run(() => client.ReadAllText($"{PATH_NOTEBOOKS}{id}.content")).ConfigureAwait(false);
             ContentFile contentFile = JsonSerializer.Deserialize<ContentFile>(contentFileText, jsonSerializerOptions);
 
-            if (contentFile.FileType != "notebook") { throw new NotebookException("Invalid reMarkable file type."); }
-            if (contentFile.FormatVersion is not (1 or 2)) { throw new NotebookException($"Invalid reMarkable file format version: '{contentFile.FormatVersion}'."); }
+            if (contentFile.FileType != "notebook") { throw new TabletException("Invalid reMarkable file type."); }
+            if (contentFile.FormatVersion is not (1 or 2)) { throw new TabletException($"Invalid reMarkable file format version: '{contentFile.FormatVersion}'."); }
 
             List<Byte[]> pageBuffers = new List<Byte[]>();
             IEnumerable<String> pages = contentFile.FormatVersion == 1 ? contentFile.Pages : contentFile.CPages.Pages.Where(page => page.Deleted == null).Select(page => page.Id);
@@ -382,8 +381,8 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
                 templatesFile.Templates.Add(TemplatesFile.Template.Convert(tabletTemplate));
             }
 
-            await FileWrite(client, $"{PATH_TEMPLATES}{tabletTemplate.FileName}.png", tabletTemplate.BytesPng).ConfigureAwait(false);
-            if (tabletTemplate.BytesSvg.Length > 0) { await FileWrite(client, $"{PATH_TEMPLATES}{tabletTemplate.FileName}.svg", tabletTemplate.BytesSvg).ConfigureAwait(false); }
+            await FileWrite(client, $"{PATH_TEMPLATES}{tabletTemplate.FileName}.png", tabletTemplate.BytesPng, false).ConfigureAwait(false);
+            await FileWrite(client, $"{PATH_TEMPLATES}{tabletTemplate.FileName}.svg", tabletTemplate.BytesSvg, false).ConfigureAwait(false);
             await FileWrite(client, templatesFilePath, JsonSerializer.Serialize(templatesFile, jsonSerializerOptions)).ConfigureAwait(false);
         }
         finally
@@ -521,21 +520,23 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
         await Task.Run(() => { if (client.Exists(path)) { client.DeleteFile(path); } }).ConfigureAwait(false);
     }
 
-    private static async Task FileWrite(SftpClient client, String path, Object content)
+    private static async Task FileWrite(SftpClient client, String path, Object content, Boolean contentRequired = true)
     {
         await FileDelete(client, path).ConfigureAwait(false);
 
         if (content is String text)
         {
-            await Task.Run(() => client.WriteAllText(path, text)).ConfigureAwait(false);
+            if (text.Length > 0) { await Task.Run(() => client.WriteAllText(path, text)).ConfigureAwait(false); }
+            else if (contentRequired) { throw new InvalidOperationException(); }
         }
         else if (content is Byte[] bytes)
         {
-            await Task.Run(() => client.WriteAllBytes(path, bytes)).ConfigureAwait(false);
+            if (bytes.Length > 0) { await Task.Run(() => client.WriteAllBytes(path, bytes)).ConfigureAwait(false); }
+            else if (contentRequired) { throw new InvalidOperationException(); }
         }
         else
         {
-            throw new NotSupportedException();
+            throw new NotImplementedException();
         }
     }
 
@@ -584,13 +585,13 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
 
     private static String UploadFileCheck(FileInfo file)
     {
-        if (file.Length >= 100 * 1024 * 1024) { throw new NotSupportedException("File is to large."); }
+        if (file.Length >= 100 * 1024 * 1024) { throw new TabletException("File is to large."); }
 
         switch (file.Extension.ToUpperInvariant())
         {
             case ".PDF": return "application/pdf";
             case ".EPUB": return "application/epub+zip";
-            default: throw new NotSupportedException("File type is not supported.");
+            default: throw new TabletException("File type is not supported.");
         }
     }
 

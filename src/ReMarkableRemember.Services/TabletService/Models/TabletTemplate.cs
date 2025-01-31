@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using ReMarkableRemember.Services.TabletService.Exceptions;
 
 namespace ReMarkableRemember.Services.TabletService.Models;
 
@@ -105,11 +106,13 @@ public sealed class TabletTemplate
         String fileNamePng = Path.Combine(directory, $"{fileName}.png");
         String fileNameSvg = Path.Combine(directory, $"{fileName}.svg");
 
-        this.BytesPng = File.ReadAllBytes(fileNamePng);
+        this.BytesPng = File.Exists(fileNamePng) ? File.ReadAllBytes(fileNamePng) : Array.Empty<Byte>();
         this.BytesSvg = File.Exists(fileNameSvg) ? File.ReadAllBytes(fileNameSvg) : Array.Empty<Byte>();
         this.Category = category;
         this.IconCode = iconCode;
         this.Name = name;
+
+        if (this.BytesPng.Length == 0 && this.BytesSvg.Length == 0) { throw new TabletException("A PNG or SVG file is required to uploading a template."); }
     }
 
     public Byte[] BytesPng { get; }
