@@ -5,7 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Svg;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using ReMarkableRemember.Services.DataService;
@@ -33,7 +35,7 @@ public sealed class TemplateViewModel
         this.tabletService = services.GetRequiredService<ITabletService>();
 
         this.Icon = icons[template.IconCode];
-        this.Image = LoadPng(template.BytesPng); // ?? LoadSvg(template.BytesSvg);
+        this.Image = (IImage?)LoadPng(template.BytesPng) ?? LoadSvg(template.BytesSvg);
 
         this.CommandDelete = ReactiveCommand.CreateFromTask(this.Delete);
     }
@@ -44,7 +46,7 @@ public sealed class TemplateViewModel
 
     public TemplateIconViewModel Icon { get; }
 
-    public Bitmap? Image { get; }
+    public IImage? Image { get; }
 
     public String Name { get { return this.template.Name; } }
 
@@ -59,6 +61,11 @@ public sealed class TemplateViewModel
     private static Bitmap? LoadPng(Byte[] bytesPng)
     {
         return (bytesPng.Length > 0) ? new Bitmap(new MemoryStream(bytesPng)) : null;
+    }
+
+    private static SvgImage? LoadSvg(Byte[] bytesSvg)
+    {
+        return (bytesSvg.Length > 0) ? new SvgImage() { Source = SvgSource.Load(new MemoryStream(bytesSvg)) } : null;
     }
 
     public async Task Restore()
