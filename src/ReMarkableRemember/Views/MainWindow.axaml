@@ -101,6 +101,9 @@
                         <MenuItem Header="Open" Command="{Binding CommandOpenItem}">
                             <MenuItem.Icon><TextBlock Classes="Icon">&#xe89e;</TextBlock></MenuItem.Icon>
                         </MenuItem>
+                        <MenuItem Header="Download" Command="{Binding CommandDownloadItem}">
+                            <MenuItem.Icon><TextBlock Classes="Icon">&#xf090;</TextBlock></MenuItem.Icon>
+                        </MenuItem>
                         <MenuItem Header="Handwriting Recognition" Command="{Binding CommandHandwritingRecognition}">
                             <MenuItem.Icon><TextBlock Classes="Icon">&#xe5fa;</TextBlock></MenuItem.Icon>
                         </MenuItem>

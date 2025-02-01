@@ -50,6 +50,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.handWritingRecognitionService);
         this.OpenFilePicker = new Interaction<FilePickerOpenOptions, IEnumerable<String>?>();
         this.OpenFolderPicker = new Interaction<String, String?>();
+        this.OpenSaveFilePicker = new Interaction<FilePickerSaveOptions, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
 
         this.connectionStatus = TabletError.SshNotConnected;
@@ -60,6 +61,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
         this.CommandAbout = ReactiveCommand.CreateFromTask(this.About);
         this.CommandBackup = ReactiveCommand.CreateFromTask(() => this.Execute(Job.Description.Backup), this.Execute_CanExecute(Job.Description.Backup));
+        this.CommandDownloadItem = ReactiveCommand.CreateFromTask(this.DownloadItem, this.DownloadItem_CanExecute());
         this.CommandExecute = ReactiveCommand.CreateFromTask(() => this.Execute(Job.Description.Backup | Job.Description.Sync), this.Execute_CanExecute(Job.Description.Backup | Job.Description.Sync));
         this.CommandHandwritingRecognition = ReactiveCommand.CreateFromTask(this.HandwritingRecognition, this.HandwritingRecognition_CanExecute());
         this.CommandInstallLamyEraser = ReactiveCommand.CreateFromTask(this.InstallLamyEraser, this.InstallLamyEraser_CanExecute());
@@ -106,12 +108,38 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
                 return status is null or (not TabletError.NotSupported and not TabletError.Unknown and not TabletError.SshNotConfigured and not TabletError.SshNotConnected);
 
             case Job.Description.Sync:
+            case Job.Description.Download:
             case Job.Description.Upload:
                 return status is null;
 
             default:
                 throw new NotImplementedException();
         }
+    }
+
+    private async Task DownloadItem()
+    {
+        ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
+        if (selectedItem != null && selectedItem.Collection == null)
+        {
+            using Job job = new Job(Job.Description.Download, this);
+
+            FilePickerSaveOptions options = new FilePickerSaveOptions() { DefaultExtension = "pdf", FileTypeChoices = new[] { FilePickerFileTypes.Pdf } };
+            String? targetPath = await this.OpenSaveFilePicker.Handle(options);
+            if (targetPath != null)
+            {
+                await this.tabletService.Download(selectedItem.Id, targetPath);
+            }
+        }
+    }
+
+    private IObservable<Boolean> DownloadItem_CanExecute()
+    {
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.Download));
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
+        IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
+
+        return Observable.CombineLatest(connectionStatus, jobs, treeSelection, (value1, value2, value3) => value1 && value2 && value3);
     }
 
     private async Task Execute(Job.Description jobDescription)
@@ -154,7 +182,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     private async Task HandwritingRecognition()
     {
         ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
-        if (selectedItem != null)
+        if (selectedItem != null && selectedItem.Collection == null)
         {
             using Job job = new Job(Job.Description.HandwritingRecognition, this);
 
@@ -458,6 +486,8 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     public ICommand CommandBackup { get; }
 
+    public ICommand CommandDownloadItem { get; }
+
     public ICommand CommandExecute { get; }
 
     public ICommand CommandHandwritingRecognition { get; }
@@ -534,6 +564,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
             if (this.Jobs.HasFlag(Job.Description.Sync)) { jobs.Add("Syncing"); }
             if (this.Jobs.HasFlag(Job.Description.Backup)) { jobs.Add("Backup"); }
             if (this.Jobs.HasFlag(Job.Description.HandwritingRecognition)) { jobs.Add("Handwriting Recognition"); }
+            if (this.Jobs.HasFlag(Job.Description.Download)) { jobs.Add("Downloading File"); }
             if (this.Jobs.HasFlag(Job.Description.Upload)) { jobs.Add("Uploading File"); }
             if (this.Jobs.HasFlag(Job.Description.UploadTemplate)) { jobs.Add("Uploading Template"); }
             if (this.Jobs.HasFlag(Job.Description.ManageTemplates)) { jobs.Add("Managing Templates"); }
@@ -556,6 +587,8 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     public Interaction<String, String?> OpenFolderPicker { get; }
 
+    public Interaction<FilePickerSaveOptions, String?> OpenSaveFilePicker { get; }
+
     public Interaction<DialogWindowModel, Boolean> ShowDialog { get; }
 
     public static String Title
@@ -573,13 +606,14 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
             Sync = 0x0002,
             Backup = 0x0004,
             HandwritingRecognition = 0x0008,
-            Upload = 0x0010,
-            UploadTemplate = 0x0020,
-            ManageTemplates = 0x0040,
-            SetSyncTargetDirectory = 0x0080,
-            InstallLamyEraser = 0x0100,
-            InstallWebInterfaceOnBoot = 0x0200,
-            Settings = 0x0400
+            Download = 0x0010,
+            Upload = 0x0020,
+            UploadTemplate = 0x0040,
+            ManageTemplates = 0x0080,
+            SetSyncTargetDirectory = 0x0100,
+            InstallLamyEraser = 0x0200,
+            InstallWebInterfaceOnBoot = 0x0400,
+            Settings = 0x0800
         }
 
         private readonly Description description;

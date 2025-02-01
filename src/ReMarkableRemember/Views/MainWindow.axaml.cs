@@ -46,6 +46,12 @@ public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
         context.SetOutput(folders?.Select(folder => folder.Path.LocalPath).SingleOrDefault());
     }
 
+    private async Task OpenSaveFilePickerHandler(IInteractionContext<FilePickerSaveOptions, String?> context)
+    {
+        IStorageFile? file = await this.StorageProvider.SaveFilePickerAsync(context.Input).ConfigureAwait(true);
+        context.SetOutput(file?.Path.LocalPath);
+    }
+
     private async Task ShowDialogHandler(IInteractionContext<DialogWindowModel, Boolean> context)
     {
         DialogWindow dialog = new DialogWindow() { DataContext = context.Input };
@@ -60,5 +66,6 @@ public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
         action(this.ViewModel.ShowDialog.RegisterHandler(this.ShowDialogHandler));
         action(this.ViewModel.OpenFilePicker.RegisterHandler(this.OpenFilePickerHandler));
         action(this.ViewModel.OpenFolderPicker.RegisterHandler(this.OpenFolderPickerHandler));
+        action(this.ViewModel.OpenSaveFilePicker.RegisterHandler(this.OpenSaveFilePickerHandler));
     }
 }

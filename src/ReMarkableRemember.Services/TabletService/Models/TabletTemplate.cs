@@ -112,7 +112,7 @@ public sealed class TabletTemplate
         this.IconCode = iconCode;
         this.Name = name;
 
-        if (this.BytesPng.Length == 0 && this.BytesSvg.Length == 0) { throw new TabletException("A PNG or SVG file is required to uploading a template."); }
+        if (this.BytesPng.Length == 0 && this.BytesSvg.Length == 0) { throw new TabletException($"A PNG or SVG image is required to upload a template."); }
     }
 
     public Byte[] BytesPng { get; }
