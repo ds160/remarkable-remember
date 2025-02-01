@@ -10,7 +10,7 @@ public sealed class TabletItem
     {
         this.Collection = type == "CollectionType" ? new List<TabletItem>() : null;
         this.Id = id;
-        this.Modified = DateTime.UnixEpoch.AddMilliseconds(Double.Parse(lastModified, CultureInfo.InvariantCulture));
+        this.Modified = DateTime.UnixEpoch.AddMilliseconds(Double.Parse(lastModified[..Math.Min(lastModified.Length, 13)], CultureInfo.InvariantCulture));
         this.Name = type == "DocumentType" && !visibleName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) ? $"{visibleName}.pdf" : visibleName;
         this.ParentCollectionId = parent;
         this.Trashed = parent == "trash";

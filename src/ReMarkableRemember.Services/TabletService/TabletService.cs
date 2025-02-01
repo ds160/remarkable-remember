@@ -201,15 +201,7 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
                 if (metaDataFile.Deleted != true)
                 {
                     String id = Path.GetFileNameWithoutExtension(file.Name);
-                    try
-                    {
-                        allItems.Add(new TabletItem(id, metaDataFile.LastModified, metaDataFile.Parent, metaDataFile.Type, metaDataFile.VisibleName));
-                    }
-                    catch (ArgumentOutOfRangeException)
-                    {
-                        Console.WriteLine(metaDataFileText);
-                        throw;
-                    }
+                    allItems.Add(new TabletItem(id, metaDataFile.LastModified, metaDataFile.Parent, metaDataFile.Type, metaDataFile.VisibleName));
                 }
             }
 
