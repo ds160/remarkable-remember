@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
@@ -6,7 +6,7 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>App.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\Logo.ico</ApplicationIcon>
-    <Version>1.7.1</Version>
+    <Version>1.7.2</Version>
     <PackageDescription>A cross-platform management application for the reMarkable tablet</PackageDescription>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
@@ -22,13 +22,13 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.2.3" />
-    <PackageReference Include="Avalonia.Controls.TreeDataGrid" Version="11.1.0" />
+    <PackageReference Include="Avalonia.Controls.TreeDataGrid" Version="11.1.1" />
     <PackageReference Include="Avalonia.Desktop" Version="11.2.3" />
     <PackageReference Include="Avalonia.Svg" Version="11.2.0.2" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.3" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="11.2.3" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.1" />
     <PackageReference Include="NLog" Version="5.3.4" />
   </ItemGroup>
 

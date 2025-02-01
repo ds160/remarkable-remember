@@ -61,7 +61,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
         this.CommandAbout = ReactiveCommand.CreateFromTask(this.About);
         this.CommandBackup = ReactiveCommand.CreateFromTask(() => this.Execute(Job.Description.Backup), this.Execute_CanExecute(Job.Description.Backup));
-        this.CommandDownloadItem = ReactiveCommand.CreateFromTask(this.DownloadItem, this.DownloadItem_CanExecute());
+        this.CommandDownloadFile = ReactiveCommand.CreateFromTask(this.DownloadFile, this.DownloadFile_CanExecute());
         this.CommandExecute = ReactiveCommand.CreateFromTask(() => this.Execute(Job.Description.Backup | Job.Description.Sync), this.Execute_CanExecute(Job.Description.Backup | Job.Description.Sync));
         this.CommandHandwritingRecognition = ReactiveCommand.CreateFromTask(this.HandwritingRecognition, this.HandwritingRecognition_CanExecute());
         this.CommandInstallLamyEraser = ReactiveCommand.CreateFromTask(this.InstallLamyEraser, this.InstallLamyEraser_CanExecute());
@@ -117,7 +117,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         }
     }
 
-    private async Task DownloadItem()
+    private async Task DownloadFile()
     {
         ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
         if (selectedItem != null && selectedItem.Collection == null)
@@ -133,7 +133,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         }
     }
 
-    private IObservable<Boolean> DownloadItem_CanExecute()
+    private IObservable<Boolean> DownloadFile_CanExecute()
     {
         IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.Download));
         IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
@@ -486,7 +486,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     public ICommand CommandBackup { get; }
 
-    public ICommand CommandDownloadItem { get; }
+    public ICommand CommandDownloadFile { get; }
 
     public ICommand CommandExecute { get; }
 

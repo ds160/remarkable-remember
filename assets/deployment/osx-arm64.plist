@@ -9,7 +9,7 @@
     <key>CFBundleName</key>
     <string>reMarkable Remember</string>
     <key>CFBundleVersion</key>
-    <string>1.7.1</string>
+    <string>1.7.2</string>
     <key>LSMinimumSystemVersion</key>
     <string>11</string>
     <key>CFBundleExecutable</key>
@@ -19,7 +19,7 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.7.1</string>
+    <string>1.7.2</string>
     <key>NSHighResolutionCapable</key>
     <true/>
 </dict>
