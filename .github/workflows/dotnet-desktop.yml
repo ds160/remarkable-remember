@@ -155,7 +155,7 @@ jobs:
           mkdir "bin/reMarkable Remember.app/Contents/Resources"
           cp "assets/deployment/${{ matrix.arch }}.plist" "bin/reMarkable Remember.app/Contents/Info.plist"
           cp "assets/deployment/osx.icns" "bin/reMarkable Remember.app/Contents/Resources/icon.icns"
-          rm "bin/reMarkable Remember.app/Contents/MacOS/ReMarkableRemember.xml"
+          find "bin/reMarkable Remember.app/Contents/MacOS/" -name "ReMarkableRemember*.xml" -exec rm -rf {} \;
       -
         name: Import Developer ID Certificate
         uses: apple-actions/import-codesign-certs@v3

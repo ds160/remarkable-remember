@@ -1,8 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataService\ReMarkableRemember.Services.DataService.csproj" />
   </ItemGroup>
