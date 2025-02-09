@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive;
+using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
 
@@ -10,8 +11,8 @@ public abstract class DialogWindowModel : ViewModelBase
 {
     protected DialogWindowModel(String title, String textClose, String? textCancel = null)
     {
-        this.CommandCancel = ReactiveCommand.Create(() => { return false; });
-        this.CommandClose = ReactiveCommand.Create(() => { return true; });
+        this.CommandCancel = ReactiveCommand.CreateFromTask(this.OnCancel);
+        this.CommandClose = ReactiveCommand.CreateFromTask(this.OnClose);
 
         this.CopyToClipboard = new Interaction<String, Boolean>();
         this.OpenFilePicker = new Interaction<FilePickerOpenOptions, IEnumerable<String>?>();
@@ -39,4 +40,14 @@ public abstract class DialogWindowModel : ViewModelBase
     public String TextClose { get; }
 
     public String Title { get; }
+
+    protected virtual Task<Boolean> OnCancel()
+    {
+        return Task.FromResult(false);
+    }
+
+    protected virtual Task<Boolean> OnClose()
+    {
+        return Task.FromResult(true);
+    }
 }

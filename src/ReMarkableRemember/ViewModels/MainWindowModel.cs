@@ -83,10 +83,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private async Task About()
     {
-        if (await this.ShowDialog.Handle(new AboutViewModel()))
-        {
-            Process.Start(new ProcessStartInfo("https://github.com/ds160/remarkable-remember") { UseShellExecute = true });
-        }
+        await this.ShowDialog.Handle(new AboutViewModel());
     }
 
     private static Boolean CheckConnectionStatusForJob(TabletError? status, Job.Description job)
@@ -206,11 +203,8 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Job.Description.InstallLamyEraser, this);
 
-        LamyEraserOptionsViewModel options = new LamyEraserOptionsViewModel();
-        if (await this.ShowDialog.Handle(options))
-        {
-            await this.tabletService.InstallLamyEraser(options.Press != 0, options.Undo != 0, options.LeftHanded != 0).ConfigureAwait(true);
-        }
+        LamyEraserOptionsViewModel options = new LamyEraserOptionsViewModel(this.services);
+        await this.ShowDialog.Handle(options);
     }
 
     private IObservable<Boolean> InstallLamyEraser_CanExecute()
@@ -247,14 +241,8 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         TemplatesViewModel templates = new TemplatesViewModel(tabletTemplates, this.services);
         if (templates.Templates.Any())
         {
-            Boolean restartRequired = false;
-            if (await this.ShowDialog.Handle(templates))
-            {
-                await Task.WhenAll(templates.Templates.Select(template => template.Restore())).ConfigureAwait(true);
-                restartRequired = templates.Templates.Any();
-            }
-
-            if (restartRequired || templates.RestartRequired)
+            await this.ShowDialog.Handle(templates);
+            if (templates.RestartRequired)
             {
                 await this.Restart(job).ConfigureAwait(true);
             }
@@ -323,10 +311,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         using Job job = new Job(Job.Description.Settings, this);
 
         SettingsViewModel settings = new SettingsViewModel(this.services);
-        if (await this.ShowDialog.Handle(settings))
-        {
-            await settings.Save().ConfigureAwait(true);
-        }
+        await this.ShowDialog.Handle(settings);
 
         this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
         this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.CompareOrdinal(language.Code, this.handWritingRecognitionService.Configuration.Language) == 0);
@@ -461,15 +446,9 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Job.Description.UploadTemplate, this);
 
-        TemplateUploadViewModel template = new TemplateUploadViewModel();
+        TemplateUploadViewModel template = new TemplateUploadViewModel(this.services);
         if (await this.ShowDialog.Handle(template))
         {
-            TabletTemplate tabletTemplate = new TabletTemplate(template.Name, template.Category, template.Icon.Code, template.SourceFilePath);
-            await this.tabletService.UploadTemplate(tabletTemplate).ConfigureAwait(true);
-
-            TemplateData dataTemplate = new TemplateData(tabletTemplate.Category, tabletTemplate.Name, tabletTemplate.IconCode, tabletTemplate.BytesPng, tabletTemplate.BytesSvg);
-            await this.dataService.SetTemplate(dataTemplate).ConfigureAwait(true);
-
             await this.Restart(job).ConfigureAwait(true);
         }
     }

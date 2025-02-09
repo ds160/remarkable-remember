@@ -5,20 +5,31 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Platform.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using ReMarkableRemember.Helper;
+using ReMarkableRemember.Services.DataService;
+using ReMarkableRemember.Services.DataService.Models;
+using ReMarkableRemember.Services.TabletService;
+using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.ViewModels;
 
 public sealed class TemplateUploadViewModel : DialogWindowModel
 {
+    private readonly IDataService dataService;
+    private readonly ITabletService tabletService;
+
     private String category;
     private TemplateIconViewModel icon;
     private String name;
     private String sourceFilePath;
 
-    public TemplateUploadViewModel() : base("Template", "Upload", "Cancel")
+    public TemplateUploadViewModel(ServiceProvider services) : base("Template", "Upload", "Cancel")
     {
+        this.dataService = services.GetRequiredService<IDataService>();
+        this.tabletService = services.GetRequiredService<ITabletService>();
+
         this.Icons = TemplateIconViewModel.GetIcons();
 
         this.category = String.Empty;
@@ -53,6 +64,17 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
         {
             this.AddError(propertyName, $"{displayName ?? propertyName} is required");
         }
+    }
+
+    protected override async Task<Boolean> OnClose()
+    {
+        TabletTemplate tabletTemplate = new TabletTemplate(this.Name, this.Category, this.Icon.Code, this.SourceFilePath);
+        await this.tabletService.UploadTemplate(tabletTemplate).ConfigureAwait(true);
+
+        TemplateData dataTemplate = new TemplateData(tabletTemplate.Category, tabletTemplate.Name, tabletTemplate.IconCode, tabletTemplate.BytesPng, tabletTemplate.BytesSvg);
+        await this.dataService.SetTemplate(dataTemplate).ConfigureAwait(true);
+
+        return await base.OnClose().ConfigureAwait(true);
     }
 
     private async Task SetSourceFilePath()

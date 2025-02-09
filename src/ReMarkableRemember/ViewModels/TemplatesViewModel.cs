@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using ReMarkableRemember.Services.TabletService.Models;
 
@@ -38,5 +39,13 @@ public sealed class TemplatesViewModel : DialogWindowModel
         {
             await this.CommandCancel.Execute();
         }
+    }
+
+    protected override async Task<Boolean> OnClose()
+    {
+        await Task.WhenAll(this.Templates.Select(template => template.Restore())).ConfigureAwait(true);
+        this.RestartRequired |= this.Templates.Any();
+
+        return await base.OnClose().ConfigureAwait(true);
     }
 }

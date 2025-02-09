@@ -86,7 +86,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         }
     }
 
-    public async Task Save()
+    protected override async Task<Boolean> OnClose()
     {
         this.handWritingRecognitionConfiguration.Language = this.HandWritingRecognitionLanguage.Code;
         await this.handWritingRecognitionConfiguration.Save().ConfigureAwait(true);
@@ -102,6 +102,8 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         this.tabletConfiguration.IP = this.TabletIp;
         this.tabletConfiguration.Password = this.TabletPassword;
         await this.tabletConfiguration.Save().ConfigureAwait(true);
+
+        return await base.OnClose().ConfigureAwait(true);
     }
 
     [GeneratedRegex("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$")]
