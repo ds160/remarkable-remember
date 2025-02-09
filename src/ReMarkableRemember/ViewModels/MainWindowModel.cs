@@ -203,8 +203,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Job.Description.InstallLamyEraser, this);
 
-        LamyEraserOptionsViewModel options = new LamyEraserOptionsViewModel(this.services);
-        await this.ShowDialog.Handle(options);
+        await this.ShowDialog.Handle(new LamyEraserViewModel(this.services));
     }
 
     private IObservable<Boolean> InstallLamyEraser_CanExecute()
@@ -310,8 +309,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Job.Description.Settings, this);
 
-        SettingsViewModel settings = new SettingsViewModel(this.services);
-        await this.ShowDialog.Handle(settings);
+        await this.ShowDialog.Handle(new SettingsViewModel(this.services));
 
         this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
         this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.CompareOrdinal(language.Code, this.handWritingRecognitionService.Configuration.Language) == 0);
@@ -446,8 +444,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Job.Description.UploadTemplate, this);
 
-        TemplateUploadViewModel template = new TemplateUploadViewModel(this.services);
-        if (await this.ShowDialog.Handle(template))
+        if (await this.ShowDialog.Handle(new TemplateUploadViewModel(this.services)))
         {
             await this.Restart(job).ConfigureAwait(true);
         }

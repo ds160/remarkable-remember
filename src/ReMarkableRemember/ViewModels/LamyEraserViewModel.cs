@@ -5,11 +5,11 @@ using ReMarkableRemember.Services.TabletService;
 
 namespace ReMarkableRemember.ViewModels;
 
-public sealed partial class LamyEraserOptionsViewModel : DialogWindowModel
+public sealed partial class LamyEraserViewModel : DialogWindowModel
 {
     private readonly ITabletService tabletService;
 
-    internal LamyEraserOptionsViewModel(ServiceProvider services) : base("Lamy Eraser Options", "Install", "Cancel")
+    internal LamyEraserViewModel(ServiceProvider services) : base("Lamy Eraser Options", "Install", "Cancel")
     {
         this.tabletService = services.GetRequiredService<ITabletService>();
 

@@ -3,9 +3,9 @@ using ReMarkableRemember.ViewModels;
 
 namespace ReMarkableRemember.Views;
 
-public sealed partial class LamyEraserOptionsView : ReactiveUserControl<LamyEraserOptionsViewModel>
+public sealed partial class LamyEraserView : ReactiveUserControl<LamyEraserViewModel>
 {
-    public LamyEraserOptionsView()
+    public LamyEraserView()
     {
         this.InitializeComponent();
     }
