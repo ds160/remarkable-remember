@@ -2,7 +2,7 @@ name: .NET Core Desktop
 
 on:
   push:
-    branches: 
+    branches:
       - 'main'
     tags:
       - '*'
@@ -17,7 +17,7 @@ jobs:
         name: Checkout
         if: github.ref_type == 'tag'
         uses: actions/checkout@v4
-      - 
+      -
         name: Create Release
         if: github.ref_type == 'tag'
         uses: actions/create-release@v1
@@ -63,9 +63,9 @@ jobs:
       name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.arch }}
+        name: reMarkableRemember-${{ matrix.arch }}
         path: bin/
-    - 
+    -
       name: Upload Release Asset - AppImage
       if: github.ref_type == 'tag'
       uses: actions/upload-release-asset@v1
@@ -76,7 +76,7 @@ jobs:
         asset_path: bin/reMarkableRemember-${{ matrix.arch }}.AppImage
         asset_name: reMarkableRemember-${{ matrix.arch }}.AppImage
         asset_content_type: application/octet-stream
-    - 
+    -
       name: Upload Release Asset - DEB
       if: github.ref_type == 'tag'
       uses: actions/upload-release-asset@v1
@@ -87,7 +87,7 @@ jobs:
         asset_path: bin/reMarkableRemember-${{ matrix.arch }}.deb
         asset_name: reMarkableRemember-${{ matrix.arch }}.deb
         asset_content_type: application/octet-stream
-    - 
+    -
       name: Upload Release Asset - RPM
       if: matrix.arch == 'linux-x64' && github.ref_type == 'tag'
       uses: actions/upload-release-asset@v1
@@ -98,7 +98,7 @@ jobs:
         asset_path: bin/reMarkableRemember-${{ matrix.arch }}.rpm
         asset_name: reMarkableRemember-${{ matrix.arch }}.rpm
         asset_content_type: application/octet-stream
-    
+
   build-windows:
     needs: create-release-on-tag
     runs-on: windows-latest
@@ -121,9 +121,9 @@ jobs:
         name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.arch }}
+          name: reMarkableRemember-${{ matrix.arch }}
           path: bin/
-      - 
+      -
         name: Upload Release Asset
         if: github.ref_type == 'tag'
         uses: actions/upload-release-asset@v1
@@ -159,7 +159,7 @@ jobs:
       -
         name: Import Developer ID Certificate
         uses: apple-actions/import-codesign-certs@v3
-        with: 
+        with:
           p12-file-base64: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_P12 }}
           p12-password: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_P12_PASSWORD }}
       -
@@ -191,9 +191,9 @@ jobs:
         name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-            name: ${{ matrix.arch }}
+            name: reMarkableRemember-${{ matrix.arch }}
             path: bin/
-      - 
+      -
         name: Upload Release Asset
         if: github.ref_type == 'tag'
         uses: actions/upload-release-asset@v1
