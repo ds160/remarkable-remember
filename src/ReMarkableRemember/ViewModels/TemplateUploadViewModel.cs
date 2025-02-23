@@ -5,7 +5,6 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Platform.Storage;
-using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.DataService;
@@ -25,10 +24,10 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
     private String name;
     private String sourceFilePath;
 
-    public TemplateUploadViewModel(ServiceProvider services) : base("Template", "Upload", "Cancel")
+    public TemplateUploadViewModel(IDataService dataService, ITabletService tabletService) : base("Template", "Upload", "Cancel")
     {
-        this.dataService = services.GetRequiredService<IDataService>();
-        this.tabletService = services.GetRequiredService<ITabletService>();
+        this.dataService = dataService;
+        this.tabletService = tabletService;
 
         this.Icons = TemplateIconViewModel.GetIcons();
 

@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using ReMarkableRemember.Common.FileSystem;
 using ReMarkableRemember.Common.Notebook;
@@ -48,13 +47,13 @@ public sealed class ItemViewModel : ViewModelBase
     private readonly IHandWritingRecognitionService handWritingRecognitionService;
     private readonly ITabletService tabletService;
 
-    internal ItemViewModel(TabletItem tabletItem, ItemViewModel? parent, ServiceProvider services)
+    internal ItemViewModel(TabletItem tabletItem, ItemViewModel? parent, IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ITabletService tabletService)
     {
-        this.dataService = services.GetRequiredService<IDataService>();
-        this.handWritingRecognitionService = services.GetRequiredService<IHandWritingRecognitionService>();
-        this.tabletService = services.GetRequiredService<ITabletService>();
+        this.dataService = dataService;
+        this.handWritingRecognitionService = handWritingRecognitionService;
+        this.tabletService = tabletService;
 
-        List<ItemViewModel>? collection = tabletItem.Collection?.Select(childItem => new ItemViewModel(childItem, this, services)).ToList();
+        List<ItemViewModel>? collection = tabletItem.Collection?.Select(childItem => new ItemViewModel(childItem, this, dataService, handWritingRecognitionService, tabletService)).ToList();
 
         this.Collection = (collection != null) ? new ObservableCollection<ItemViewModel>(collection) : null;
         this.Parent = parent;
@@ -237,14 +236,14 @@ public sealed class ItemViewModel : ViewModelBase
         throw new NotImplementedException();
     }
 
-    internal static async Task UpdateItems(IEnumerable<TabletItem> tabletItems, ObservableCollection<ItemViewModel> items, ItemViewModel? parentItem, ServiceProvider services)
+    internal static async Task UpdateItems(IEnumerable<TabletItem> tabletItems, ObservableCollection<ItemViewModel> items, ItemViewModel? parentItem, IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ITabletService tabletService)
     {
         foreach (TabletItem tabletItem in tabletItems)
         {
             ItemViewModel? item = items.SingleOrDefault(item => item.TabletItem.Id == tabletItem.Id);
             if (item == null)
             {
-                item = new ItemViewModel(tabletItem, parentItem, services);
+                item = new ItemViewModel(tabletItem, parentItem, dataService, handWritingRecognitionService, tabletService);
                 await item.Update().ConfigureAwait(true);
                 items.Add(item);
             }
@@ -254,7 +253,7 @@ public sealed class ItemViewModel : ViewModelBase
 
                 if (tabletItem.Collection != null && item.Collection != null)
                 {
-                    await UpdateItems(tabletItem.Collection, item.Collection, item, services).ConfigureAwait(true);
+                    await UpdateItems(tabletItem.Collection, item.Collection, item, dataService, handWritingRecognitionService, tabletService).ConfigureAwait(true);
                 }
 
                 if (parentItem == null)

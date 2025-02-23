@@ -8,7 +8,6 @@ using System.Windows.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Svg;
-using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.TabletService;
@@ -26,13 +25,13 @@ public sealed class TemplateViewModel
     private readonly IDataService dataService;
     private readonly ITabletService tabletService;
 
-    internal TemplateViewModel(TabletTemplate template, ObservableCollection<TemplateViewModel> templates, ServiceProvider services)
+    internal TemplateViewModel(TabletTemplate template, ObservableCollection<TemplateViewModel> templates, IDataService dataService, ITabletService tabletService)
     {
         this.template = template;
         this.templates = templates;
 
-        this.dataService = services.GetRequiredService<IDataService>();
-        this.tabletService = services.GetRequiredService<ITabletService>();
+        this.dataService = dataService;
+        this.tabletService = tabletService;
 
         this.Icon = icons[template.IconCode];
         this.Image = (IImage?)LoadPng(template.BytesPng) ?? LoadSvg(template.BytesSvg);

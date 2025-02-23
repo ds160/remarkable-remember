@@ -11,7 +11,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Platform.Storage;
-using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.DataService;
@@ -26,8 +25,6 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class MainWindowModel : ViewModelBase, IAppModel
 {
-    private readonly ServiceProvider services;
-
     private readonly IDataService dataService;
     private readonly IHandWritingRecognitionService handWritingRecognitionService;
     private readonly ITabletService tabletService;
@@ -38,13 +35,11 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     private Boolean hasItems;
     private Job.Description jobs;
 
-    public MainWindowModel(ServiceProvider services)
+    public MainWindowModel(IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ITabletService tabletService)
     {
-        this.services = services;
-
-        this.dataService = this.services.GetRequiredService<IDataService>();
-        this.handWritingRecognitionService = this.services.GetRequiredService<IHandWritingRecognitionService>();
-        this.tabletService = this.services.GetRequiredService<ITabletService>();
+        this.dataService = dataService;
+        this.handWritingRecognitionService = handWritingRecognitionService;
+        this.tabletService = tabletService;
 
         this.ItemsTree = new ItemsTreeViewModel();
         this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.handWritingRecognitionService);
@@ -203,7 +198,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Job.Description.InstallLamyEraser, this);
 
-        await this.ShowDialog.Handle(new LamyEraserViewModel(this.services));
+        await this.ShowDialog.Handle(new LamyEraserViewModel(this.tabletService));
     }
 
     private IObservable<Boolean> InstallLamyEraser_CanExecute()
@@ -237,7 +232,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
         IEnumerable<TemplateData> dataTemplates = await this.dataService.GetTemplates().ConfigureAwait(true);
         IEnumerable<TabletTemplate> tabletTemplates = dataTemplates.Select(template => new TabletTemplate(template.Name, template.Category, template.IconCode, template.BytesPng, template.BytesSvg)).ToArray();
-        TemplatesViewModel templates = new TemplatesViewModel(tabletTemplates, this.services);
+        TemplatesViewModel templates = new TemplatesViewModel(tabletTemplates, this.dataService, this.tabletService);
         if (templates.Templates.Any())
         {
             await this.ShowDialog.Handle(templates);
@@ -309,7 +304,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Job.Description.Settings, this);
 
-        await this.ShowDialog.Handle(new SettingsViewModel(this.services));
+        await this.ShowDialog.Handle(new SettingsViewModel(this.handWritingRecognitionService, this.tabletService));
 
         this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
         this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.CompareOrdinal(language.Code, this.handWritingRecognitionService.Configuration.Language) == 0);
@@ -375,7 +370,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
                     IEnumerable<TabletItem> tabletItemsAll = await this.tabletService.GetItems().ConfigureAwait(true);
                     IEnumerable<TabletItem> tabletItems = tabletItemsAll.Where(item => !item.Trashed).ToArray();
 
-                    await ItemViewModel.UpdateItems(tabletItems, this.ItemsTree.Items, null, this.services).ConfigureAwait(true);
+                    await ItemViewModel.UpdateItems(tabletItems, this.ItemsTree.Items, null, this.dataService, this.handWritingRecognitionService, this.tabletService).ConfigureAwait(true);
 
                     this.ItemsTree.Sort(new Comparison<ItemViewModel>(ItemViewModel.Compare));
 
@@ -444,7 +439,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Job.Description.UploadTemplate, this);
 
-        if (await this.ShowDialog.Handle(new TemplateUploadViewModel(this.services)))
+        if (await this.ShowDialog.Handle(new TemplateUploadViewModel(this.dataService, this.tabletService)))
         {
             await this.Restart(job).ConfigureAwait(true);
         }

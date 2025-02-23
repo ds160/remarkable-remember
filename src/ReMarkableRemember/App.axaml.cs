@@ -23,14 +23,15 @@ public partial class App : Application
     {
         if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            ServiceCollection services = new ServiceCollection();
+            ServiceProvider services = new ServiceCollection()
+                .AddSingleton<IConfigurationService, ConfigurationServiceDataService>()
+                .AddSingleton<IDataService>(new DataServiceSqlite(desktop.Args?.FirstOrDefault()))
+                .AddSingleton<IHandWritingRecognitionService, HandWritingRecognitionServiceMyScript>()
+                .AddSingleton<ITabletService, TabletService>()
+                .AddSingleton<MainWindowModel>()
+                .BuildServiceProvider();
 
-            services.AddSingleton<IConfigurationService, ConfigurationServiceDataService>();
-            services.AddSingleton<IDataService>(new DataServiceSqlite(desktop.Args?.FirstOrDefault()));
-            services.AddSingleton<IHandWritingRecognitionService, HandWritingRecognitionServiceMyScript>();
-            services.AddSingleton<ITabletService, TabletService>();
-
-            desktop.MainWindow = new MainWindow() { DataContext = new MainWindowModel(services.BuildServiceProvider()) };
+            desktop.MainWindow = new MainWindow() { DataContext = services.GetRequiredService<MainWindowModel>() };
             this.DataContext = desktop.MainWindow.DataContext;
         }
 

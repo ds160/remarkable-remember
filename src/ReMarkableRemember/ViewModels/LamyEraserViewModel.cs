@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using ReMarkableRemember.Services.TabletService;
 
 namespace ReMarkableRemember.ViewModels;
@@ -9,9 +8,9 @@ public sealed partial class LamyEraserViewModel : DialogWindowModel
 {
     private readonly ITabletService tabletService;
 
-    internal LamyEraserViewModel(ServiceProvider services) : base("Lamy Eraser Options", "Install", "Cancel")
+    internal LamyEraserViewModel(ITabletService tabletService) : base("Lamy Eraser Options", "Install", "Cancel")
     {
-        this.tabletService = services.GetRequiredService<ITabletService>();
+        this.tabletService = tabletService;
 
         this.LeftHanded = 0;
         this.Press = 0;

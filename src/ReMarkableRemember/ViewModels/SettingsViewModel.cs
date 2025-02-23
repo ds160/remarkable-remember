@@ -5,7 +5,6 @@ using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using ReMarkableRemember.Services.HandWritingRecognition;
 using ReMarkableRemember.Services.HandWritingRecognition.Configuration;
@@ -27,13 +26,13 @@ public sealed partial class SettingsViewModel : DialogWindowModel
     private readonly HandWritingRecognitionConfigurationMyScript? myScriptConfiguration;
     private readonly ITabletConfiguration tabletConfiguration;
 
-    internal SettingsViewModel(ServiceProvider services) : base("Settings", "Save", "Cancel")
+    internal SettingsViewModel(IHandWritingRecognitionService handWritingRecognitionService, ITabletService tabletService) : base("Settings", "Save", "Cancel")
     {
-        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(services.GetRequiredService<IHandWritingRecognitionService>());
+        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(handWritingRecognitionService);
 
-        this.handWritingRecognitionConfiguration = services.GetRequiredService<IHandWritingRecognitionService>().Configuration;
-        this.myScriptConfiguration = services.GetRequiredService<IHandWritingRecognitionService>().Configuration as HandWritingRecognitionConfigurationMyScript;
-        this.tabletConfiguration = services.GetRequiredService<ITabletService>().Configuration;
+        this.handWritingRecognitionConfiguration = handWritingRecognitionService.Configuration;
+        this.myScriptConfiguration = handWritingRecognitionService.Configuration as HandWritingRecognitionConfigurationMyScript;
+        this.tabletConfiguration = tabletService.Configuration;
 
         this.backup = this.tabletConfiguration.Backup;
         this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.CompareOrdinal(language.Code, this.handWritingRecognitionConfiguration.Language) == 0);
