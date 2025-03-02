@@ -2,30 +2,39 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using ReMarkableRemember.Services.DataService.Database;
 using ReMarkableRemember.Services.DataService.Entities;
 using ReMarkableRemember.Services.DataService.Models;
 
 namespace ReMarkableRemember.Services.DataService;
 
-public sealed class DataServiceSqlite : IDataService
+public sealed class DataServiceSqlite : IDataService, IDisposable
 {
-    private readonly String dataSource;
+    private readonly SqliteConnection connection;
 
-    public DataServiceSqlite(String? arg)
+    private DataServiceSqlite(SqliteConnectionStringBuilder connectionStringBuilder)
     {
-        this.dataSource = DatabaseSource.GetDataSource(arg);
+        this.connection = new SqliteConnection(connectionStringBuilder.ToString());
 
-        using DatabaseContext database = this.CreateDatabaseContext();
-        IMigrator migrator = database.GetService<IMigrator>();
-        migrator.Migrate();
+        using DatabaseContext context = this.CreateDatabaseContext();
+        context.Database.Migrate();
+    }
+
+    public static DataServiceSqlite Create(String? arg)
+    {
+        return new DataServiceSqlite(DatabaseContextFactory.CreateConnectionStringBuilder(arg));
     }
 
     private DatabaseContext CreateDatabaseContext()
     {
-        return new DatabaseContext(this.dataSource);
+        return new DatabaseContext(new DbContextOptionsBuilder<DatabaseContext>().UseSqlite(this.connection).Options);
+    }
+
+    void IDisposable.Dispose()
+    {
+        this.connection.Dispose();
     }
 
 

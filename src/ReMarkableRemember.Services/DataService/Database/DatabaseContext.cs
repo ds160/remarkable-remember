@@ -7,7 +7,7 @@ namespace ReMarkableRemember.Services.DataService.Database;
 
 internal sealed class DatabaseContext : DbContext
 {
-    public DatabaseContext(String dataSource) : base(new DbContextOptionsBuilder<DatabaseContext>().UseSqlite($"Data Source={dataSource}").Options)
+    public DatabaseContext(DbContextOptions options) : base(options)
     {
     }
 

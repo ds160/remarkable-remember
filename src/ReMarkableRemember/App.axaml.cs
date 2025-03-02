@@ -25,7 +25,7 @@ public partial class App : Application
         {
             ServiceProvider services = new ServiceCollection()
                 .AddSingleton<IConfigurationService, ConfigurationServiceDataService>()
-                .AddSingleton<IDataService>(new DataServiceSqlite(desktop.Args?.FirstOrDefault()))
+                .AddSingleton<IDataService>(DataServiceSqlite.Create(desktop.Args?.FirstOrDefault()))
                 .AddSingleton<IHandWritingRecognitionService, HandWritingRecognitionServiceMyScript>()
                 .AddSingleton<ITabletService, TabletService>()
                 .AddSingleton<MainWindowModel>()

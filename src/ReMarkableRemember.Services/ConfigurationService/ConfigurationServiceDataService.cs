@@ -24,7 +24,7 @@ public class ConfigurationServiceDataService : IConfigurationService
         List<SettingData> settings = GetSettings(configuration);
         this.dataService.LoadSettings(settings).Wait();
 
-        Dictionary<String, PropertyInfo> properties = GetProperties<T>();
+        Dictionary<String, PropertyInfo> properties = GetProperties(configuration);
         foreach (SettingData setting in settings)
         {
             properties[setting.Key].SetValue(configuration, setting.Value);
@@ -44,7 +44,7 @@ public class ConfigurationServiceDataService : IConfigurationService
         String prefix = configuration.GetPrefix();
         List<SettingData> settings = new List<SettingData>();
 
-        foreach (PropertyInfo property in GetProperties<T>().Values)
+        foreach (PropertyInfo property in GetProperties(configuration).Values)
         {
             settings.Add(new SettingData(prefix, property.Name, property.GetValue(configuration) as String ?? String.Empty));
         }
@@ -52,9 +52,10 @@ public class ConfigurationServiceDataService : IConfigurationService
         return settings;
     }
 
-    private static Dictionary<String, PropertyInfo> GetProperties<T>() where T : IConfiguration
+    private static Dictionary<String, PropertyInfo> GetProperties(IConfiguration configuration)
     {
-        return typeof(T)
+        return configuration
+            .GetType()
             .GetProperties()
             .Where(prop => prop.PropertyType == typeof(String) && prop.CanRead && prop.CanWrite)
             .ToDictionary(prop => prop.Name);
