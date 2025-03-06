@@ -39,7 +39,7 @@ public class ConfigurationServiceDataService : IConfigurationService
         await this.dataService.SaveSettings(settings).ConfigureAwait(false);
     }
 
-    private static List<SettingData> GetSettings<T>(T configuration) where T : IConfiguration
+    private static List<SettingData> GetSettings(IConfiguration configuration)
     {
         String prefix = configuration.GetPrefix();
         List<SettingData> settings = new List<SettingData>();
