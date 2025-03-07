@@ -11,6 +11,8 @@ public sealed class SettingData
         this.Value = value;
     }
 
+    internal String DatabaseKey { get { return $"{this.Prefix} {this.Key}"; } }
+
     public String Key { get; }
 
     public String Prefix { get; }

@@ -14,9 +14,10 @@ public sealed class DataServiceSqlite : IDataService, IDisposable
 {
     private readonly SqliteConnection connection;
 
-    private DataServiceSqlite(SqliteConnectionStringBuilder connectionStringBuilder)
+    private DataServiceSqlite(String connectionString)
     {
-        this.connection = new SqliteConnection(connectionStringBuilder.ToString());
+        this.connection = new SqliteConnection(connectionString);
+        this.connection.Open();
 
         using DatabaseContext context = this.CreateDatabaseContext();
         context.Database.Migrate();
@@ -24,7 +25,7 @@ public sealed class DataServiceSqlite : IDataService, IDisposable
 
     public static DataServiceSqlite Create(String? arg)
     {
-        return new DataServiceSqlite(DatabaseContextFactory.CreateConnectionStringBuilder(arg));
+        return new DataServiceSqlite(DatabaseContextFactory.BuildConnectionString(arg));
     }
 
     private DatabaseContext CreateDatabaseContext()
@@ -136,7 +137,7 @@ public sealed class DataServiceSqlite : IDataService, IDisposable
 
         foreach (SettingData setting in settings)
         {
-            Setting? databaseSetting = await database.Settings.FindAsync($"{setting.Prefix} {setting.Key}").ConfigureAwait(false);
+            Setting? databaseSetting = await database.Settings.FindAsync(setting.DatabaseKey).ConfigureAwait(false);
             if (databaseSetting != null)
             {
                 setting.Value = databaseSetting.Value;
@@ -150,14 +151,14 @@ public sealed class DataServiceSqlite : IDataService, IDisposable
 
         foreach (SettingData setting in settings)
         {
-            Setting? databaseSetting = await database.Settings.FindAsync($"{setting.Prefix} {setting.Key}").ConfigureAwait(false);
+            Setting? databaseSetting = await database.Settings.FindAsync(setting.DatabaseKey).ConfigureAwait(false);
             if (databaseSetting != null)
             {
                 databaseSetting.Value = setting.Value;
             }
             else
             {
-                databaseSetting = new Setting(setting.Key, setting.Value);
+                databaseSetting = new Setting(setting.DatabaseKey, setting.Value);
                 await database.Settings.AddAsync(databaseSetting).ConfigureAwait(false);
             }
         }

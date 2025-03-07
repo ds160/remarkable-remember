@@ -101,7 +101,10 @@ public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWrit
         get { return this.Configuration; }
     }
 
-    IEnumerable<String> IHandWritingRecognitionService.SupportedLanguages { get { return supportedLanguages; } }
+    IEnumerable<String> IHandWritingRecognitionService.SupportedLanguages
+    {
+        get { return supportedLanguages; }
+    }
 
     public async Task<String> Recognize(Notebook.Page page, String? language = null)
     {

@@ -10,15 +10,15 @@ namespace ReMarkableRemember.Services.DataService.Database;
 
 internal sealed class DatabaseContextFactory : IDesignTimeDbContextFactory<DatabaseContext>
 {
-    public static SqliteConnectionStringBuilder CreateConnectionStringBuilder(String? arg)
+    public static String BuildConnectionString(String? arg)
     {
         String dataSource = File.Exists(arg) ? arg : FileSystem.CreateApplicationDataFilePath("database.db");
-        return new SqliteConnectionStringBuilder() { DataSource = dataSource };
+        return new SqliteConnectionStringBuilder() { DataSource = dataSource }.ToString();
     }
 
     public DatabaseContext CreateDbContext(String[] args)
     {
-        String connectionString = CreateConnectionStringBuilder(args.FirstOrDefault()).ToString();
+        String connectionString = BuildConnectionString(args.FirstOrDefault());
         return new DatabaseContext(new DbContextOptionsBuilder().UseSqlite(connectionString).Options);
     }
 }
