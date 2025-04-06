@@ -116,7 +116,12 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         {
             using Job job = new Job(Job.Description.Download, this);
 
-            FilePickerSaveOptions options = new FilePickerSaveOptions() { DefaultExtension = "pdf", FileTypeChoices = new[] { FilePickerFileTypes.Pdf } };
+            FilePickerSaveOptions options = new FilePickerSaveOptions()
+            {
+                DefaultExtension = "pdf",
+                FileTypeChoices = new[] { FilePickerFileTypes.Pdf },
+                SuggestedFileName = selectedItem.Name
+            };
             String? targetPath = await this.OpenSaveFilePicker.Handle(options);
             if (targetPath != null)
             {
