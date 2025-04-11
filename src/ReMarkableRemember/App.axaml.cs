@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -31,8 +32,9 @@ public partial class App : Application
                 .AddSingleton<MainWindowModel>()
                 .BuildServiceProvider();
 
-            desktop.MainWindow = new MainWindow() { DataContext = services.GetRequiredService<MainWindowModel>() };
-            this.DataContext = desktop.MainWindow.DataContext;
+            Object dataContext = services.GetRequiredService<MainWindowModel>();
+            desktop.MainWindow = new MainWindow() { DataContext = dataContext };
+            this.DataContext = dataContext;
         }
 
         base.OnFrameworkInitializationCompleted();
