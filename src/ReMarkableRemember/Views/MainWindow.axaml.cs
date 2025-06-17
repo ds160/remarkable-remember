@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using Avalonia.ReactiveUI;
-using NLog;
 using ReactiveUI;
 using ReMarkableRemember.ViewModels;
 
@@ -13,24 +11,10 @@ namespace ReMarkableRemember.Views;
 
 public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
 {
-    private readonly Logger logger;
-
     public MainWindow()
     {
-        this.logger = LogManager.GetCurrentClassLogger();
-
         this.InitializeComponent();
         this.WhenActivated(this.Subscribe);
-
-        RxApp.DefaultExceptionHandler = Observer.Create<Exception>(this.ExceptionHandler, this.ExceptionHandler);
-    }
-
-    private async void ExceptionHandler(Exception exception)
-    {
-        this.logger.Error(exception);
-
-        DialogWindow dialog = new DialogWindow() { DataContext = MessageViewModel.Error(exception) };
-        await dialog.ShowDialog<Boolean?>(this).ConfigureAwait(true);
     }
 
     private async Task OpenFilePickerHandler(IInteractionContext<FilePickerOpenOptions, IEnumerable<String>?> context)
