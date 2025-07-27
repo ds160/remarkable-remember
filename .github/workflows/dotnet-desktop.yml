@@ -47,13 +47,10 @@ jobs:
       name: Install PupNet Deploy dependencies
       run: sudo apt-get install -y libfuse2
     -
-      name: Install AppImage Tool (x64)
-      if: matrix.arch == 'linux-x64'
-      run: wget -nv -c https://github.com/AppImage/appimagetool/releases/download/1.9.0/appimagetool-x86_64.AppImage
-    -
-      name: Install AppImage Tool (ARM)
-      if: matrix.arch == 'linux-arm64'
-      run: wget -nv -c https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-aarch64.AppImage
+      name: Install AppImage Tool
+      run: |
+        wget -nv -c https://github.com/AppImage/appimagetool/releases/download/1.9.0/appimagetool-x86_64.AppImage
+        chmod +x appimagetool-x86_64.AppImage
     -
       name: Build AppImage
       run: pupnet -y -k appimage -r ${{ matrix.arch }}
