@@ -49,7 +49,7 @@ jobs:
     -
       name: Install AppImage Tool
       run: |
-        wget -nv -c https://github.com/AppImage/appimagetool/releases/download/1.9.0/appimagetool-x86_64.AppImage
+        wget -nv -c https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
         chmod +x appimagetool-x86_64.AppImage
     -
       name: Build AppImage
