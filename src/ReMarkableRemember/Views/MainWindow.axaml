@@ -60,7 +60,7 @@
                     </SplitButton>
                     <Button ToolTip.Tip="Upload File" Command="{Binding CommandUploadFile}">&#xf09b;</Button>
                     <Button ToolTip.Tip="Download File" Command="{Binding CommandDownloadFile}">&#xf090;</Button>
-                
+
                     <Button ToolTip.Tip="Open" Command="{Binding CommandOpenItem}" Margin="0, 16, 0, 0">&#xe89e;</Button>
                     <SplitButton ToolTip.Tip="Handwriting Recognition" Command="{Binding CommandHandwritingRecognition}" Content="&#xe5fa;">
                         <SplitButton.Flyout>
@@ -78,7 +78,7 @@
                             </Flyout>
                         </SplitButton.Flyout>
                     </SplitButton>
-                
+
                     <Button ToolTip.Tip="Set Sync Directory" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="True" Margin="0, 16, 0, 0">&#xe2cc;</Button>
                     <Button ToolTip.Tip="Reset Sync Directory" Command="{Binding CommandSyncTargetDirectory}" CommandParameter="False">&#xeb83;</Button>
 
@@ -141,8 +141,8 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal">
-                    <Label Content="&#xe1e0;" Classes="Icon" IsVisible="{Binding ConnectionStatus, Converter={x:Static ObjectConverters.IsNull}}"/>
-                    <Label Content="&#xe4fa;" Classes="Icon" IsVisible="{Binding ConnectionStatus, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                    <Label Content="&#xe1e0;" Classes="Icon" IsVisible="{Binding ConnectionStatus.Error, Converter={x:Static ObjectConverters.IsNull}}"/>
+                    <Label Content="&#xe4fa;" Classes="Icon" IsVisible="{Binding ConnectionStatus.Error, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                     <Label Content="{Binding ConnectionStatusText}"/>
                 </StackPanel>
             </DockPanel>

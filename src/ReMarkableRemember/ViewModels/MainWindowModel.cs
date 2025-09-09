@@ -29,7 +29,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     private readonly IHandWritingRecognitionService handWritingRecognitionService;
     private readonly ITabletService tabletService;
 
-    private TabletError? connectionStatus;
+    private TabletConnectionStatus connectionStatus;
     private HandWritingRecognitionLanguageViewModel handWritingRecognitionLanguage;
     private Boolean hasBackupDirectory;
     private Boolean hasItems;
@@ -48,7 +48,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         this.OpenSaveFilePicker = new Interaction<FilePickerSaveOptions, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
 
-        this.connectionStatus = TabletError.SshNotConnected;
+        this.connectionStatus = TabletConnectionStatus.Default;
         this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.CompareOrdinal(language.Code, this.handWritingRecognitionService.Configuration.Language) == 0);
         this.hasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
         this.hasItems = false;
@@ -81,7 +81,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         await this.ShowDialog.Handle(new AboutViewModel());
     }
 
-    private static Boolean CheckConnectionStatusForJob(TabletError? status, Job.Description job)
+    private static Boolean CheckConnectionStatusForJob(TabletConnectionStatus status, Job.Description job)
     {
         switch (job)
         {
@@ -97,12 +97,12 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
             case Job.Description.ManageTemplates:
             case Job.Description.InstallLamyEraser:
             case Job.Description.InstallWebInterfaceOnBoot:
-                return status is null or (not TabletError.NotSupported and not TabletError.Unknown and not TabletError.SshNotConfigured and not TabletError.SshNotConnected);
+                return status.Error is null or (not TabletError.NotSupported and not TabletError.Unknown and not TabletError.SshNotConfigured and not TabletError.SshNotConnected);
 
             case Job.Description.Sync:
             case Job.Description.Download:
             case Job.Description.Upload:
-                return status is null;
+                return status.Error is null;
 
             default:
                 throw new NotImplementedException();
@@ -152,7 +152,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private async Task Execute(ItemViewModel item, Job.Description job)
     {
-        TabletError? status = this.ConnectionStatus;
+        TabletConnectionStatus status = this.ConnectionStatus;
 
         if (item.Collection != null)
         {
@@ -486,7 +486,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     public ICommand CommandUploadTemplate { get; }
 
-    public TabletError? ConnectionStatus
+    public TabletConnectionStatus ConnectionStatus
     {
         get { return this.connectionStatus; }
         private set { this.RaiseAndSetIfChanged(ref this.connectionStatus, value); }
@@ -496,17 +496,17 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         get
         {
-            switch (this.ConnectionStatus)
+            return this.ConnectionStatus.Error switch
             {
-                case null: return "Connected";
-                case TabletError.NotSupported: return "Connected reMarkable not supported";
-                case TabletError.Unknown: return "Not connected";
-                case TabletError.SshNotConfigured: return "SSH protocol information are not configured or wrong";
-                case TabletError.SshNotConnected: return "Not connected via WiFi or USB";
-                case TabletError.UsbNotActived: return "USB web interface is not activated";
-                case TabletError.UsbNotConnected: return "Not connected via USB";
-                default: return "Not connected";
-            }
+                null => "Connected",
+                TabletError.NotSupported => "Connected reMarkable not supported",
+                TabletError.Unknown => "Not connected",
+                TabletError.SshNotConfigured => "SSH protocol information are not configured or wrong",
+                TabletError.SshNotConnected => "Not connected via WiFi or USB",
+                TabletError.UsbNotActived => "USB web interface is not activated",
+                TabletError.UsbNotConnected => "Not connected via USB",
+                _ => "Not connected",
+            };
         }
     }
 

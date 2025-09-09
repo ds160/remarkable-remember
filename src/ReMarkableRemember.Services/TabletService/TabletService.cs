@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ReMarkableRemember.Common.FileSystem;
@@ -24,21 +25,22 @@ using Renci.SshNet.Sftp;
 
 namespace ReMarkableRemember.Services.TabletService;
 
-public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletService
+public sealed partial class TabletService : ServiceBase<TabletConfiguration>, ITabletService
 {
     private const String IP = "10.11.99.1";
     private const String PATH_NOTEBOOKS = "/home/root/.local/share/remarkable/xochitl/";
+    private const String PATH_OS_RELEASE = "/usr/lib/os-release";
     private const String PATH_TEMPLATES = "/usr/share/remarkable/templates/";
     private const String PATH_TEMPLATES_FILE = "templates.json";
-    private const String PATH_UPDATE_CONFIG_FILE = "/usr/share/remarkable/update.conf";
     private const String PATH_VERSION_INFORMATION_FILE = "/proc/version";
-    private const String SOFTWARE_VERSION_INFORMATION = "REMARKABLE_RELEASE_VERSION=";
+    private const String SOFTWARE_VERSION_REGEX = "IMG_VERSION=\"(\\d+\\.\\d+\\.\\d+.\\d+)\"";
     private const Int32 SSH_TIMEOUT = 2;
     private const String SSH_USER = "root";
     private const Int32 USB_TIMEOUT = 1;
-    private const String VERSION_INFORMATION_RM1 = "-rm10x ";
-    private const String VERSION_INFORMATION_RM2 = "-rm11x ";
-    private const String VERSION_INFORMATION_RMPP = "aarch64-remarkable-linux-gcc ";
+    private const String VERSION_INFORMATION_RM1 = "-rm10x";
+    private const String VERSION_INFORMATION_RM2 = "-rm11x";
+    private const String VERSION_INFORMATION_RMPP = "imx8mm-ferrari";
+    private const String VERSION_INFORMATION_RMPP_MOVE = "imx93-chiappa";
 
     private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true };
 
@@ -148,17 +150,22 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
         }
     }
 
-    public async Task<TabletError?> GetConnectionStatus()
+    public async Task<TabletConnectionStatus> GetConnectionStatus()
     {
         await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
 
+        TabletType? type = null;
+
         try
         {
-            using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
+            (SftpClient SftpClient, TabletType Type) tablet = await this.CreateSftpClientWithType().ConfigureAwait(false);
+            using SftpClient client = tablet.SftpClient;
+
+            type = tablet.Type;
         }
         catch (TabletException exception)
         {
-            return exception.Error;
+            return new TabletConnectionStatus(type, exception.Error);
         }
         finally
         {
@@ -173,14 +180,14 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
         }
         catch (TabletException exception)
         {
-            return exception.Error;
+            return new TabletConnectionStatus(type, exception.Error);
         }
         finally
         {
             this.usbSemaphore.Release();
         }
 
-        return null;
+        return new TabletConnectionStatus(type, null);
     }
 
     public async Task<IEnumerable<TabletItem>> GetItems()
@@ -221,7 +228,8 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
 
         try
         {
-            using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
+            (SftpClient SftpClient, TabletType Type) tablet = await this.CreateSftpClientWithType().ConfigureAwait(false);
+            using SftpClient client = tablet.SftpClient;
 
             String contentFileText = await Task.Run(() => client.ReadAllText($"{PATH_NOTEBOOKS}{id}.content")).ConfigureAwait(false);
             ContentFile contentFile = JsonSerializer.Deserialize<ContentFile>(contentFileText, jsonSerializerOptions);
@@ -237,8 +245,16 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
                 pageBuffers.Add(pageBuffer);
             }
 
-            TabletType tabletType = await GetType(client).ConfigureAwait(false);
-            return new Notebook(pageBuffers, tabletType == TabletType.rMPaperPro ? 229 : 226);
+            Int32 resolution = tablet.Type switch
+            {
+                TabletType.rM1 => 226,
+                TabletType.rM2 => 226,
+                TabletType.rMPaperPro => 229,
+                TabletType.rMPaperProMove => 264,
+                _ => throw new NotImplementedException(),
+            };
+
+            return new Notebook(pageBuffers, resolution);
         }
         finally
         {
@@ -252,8 +268,11 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
 
         try
         {
-            using SftpClient sftpClient = await this.CreateSftpClient().ConfigureAwait(false);
+            (SftpClient SftpClient, TabletType Type) tablet = await this.CreateSftpClientWithType().ConfigureAwait(false);
+            using SftpClient sftpClient = tablet.SftpClient;
             using SshClient sshClient = await this.CreateSshClient().ConfigureAwait(false);
+
+            if (tablet.Type is TabletType.rMPaperPro or TabletType.rMPaperProMove) { throw new TabletException(TabletError.NotSupported, "Lamy Eraser is not supported on reMarkable Paper Pro and Paper Pro Move."); }
 
             await ExecuteSshCommand(sshClient, "systemctl disable --now LamyEraser.service", false).ConfigureAwait(false);
 
@@ -405,10 +424,16 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
 
     private async Task<SftpClient> CreateSftpClient()
     {
+        (SftpClient SftpClient, TabletType Type) tablet = await this.CreateSftpClientWithType().ConfigureAwait(false);
+        return tablet.SftpClient;
+    }
+
+    private async Task<(SftpClient, TabletType)> CreateSftpClientWithType()
+    {
         SftpClient client = new SftpClient(this.CreateSshConnectionInfo());
         await ConnectClient(client).ConfigureAwait(false);
-        await GetType(client).ConfigureAwait(false);
-        return client;
+        TabletType type = await GetType(client).ConfigureAwait(false);
+        return (client, type);
     }
 
     private async Task<SshClient> CreateSshClient()
@@ -534,9 +559,16 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
 
     private static async Task<Version> GetSoftwareVersion(SftpClient client)
     {
-        String[] updateInformation = await Task.Run(() => client.ReadAllLines(PATH_UPDATE_CONFIG_FILE)).ConfigureAwait(false);
-        String softwareVersionInformation = updateInformation.Single(line => line.StartsWith(SOFTWARE_VERSION_INFORMATION, StringComparison.Ordinal));
-        return new Version(softwareVersionInformation[SOFTWARE_VERSION_INFORMATION.Length..]);
+        String osReleaseInformation = await Task.Run(() => client.ReadAllText(PATH_OS_RELEASE)).ConfigureAwait(false);
+        Match match = SoftwareVersionRegex().Match(osReleaseInformation);
+        if (match.Success)
+        {
+            return new Version(match.Groups[1].Value);
+        }
+        else
+        {
+            throw new TabletException(TabletError.NotSupported, "The reMarkable software verion cannot be identified.");
+        }
     }
 
     private static async Task<TabletType> GetType(SftpClient client)
@@ -546,6 +578,7 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
         if (versionInformation.Contains(VERSION_INFORMATION_RM1)) { return TabletType.rM1; }
         if (versionInformation.Contains(VERSION_INFORMATION_RM2)) { return TabletType.rM2; }
         if (versionInformation.Contains(VERSION_INFORMATION_RMPP)) { return TabletType.rMPaperPro; }
+        if (versionInformation.Contains(VERSION_INFORMATION_RMPP_MOVE)) { return TabletType.rMPaperProMove; }
 
         throw new TabletException(TabletError.NotSupported, "The connected reMarkable is not supported.");
     }
@@ -562,6 +595,9 @@ public sealed class TabletService : ServiceBase<TabletConfiguration>, ITabletSer
             StringComparison.Ordinal
         );
     }
+
+    [GeneratedRegex(SOFTWARE_VERSION_REGEX)]
+    private static partial Regex SoftwareVersionRegex();
 
     private static void UpdateItems(TabletItem parentItem, IEnumerable<TabletItem> allItems)
     {

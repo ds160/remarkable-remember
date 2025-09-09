@@ -17,7 +17,7 @@ public interface ITabletService : IDisposable
 
     Task Download(String id, String targetPath);
 
-    Task<TabletError?> GetConnectionStatus();
+    Task<TabletConnectionStatus> GetConnectionStatus();
 
     Task<IEnumerable<TabletItem>> GetItems();
 

@@ -1,6 +1,7 @@
 [![rm1](https://img.shields.io/badge/rM1-supported-green)](https://remarkable.com/store/remarkable)
 [![rm2](https://img.shields.io/badge/rM2-supported-green)](https://remarkable.com/store/remarkable-2)
 [![rmpp](https://img.shields.io/badge/rMPP-supported-green)](https://remarkable.com/store/remarkable-paper/pro)
+[![rmppm](https://img.shields.io/badge/rMPPM-supported-green)](https://remarkable.com/products/remarkable-paper/pro-move)
 
 # reMarkable Remember
 
@@ -54,7 +55,7 @@ Clone the repository, install .NET Core SDK 8, and build the project with `dotne
 - I got inspired by [rmscene](https://github.com/ricklupton/rmscene) to parse the reMarkable Lines File (version 6) and do handwriting recognition via MyScript.
 - I'm using the [Lamy Eraser](https://github.com/isaacwisdom/RemarkableLamyEraser/tree/v1) sources that turns the button on the Lamy Pen into an eraser on the reMarkable tablet.
 - I'm using the [WebInterface-OnBoot](https://github.com/rM-self-serve/webinterface-onboot) sources that eliminates the need to switch on the `USB web interface` setting after connecting the USB cable.
-- I'm using [PupNet Deploy](https://github.com/kuiperzone/PupNet-Deploy) for the deployment. 
+- I'm using [PupNet Deploy](https://github.com/kuiperzone/PupNet-Deploy) for the deployment.
 
 Thanks to the developers for their beautiful work.
 
