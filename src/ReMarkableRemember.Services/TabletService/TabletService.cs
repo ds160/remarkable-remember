@@ -272,7 +272,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
             using SftpClient sftpClient = tablet.SftpClient;
             using SshClient sshClient = await this.CreateSshClient().ConfigureAwait(false);
 
-            if (tablet.Type is TabletType.rMPaperPro or TabletType.rMPaperProMove) { throw new TabletException(TabletError.NotSupported, "Lamy Eraser is not supported on reMarkable Paper Pro and Paper Pro Move."); }
+            if (tablet.Type is not TabletType.rM1 or TabletType.rM2) { throw new TabletException(TabletError.NotSupported, "Lamy Eraser is not supported on reMarkable Paper Pro and Paper Pro Move."); }
 
             await ExecuteSshCommand(sshClient, "systemctl disable --now LamyEraser.service", false).ConfigureAwait(false);
 
@@ -303,7 +303,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
             using SshClient sshClient = await this.CreateSshClient().ConfigureAwait(false);
 
             Version softwareVersion = await GetSoftwareVersion(sftpClient).ConfigureAwait(false);
-            if (softwareVersion.Major >= 3 && softwareVersion.Minor >= 16) { throw new TabletException(TabletError.NotSupported, "WebInterface-OnBoot is currently not supported by reMarkable software version 3.16 or higher."); }
+            if (softwareVersion.Major > 3 || (softwareVersion.Major == 3 && softwareVersion.Minor > 15)) { throw new TabletException(TabletError.NotSupported, "WebInterface-OnBoot is currently not supported by reMarkable software version 3.16 or higher."); }
 
             await ExecuteSshCommand(sshClient, "systemctl disable --now webinterface-onboot.service", false).ConfigureAwait(false);
 

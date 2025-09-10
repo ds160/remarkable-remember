@@ -10,9 +10,14 @@ namespace ReMarkableRemember.Services.DataService.Database;
 
 internal sealed class DatabaseContextFactory : IDesignTimeDbContextFactory<DatabaseContext>
 {
+    private const String DEFAULT_DATABASE_FILE_NAME = "database.db";
+
     public static String BuildConnectionString(String? arg)
     {
-        String dataSource = File.Exists(arg) ? arg : FileSystem.CreateApplicationDataFilePath("database.db");
+        String? dataSource = Directory.Exists(arg)
+            ? Path.Combine(arg, DEFAULT_DATABASE_FILE_NAME)
+            : FileSystem.EnsureExists(arg) ?? FileSystem.CreateApplicationDataFilePath(DEFAULT_DATABASE_FILE_NAME);
+
         return new SqliteConnectionStringBuilder() { DataSource = dataSource }.ToString();
     }
 

@@ -42,4 +42,18 @@ public static class FileSystem
             }
         }
     }
+
+    public static String? EnsureExists(String? path)
+    {
+        if (String.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+        else
+        {
+            CreateDirectory(path);
+            return path;
+        }
+
+    }
 }
