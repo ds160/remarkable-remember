@@ -17,9 +17,9 @@ The application is a cross-platform management tool for your reMarkable tablet. 
 - Handwriting recognition via MyScript
 - Install [Lamy Eraser](https://github.com/isaacwisdom/RemarkableLamyEraser/tree/v1)[^1] and [WebInterface-OnBoot](https://github.com/rM-self-serve/webinterface-onboot)[^2] via WiFi or USB
 
-[^1]: Support for reMarkable 1 and reMarkable 2
+[^1]: Lamy Eraser works for reMarkable 1 and reMarkable 2
 
-[^2]: Works until software version 3.15
+[^2]: WebInterface-OnBoot works until software version 3.15
 
 ## Installation
 

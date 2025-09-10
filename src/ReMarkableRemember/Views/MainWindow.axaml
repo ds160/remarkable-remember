@@ -141,9 +141,9 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal">
-                    <Label Content="&#xe1e0;" Classes="Icon" IsVisible="{Binding ConnectionStatus.Error, Converter={x:Static ObjectConverters.IsNull}}"/>
-                    <Label Content="&#xe4fa;" Classes="Icon" IsVisible="{Binding ConnectionStatus.Error, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                    <Label Content="{Binding ConnectionStatusText}"/>
+                    <Label Content="&#xe1e0;" Classes="Icon" IsVisible="{Binding ConnectionStatus.IsConnected}"/>
+                    <Label Content="&#xe4fa;" Classes="Icon" IsVisible="{Binding !ConnectionStatus.IsConnected}"/>
+                    <Label Content="{Binding ConnectionStatus.Text}"/>
                 </StackPanel>
             </DockPanel>
         </Grid>

@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
+using ReMarkableRemember.Enumerations;
 using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.DataService.Models;
@@ -29,11 +30,11 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     private readonly IHandWritingRecognitionService handWritingRecognitionService;
     private readonly ITabletService tabletService;
 
-    private TabletConnectionStatus connectionStatus;
+    private ConnectionStatusViewModel connectionStatus;
     private HandWritingRecognitionLanguageViewModel handWritingRecognitionLanguage;
     private Boolean hasBackupDirectory;
     private Boolean hasItems;
-    private Job.Description jobs;
+    private Jobs jobs;
 
     public MainWindowModel(IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ITabletService tabletService)
     {
@@ -48,28 +49,27 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         this.OpenSaveFilePicker = new Interaction<FilePickerSaveOptions, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
 
-        this.connectionStatus = TabletConnectionStatus.Default;
+        this.connectionStatus = new ConnectionStatusViewModel();
         this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.CompareOrdinal(language.Code, this.handWritingRecognitionService.Configuration.Language) == 0);
         this.hasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
         this.hasItems = false;
-        this.jobs = Job.Description.None;
+        this.jobs = Jobs.None;
 
         this.CommandAbout = ReactiveCommand.CreateFromTask(this.About);
-        this.CommandBackup = ReactiveCommand.CreateFromTask(() => this.Execute(Job.Description.Backup), this.Execute_CanExecute(Job.Description.Backup));
+        this.CommandBackup = ReactiveCommand.CreateFromTask(() => this.Execute(Jobs.Backup), this.Execute_CanExecute(Jobs.Backup));
         this.CommandDownloadFile = ReactiveCommand.CreateFromTask(this.DownloadFile, this.DownloadFile_CanExecute());
-        this.CommandExecute = ReactiveCommand.CreateFromTask(() => this.Execute(Job.Description.Backup | Job.Description.Sync), this.Execute_CanExecute(Job.Description.Backup | Job.Description.Sync));
+        this.CommandExecute = ReactiveCommand.CreateFromTask(() => this.Execute(Jobs.Backup | Jobs.Sync), this.Execute_CanExecute(Jobs.Backup | Jobs.Sync));
         this.CommandHandwritingRecognition = ReactiveCommand.CreateFromTask(this.HandwritingRecognition, this.HandwritingRecognition_CanExecute());
         this.CommandInstallLamyEraser = ReactiveCommand.CreateFromTask(this.InstallLamyEraser, this.InstallLamyEraser_CanExecute());
         this.CommandInstallWebInterfaceOnBoot = ReactiveCommand.CreateFromTask(this.InstallWebInterfaceOnBoot, this.InstallWebInterfaceOnBoot_CanExecute());
         this.CommandManageTemplates = ReactiveCommand.CreateFromTask(this.ManageTemplates, this.ManageTemplates_CanExecute());
         this.CommandOpenItem = ReactiveCommand.Create(this.OpenItem, this.OpenItem_CanExecute());
         this.CommandSettings = ReactiveCommand.CreateFromTask(this.Settings, this.Settings_CanExecute());
-        this.CommandSync = ReactiveCommand.CreateFromTask(() => this.Execute(Job.Description.Sync), this.Execute_CanExecute(Job.Description.Sync));
+        this.CommandSync = ReactiveCommand.CreateFromTask(() => this.Execute(Jobs.Sync), this.Execute_CanExecute(Jobs.Sync));
         this.CommandSyncTargetDirectory = ReactiveCommand.CreateFromTask<String>(this.SyncTargetDirectory, this.SyncTargetDirectory_CanExecute());
         this.CommandUploadFile = ReactiveCommand.CreateFromTask(this.UploadFile, this.UploadFile_CanExecute());
         this.CommandUploadTemplate = ReactiveCommand.CreateFromTask(this.UploadTemplate, this.UploadTemplate_CanExecute());
 
-        this.WhenAnyValue(vm => vm.ConnectionStatus).Subscribe(status => this.RaisePropertyChanged(nameof(this.ConnectionStatusText)));
         this.WhenAnyValue(vm => vm.Jobs).Subscribe(jobs => this.RaisePropertyChanged(nameof(this.JobsText)));
         this.WhenAnyValue(vm => vm.HandWritingRecognitionLanguage).Subscribe(this.SaveHandWritingRecognitionLanguage);
 
@@ -81,40 +81,12 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         await this.ShowDialog.Handle(new AboutViewModel());
     }
 
-    private static Boolean CheckConnectionStatusForJob(TabletConnectionStatus status, Job.Description job)
-    {
-        switch (job)
-        {
-            case Job.Description.None:
-            case Job.Description.SetSyncTargetDirectory:
-            case Job.Description.Settings:
-                return true;
-
-            case Job.Description.GetItems:
-            case Job.Description.Backup:
-            case Job.Description.HandwritingRecognition:
-            case Job.Description.UploadTemplate:
-            case Job.Description.ManageTemplates:
-            case Job.Description.InstallLamyEraser:
-            case Job.Description.InstallWebInterfaceOnBoot:
-                return status.Error is null or (not TabletError.NotSupported and not TabletError.Unknown and not TabletError.SshNotConfigured and not TabletError.SshNotConnected);
-
-            case Job.Description.Sync:
-            case Job.Description.Download:
-            case Job.Description.Upload:
-                return status.Error is null;
-
-            default:
-                throw new NotImplementedException();
-        }
-    }
-
     private async Task DownloadFile()
     {
         ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
         if (selectedItem != null && selectedItem.Collection == null)
         {
-            using Job job = new Job(Job.Description.Download, this);
+            using Job job = new Job(Jobs.Download, this);
 
             FilePickerSaveOptions options = new FilePickerSaveOptions()
             {
@@ -132,14 +104,14 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private IObservable<Boolean> DownloadFile_CanExecute()
     {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.Download));
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status.CheckJob(Jobs.Download));
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None);
         IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
 
         return Observable.CombineLatest(connectionStatus, jobs, treeSelection, (value1, value2, value3) => value1 && value2 && value3);
     }
 
-    private async Task Execute(Job.Description jobDescription)
+    private async Task Execute(Jobs jobDescription)
     {
         using Job job = new Job(jobDescription, this);
 
@@ -150,9 +122,9 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         }
     }
 
-    private async Task Execute(ItemViewModel item, Job.Description job)
+    private async Task Execute(ItemViewModel item, Jobs job)
     {
-        TabletConnectionStatus status = this.ConnectionStatus;
+        ConnectionStatusViewModel status = this.ConnectionStatus;
 
         if (item.Collection != null)
         {
@@ -162,16 +134,16 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
             }
         }
 
-        if (job.HasFlag(Job.Description.Backup) && CheckConnectionStatusForJob(status, Job.Description.Backup)) { await item.Backup().ConfigureAwait(true); }
-        if (job.HasFlag(Job.Description.Sync) && CheckConnectionStatusForJob(status, Job.Description.Sync)) { await item.Sync().ConfigureAwait(true); }
+        if (job.HasFlag(Jobs.Backup) && status.CheckJob(Jobs.Backup)) { await item.Backup().ConfigureAwait(true); }
+        if (job.HasFlag(Jobs.Sync) && status.CheckJob(Jobs.Sync)) { await item.Sync().ConfigureAwait(true); }
     }
 
-    private IObservable<Boolean> Execute_CanExecute(Job.Description jobDescription)
+    private IObservable<Boolean> Execute_CanExecute(Jobs job)
     {
-        IObservable<Boolean> backupDirectory = this.WhenAnyValue(vm => vm.HasBackupDirectory).Select(hasBackupDirectory => jobDescription != Job.Description.Backup || hasBackupDirectory);
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, (jobDescription == Job.Description.Sync) ? Job.Description.Sync : Job.Description.Backup));
+        IObservable<Boolean> backupDirectory = this.WhenAnyValue(vm => vm.HasBackupDirectory).Select(hasBackupDirectory => job != Jobs.Backup || hasBackupDirectory);
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status.CheckJob((job == Jobs.Sync) ? Jobs.Sync : Jobs.Backup));
         IObservable<Boolean> items = this.WhenAnyValue(vm => vm.HasItems);
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandwritingRecognition);
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None or Jobs.HandwritingRecognition);
 
         return Observable.CombineLatest(backupDirectory, connectionStatus, items, jobs, (value1, value2, value3, value4) => value1 && value2 && value3 && value4);
     }
@@ -181,7 +153,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
         if (selectedItem != null && selectedItem.Collection == null)
         {
-            using Job job = new Job(Job.Description.HandwritingRecognition, this);
+            using Job job = new Job(Jobs.HandwritingRecognition, this);
 
             String text = await selectedItem.HandWritingRecognition().ConfigureAwait(true);
 
@@ -193,7 +165,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private IObservable<Boolean> HandwritingRecognition_CanExecute()
     {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.HandwritingRecognition));
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status.CheckJob(Jobs.HandwritingRecognition));
         IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
 
         return Observable.CombineLatest(connectionStatus, treeSelection, (value1, value2) => value1 && value2);
@@ -201,22 +173,22 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private async Task InstallLamyEraser()
     {
-        using Job job = new Job(Job.Description.InstallLamyEraser, this);
+        using Job job = new Job(Jobs.InstallLamyEraser, this);
 
         await this.ShowDialog.Handle(new LamyEraserViewModel(this.tabletService));
     }
 
     private IObservable<Boolean> InstallLamyEraser_CanExecute()
     {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.InstallLamyEraser));
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status.CheckJob(Jobs.InstallLamyEraser));
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None);
 
         return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
     }
 
     private async Task InstallWebInterfaceOnBoot()
     {
-        using Job job = new Job(Job.Description.InstallWebInterfaceOnBoot, this);
+        using Job job = new Job(Jobs.InstallWebInterfaceOnBoot, this);
 
         await this.tabletService.InstallWebInterfaceOnBoot().ConfigureAwait(true);
 
@@ -225,15 +197,15 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private IObservable<Boolean> InstallWebInterfaceOnBoot_CanExecute()
     {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.InstallWebInterfaceOnBoot));
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status.CheckJob(Jobs.InstallWebInterfaceOnBoot));
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None);
 
         return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
     }
 
     private async Task ManageTemplates()
     {
-        using Job job = new Job(Job.Description.ManageTemplates, this);
+        using Job job = new Job(Jobs.ManageTemplates, this);
 
         IEnumerable<TemplateData> dataTemplates = await this.dataService.GetTemplates().ConfigureAwait(true);
         IEnumerable<TabletTemplate> tabletTemplates = dataTemplates.Select(template => new TabletTemplate(template.Name, template.Category, template.IconCode, template.BytesPng, template.BytesSvg)).ToArray();
@@ -256,8 +228,8 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private IObservable<Boolean> ManageTemplates_CanExecute()
     {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.ManageTemplates));
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status.CheckJob(Jobs.ManageTemplates));
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None);
 
         return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
     }
@@ -281,7 +253,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         job.Done();
 
         String reason = String.Empty;
-        if (job.HasFlag(Job.Description.ManageTemplates) || job.HasFlag(Job.Description.UploadTemplate))
+        if (job.IsJob(Jobs.ManageTemplates) || job.IsJob(Jobs.UploadTemplate))
         {
             reason = "The template information has been changed. ";
         }
@@ -307,7 +279,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private async Task Settings()
     {
-        using Job job = new Job(Job.Description.Settings, this);
+        using Job job = new Job(Jobs.Settings, this);
 
         await this.ShowDialog.Handle(new SettingsViewModel(this.handWritingRecognitionService, this.tabletService));
 
@@ -317,7 +289,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private IObservable<Boolean> Settings_CanExecute()
     {
-        return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandwritingRecognition);
+        return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None or Jobs.HandwritingRecognition);
     }
 
     private async Task SyncTargetDirectory(String setString)
@@ -325,7 +297,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
         if (selectedItem != null)
         {
-            using Job job = new Job(Job.Description.SetSyncTargetDirectory, this);
+            using Job job = new Job(Jobs.SetSyncTargetDirectory, this);
 
             if (Boolean.TryParse(setString, out Boolean set) && set)
             {
@@ -344,7 +316,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private IObservable<Boolean> SyncTargetDirectory_CanExecute()
     {
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None or Job.Description.HandwritingRecognition);
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None or Jobs.HandwritingRecognition);
         IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null);
 
         return Observable.CombineLatest(jobs, treeSelection, (value1, value2) => value1 && value2);
@@ -354,7 +326,8 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         while (true)
         {
-            this.ConnectionStatus = await this.tabletService.GetConnectionStatus().ConfigureAwait(true);
+            TabletConnectionStatus tabletConnectionStatus = await this.tabletService.GetConnectionStatus().ConfigureAwait(true);
+            this.ConnectionStatus = new ConnectionStatusViewModel(tabletConnectionStatus);
 
             Boolean updated = await this.UpdateItems().ConfigureAwait(true);
 
@@ -366,11 +339,11 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         try
         {
-            if (CheckConnectionStatusForJob(this.ConnectionStatus, Job.Description.GetItems))
+            if (this.ConnectionStatus.CheckJob(Jobs.GetItems))
             {
-                if (this.Jobs is Job.Description.None or Job.Description.HandwritingRecognition)
+                if (this.Jobs is Jobs.None or Jobs.HandwritingRecognition)
                 {
-                    using Job? job = this.HasItems ? null : new Job(Job.Description.GetItems, this);
+                    using Job? job = this.HasItems ? null : new Job(Jobs.GetItems, this);
 
                     IEnumerable<TabletItem> tabletItemsAll = await this.tabletService.GetItems().ConfigureAwait(true);
                     IEnumerable<TabletItem> tabletItems = tabletItemsAll.Where(item => !item.Trashed).ToArray();
@@ -405,7 +378,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private async Task UploadFile()
     {
-        using Job job = new Job(Job.Description.Upload, this);
+        using Job job = new Job(Jobs.Upload, this);
 
         FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = true, FileTypeFilter = new[] { FilePickerFileTypes.Pdf, FilePickerFileTypesExtensions.Epub } };
         IEnumerable<String>? files = await this.OpenFilePicker.Handle(options);
@@ -434,15 +407,15 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private IObservable<Boolean> UploadFile_CanExecute()
     {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.Upload));
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status.CheckJob(Jobs.Upload));
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None);
 
         return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
     }
 
     private async Task UploadTemplate()
     {
-        using Job job = new Job(Job.Description.UploadTemplate, this);
+        using Job job = new Job(Jobs.UploadTemplate, this);
 
         if (await this.ShowDialog.Handle(new TemplateUploadViewModel(this.dataService, this.tabletService)))
         {
@@ -452,8 +425,8 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private IObservable<Boolean> UploadTemplate_CanExecute()
     {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => CheckConnectionStatusForJob(status, Job.Description.UploadTemplate));
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Job.Description.None);
+        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status.CheckJob(Jobs.UploadTemplate));
+        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None);
 
         return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
     }
@@ -486,28 +459,10 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     public ICommand CommandUploadTemplate { get; }
 
-    public TabletConnectionStatus ConnectionStatus
+    public ConnectionStatusViewModel ConnectionStatus
     {
         get { return this.connectionStatus; }
         private set { this.RaiseAndSetIfChanged(ref this.connectionStatus, value); }
-    }
-
-    public String ConnectionStatusText
-    {
-        get
-        {
-            return this.ConnectionStatus.Error switch
-            {
-                null => "Connected",
-                TabletError.NotSupported => "Connected reMarkable not supported",
-                TabletError.Unknown => "Not connected",
-                TabletError.SshNotConfigured => "SSH protocol information are not configured or wrong",
-                TabletError.SshNotConnected => "Not connected via WiFi or USB",
-                TabletError.UsbNotActived => "USB web interface is not activated",
-                TabletError.UsbNotConnected => "Not connected via USB",
-                _ => "Not connected",
-            };
-        }
     }
 
     public ItemsTreeViewModel ItemsTree { get; }
@@ -524,7 +479,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         private set { this.RaiseAndSetIfChanged(ref this.hasItems, value); }
     }
 
-    private Job.Description Jobs
+    private Jobs Jobs
     {
         get { return this.jobs; }
         set { this.RaiseAndSetIfChanged(ref this.jobs, value); }
@@ -532,23 +487,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     public String? JobsText
     {
-        get
-        {
-            List<String> jobs = new List<String>();
-
-            if (this.Jobs.HasFlag(Job.Description.GetItems)) { jobs.Add("Getting Items"); }
-            if (this.Jobs.HasFlag(Job.Description.Sync)) { jobs.Add("Syncing"); }
-            if (this.Jobs.HasFlag(Job.Description.Backup)) { jobs.Add("Backup"); }
-            if (this.Jobs.HasFlag(Job.Description.HandwritingRecognition)) { jobs.Add("Handwriting Recognition"); }
-            if (this.Jobs.HasFlag(Job.Description.Download)) { jobs.Add("Downloading File"); }
-            if (this.Jobs.HasFlag(Job.Description.Upload)) { jobs.Add("Uploading File"); }
-            if (this.Jobs.HasFlag(Job.Description.UploadTemplate)) { jobs.Add("Uploading Template"); }
-            if (this.Jobs.HasFlag(Job.Description.ManageTemplates)) { jobs.Add("Managing Templates"); }
-            if (this.Jobs.HasFlag(Job.Description.InstallLamyEraser)) { jobs.Add("Installing Lamy Eraser"); }
-            if (this.Jobs.HasFlag(Job.Description.InstallWebInterfaceOnBoot)) { jobs.Add("Installing WebInterface-OnBoot"); }
-
-            return (jobs.Count > 0) ? String.Join(" and ", jobs) : null;
-        }
+        get { return this.Jobs.GetDisplayText(); }
     }
 
     public HandWritingRecognitionLanguageViewModel HandWritingRecognitionLanguage
@@ -574,35 +513,17 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private sealed class Job : IDisposable
     {
-        [Flags]
-        public enum Description
-        {
-            None = 0x0000,
-            GetItems = 0x0001,
-            Sync = 0x0002,
-            Backup = 0x0004,
-            HandwritingRecognition = 0x0008,
-            Download = 0x0010,
-            Upload = 0x0020,
-            UploadTemplate = 0x0040,
-            ManageTemplates = 0x0080,
-            SetSyncTargetDirectory = 0x0100,
-            InstallLamyEraser = 0x0200,
-            InstallWebInterfaceOnBoot = 0x0400,
-            Settings = 0x0800
-        }
-
-        private readonly Description description;
         private Boolean done;
+        private readonly Jobs job;
         private readonly MainWindowModel owner;
 
-        public Job(Description description, MainWindowModel owner)
+        public Job(Jobs job, MainWindowModel owner)
         {
-            this.description = description;
             this.done = false;
+            this.job = job;
             this.owner = owner;
 
-            this.owner.Jobs |= this.description;
+            this.owner.Jobs |= this.job;
         }
 
         void IDisposable.Dispose()
@@ -610,7 +531,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
             if (!this.done)
             {
                 this.done = true;
-                this.owner.Jobs ^= this.description;
+                this.owner.Jobs ^= this.job;
             }
         }
 
@@ -620,9 +541,9 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
             disposable.Dispose();
         }
 
-        public Boolean HasFlag(Description flag)
+        public Boolean IsJob(Jobs job)
         {
-            return this.description.HasFlag(flag);
+            return this.job.HasFlag(job);
         }
     }
 }
