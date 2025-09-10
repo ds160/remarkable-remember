@@ -154,18 +154,18 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
     {
         await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
 
-        TabletType? type = null;
+        TabletInformation? information = null;
 
         try
         {
-            (SftpClient SftpClient, TabletType Type) tablet = await this.CreateSftpClientWithType().ConfigureAwait(false);
+            (SftpClient SftpClient, TabletInformation Information) tablet = await this.CreateSftpClientWithInformation().ConfigureAwait(false);
             using SftpClient client = tablet.SftpClient;
 
-            type = tablet.Type;
+            information = tablet.Information;
         }
         catch (TabletException exception)
         {
-            return new TabletConnectionStatus(type, exception.Error);
+            return new TabletConnectionStatus(information, exception.Error);
         }
         finally
         {
@@ -180,14 +180,14 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
         }
         catch (TabletException exception)
         {
-            return new TabletConnectionStatus(type, exception.Error);
+            return new TabletConnectionStatus(information, exception.Error);
         }
         finally
         {
             this.usbSemaphore.Release();
         }
 
-        return new TabletConnectionStatus(type, null);
+        return new TabletConnectionStatus(information, null);
     }
 
     public async Task<IEnumerable<TabletItem>> GetItems()
@@ -228,7 +228,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
         try
         {
-            (SftpClient SftpClient, TabletType Type) tablet = await this.CreateSftpClientWithType().ConfigureAwait(false);
+            (SftpClient SftpClient, TabletInformation Information) tablet = await this.CreateSftpClientWithInformation().ConfigureAwait(false);
             using SftpClient client = tablet.SftpClient;
 
             String contentFileText = await Task.Run(() => client.ReadAllText($"{PATH_NOTEBOOKS}{id}.content")).ConfigureAwait(false);
@@ -245,16 +245,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
                 pageBuffers.Add(pageBuffer);
             }
 
-            Int32 resolution = tablet.Type switch
-            {
-                TabletType.rM1 => 226,
-                TabletType.rM2 => 226,
-                TabletType.rMPaperPro => 229,
-                TabletType.rMPaperProMove => 264,
-                _ => throw new NotImplementedException(),
-            };
-
-            return new Notebook(pageBuffers, resolution);
+            return new Notebook(pageBuffers, tablet.Information.Resolution);
         }
         finally
         {
@@ -268,11 +259,11 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
         try
         {
-            (SftpClient SftpClient, TabletType Type) tablet = await this.CreateSftpClientWithType().ConfigureAwait(false);
+            (SftpClient SftpClient, TabletInformation Information) tablet = await this.CreateSftpClientWithInformation().ConfigureAwait(false);
             using SftpClient sftpClient = tablet.SftpClient;
             using SshClient sshClient = await this.CreateSshClient().ConfigureAwait(false);
 
-            if (tablet.Type is not TabletType.rM1 or TabletType.rM2) { throw new TabletException(TabletError.NotSupported, "Lamy Eraser is not supported on reMarkable Paper Pro and Paper Pro Move."); }
+            if (!tablet.Information.LamyEraserSupport) { throw new TabletException(TabletError.NotSupported, $"Lamy Eraser is not supported on {tablet.Information.Type.GetDisplayText()}."); }
 
             await ExecuteSshCommand(sshClient, "systemctl disable --now LamyEraser.service", false).ConfigureAwait(false);
 
@@ -299,11 +290,11 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
         try
         {
-            using SftpClient sftpClient = await this.CreateSftpClient().ConfigureAwait(false);
+            (SftpClient SftpClient, TabletInformation Information) tablet = await this.CreateSftpClientWithInformation().ConfigureAwait(false);
+            using SftpClient sftpClient = tablet.SftpClient;
             using SshClient sshClient = await this.CreateSshClient().ConfigureAwait(false);
 
-            Version softwareVersion = await GetSoftwareVersion(sftpClient).ConfigureAwait(false);
-            if (softwareVersion.Major > 3 || (softwareVersion.Major == 3 && softwareVersion.Minor > 15)) { throw new TabletException(TabletError.NotSupported, "WebInterface-OnBoot is currently not supported by reMarkable software version 3.16 or higher."); }
+            if (!tablet.Information.WebInterfaceOnBootSupport) { throw new TabletException(TabletError.NotSupported, $"WebInterface-OnBoot is not compatible with reMarkable software version {tablet.Information.SoftwareVersion}."); }
 
             await ExecuteSshCommand(sshClient, "systemctl disable --now webinterface-onboot.service", false).ConfigureAwait(false);
 
@@ -315,7 +306,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
             await ExecuteSshCommand(sshClient, "chmod +x /home/root/.local/bin/webinterface-onboot").ConfigureAwait(false);
 
-            Boolean applyHack = softwareVersion.Major >= 2 && softwareVersion.Minor >= 15;
+            Boolean applyHack = tablet.Information.WebInterfaceOnBootHack;
             if (applyHack) { await ExecuteSshCommand(sshClient, "/home/root/.local/bin/webinterface-onboot apply-hack -y").ConfigureAwait(false); }
 
             await ExecuteSshCommand(sshClient, "systemctl enable --now webinterface-onboot.service").ConfigureAwait(false);
@@ -424,16 +415,19 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
     private async Task<SftpClient> CreateSftpClient()
     {
-        (SftpClient SftpClient, TabletType Type) tablet = await this.CreateSftpClientWithType().ConfigureAwait(false);
+        (SftpClient SftpClient, TabletInformation Information) tablet = await this.CreateSftpClientWithInformation().ConfigureAwait(false);
         return tablet.SftpClient;
     }
 
-    private async Task<(SftpClient, TabletType)> CreateSftpClientWithType()
+    private async Task<(SftpClient, TabletInformation)> CreateSftpClientWithInformation()
     {
         SftpClient client = new SftpClient(this.CreateSshConnectionInfo());
         await ConnectClient(client).ConfigureAwait(false);
+
         TabletType type = await GetType(client).ConfigureAwait(false);
-        return (client, type);
+        Version softwareVersion = await GetSoftwareVersion(client).ConfigureAwait(false);
+
+        return (client, new TabletInformation(type, softwareVersion));
     }
 
     private async Task<SshClient> CreateSshClient()

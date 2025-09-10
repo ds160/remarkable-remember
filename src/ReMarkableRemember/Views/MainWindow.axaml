@@ -119,9 +119,17 @@
                 </TreeDataGrid.ContextMenu>
             </TreeDataGrid>
 
-            <DockPanel Grid.Row="1" Margin="2, 4, 8, 4">
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
-                    <PathIcon Data="{StaticResource Spinner}" Height="16" Width="16" IsVisible="{Binding JobsText, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <Grid Grid.Row="1" ColumnDefinitions="*, *, *" Margin="2, 4, 8, 4">
+                <Grid Grid.Column="0" ColumnDefinitions="Auto, Auto, *">
+                    <Label Grid.Column="0" Content="&#xe1e0;" Classes="Icon" IsVisible="{Binding ConnectionStatus.IsConnected}"/>
+                    <Label Grid.Column="0" Content="&#xe4fa;" Classes="Icon" IsVisible="{Binding !ConnectionStatus.IsConnected}"/>
+                    <Label Grid.Column="1" Content="{Binding ConnectionStatus.Text}"/>
+                </Grid>
+
+                <Label Grid.Column="1" Content="{Binding ConnectionStatus.Tablet}" HorizontalContentAlignment="Center"/>
+
+                <Grid Grid.Column="2" ColumnDefinitions="*, Auto, 4, Auto">
+                    <PathIcon Grid.Column="1" Data="{StaticResource Spinner}" Height="16" Width="16" IsVisible="{Binding JobsText, Converter={x:Static ObjectConverters.IsNotNull}}">
                         <PathIcon.Styles>
                             <Style Selector="PathIcon">
                                 <Style.Animations>
@@ -137,15 +145,9 @@
                             </Style>
                         </PathIcon.Styles>
                     </PathIcon>
-                    <Label Content="{Binding JobsText}"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="&#xe1e0;" Classes="Icon" IsVisible="{Binding ConnectionStatus.IsConnected}"/>
-                    <Label Content="&#xe4fa;" Classes="Icon" IsVisible="{Binding !ConnectionStatus.IsConnected}"/>
-                    <Label Content="{Binding ConnectionStatus.Text}"/>
-                </StackPanel>
-            </DockPanel>
+                    <Label Grid.Column="3" Content="{Binding JobsText}"/>
+                </Grid>
+            </Grid>
         </Grid>
     </SplitView>
 </Window>

@@ -4,13 +4,13 @@ public sealed class TabletConnectionStatus
 {
     public static readonly TabletConnectionStatus Default = new TabletConnectionStatus(null, TabletError.Unknown);
 
-    internal TabletConnectionStatus(TabletType? type, TabletError? error)
+    internal TabletConnectionStatus(TabletInformation? information, TabletError? error)
     {
         this.Error = error;
-        this.Type = type;
+        this.Information = information;
     }
 
     public TabletError? Error { get; }
 
-    public TabletType? Type { get; }
+    public TabletInformation? Information { get; }
 }

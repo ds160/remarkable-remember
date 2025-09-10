@@ -6,7 +6,8 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class ConnectionStatusViewModel
 {
-    private readonly TabletConnectionStatus connectionStatus;
+    private readonly Boolean hasBasicConnection;
+    private readonly TabletInformation? information;
 
     public ConnectionStatusViewModel() : this(TabletConnectionStatus.Default)
     {
@@ -14,9 +15,12 @@ public sealed class ConnectionStatusViewModel
 
     public ConnectionStatusViewModel(TabletConnectionStatus connectionStatus)
     {
-        this.connectionStatus = connectionStatus;
+        this.hasBasicConnection = connectionStatus.Error is null or (not TabletError.NotSupported and not TabletError.Unknown and not TabletError.SshNotConfigured and not TabletError.SshNotConnected);
+        this.information = connectionStatus.Information;
 
-        this.Text = this.connectionStatus.Error switch
+        this.IsConnected = connectionStatus.Error is null;
+        this.Tablet = (this.information != null) ? $"{this.information.Type.GetDisplayText()} ({this.information.SoftwareVersion})" : null;
+        this.Text = connectionStatus.Error switch
         {
             null => "Connected",
             TabletError.NotSupported => "Connected reMarkable not supported",
@@ -29,10 +33,9 @@ public sealed class ConnectionStatusViewModel
         };
     }
 
-    public Boolean IsConnected
-    {
-        get { return this.connectionStatus.Error is null; }
-    }
+    public Boolean IsConnected { get; }
+
+    public String? Tablet { get; }
 
     public String Text { get; }
 
@@ -50,14 +53,18 @@ public sealed class ConnectionStatusViewModel
             case Jobs.HandwritingRecognition:
             case Jobs.UploadTemplate:
             case Jobs.ManageTemplates:
+                return this.hasBasicConnection;
+
             case Jobs.InstallLamyEraser:
+                return this.hasBasicConnection && this.information?.LamyEraserSupport == true;
+
             case Jobs.InstallWebInterfaceOnBoot:
-                return this.connectionStatus.Error is null or (not TabletError.NotSupported and not TabletError.Unknown and not TabletError.SshNotConfigured and not TabletError.SshNotConnected);
+                return this.hasBasicConnection && this.information?.WebInterfaceOnBootSupport == true;
 
             case Jobs.Sync:
             case Jobs.Download:
             case Jobs.Upload:
-                return this.connectionStatus.Error is null;
+                return this.IsConnected;
 
             default:
                 throw new NotImplementedException();
