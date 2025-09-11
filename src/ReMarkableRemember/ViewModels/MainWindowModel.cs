@@ -83,7 +83,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private async Task DownloadFile()
     {
-        ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
+        ItemViewModel? selectedItem = this.ItemsTree.RowSelection.SelectedItem;
         if (selectedItem != null && selectedItem.Collection == null)
         {
             using Job job = new Job(Jobs.Download, this);
@@ -106,7 +106,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status.CheckJob(Jobs.Download));
         IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None);
-        IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
+        IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
 
         return Observable.CombineLatest(connectionStatus, jobs, treeSelection, (value1, value2, value3) => value1 && value2 && value3);
     }
@@ -150,7 +150,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private async Task HandwritingRecognition()
     {
-        ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
+        ItemViewModel? selectedItem = this.ItemsTree.RowSelection.SelectedItem;
         if (selectedItem != null && selectedItem.Collection == null)
         {
             using Job job = new Job(Jobs.HandwritingRecognition, this);
@@ -166,7 +166,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     private IObservable<Boolean> HandwritingRecognition_CanExecute()
     {
         IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status.CheckJob(Jobs.HandwritingRecognition));
-        IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
+        IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
 
         return Observable.CombineLatest(connectionStatus, treeSelection, (value1, value2) => value1 && value2);
     }
@@ -236,7 +236,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private void OpenItem()
     {
-        ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
+        ItemViewModel? selectedItem = this.ItemsTree.RowSelection.SelectedItem;
         if (selectedItem?.SyncPath != null)
         {
             Process.Start(new ProcessStartInfo(selectedItem.SyncPath) { UseShellExecute = true });
@@ -245,7 +245,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private IObservable<Boolean> OpenItem_CanExecute()
     {
-        return this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => Path.Exists(item?.SyncPath));
+        return this.ItemsTree.RowSelection.WhenAnyValue(selection => selection.SelectedItem).Select(item => Path.Exists(item?.SyncPath));
     }
 
     private async Task Restart(Job job)
@@ -294,7 +294,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private async Task SyncTargetDirectory(String setString)
     {
-        ItemViewModel? selectedItem = this.ItemsTree.RowSelection!.SelectedItem;
+        ItemViewModel? selectedItem = this.ItemsTree.RowSelection.SelectedItem;
         if (selectedItem != null)
         {
             using Job job = new Job(Jobs.SetSyncTargetDirectory, this);
@@ -317,7 +317,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     private IObservable<Boolean> SyncTargetDirectory_CanExecute()
     {
         IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None or Jobs.HandwritingRecognition);
-        IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection!.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null);
+        IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null);
 
         return Observable.CombineLatest(jobs, treeSelection, (value1, value2) => value1 && value2);
     }
@@ -384,7 +384,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         IEnumerable<String>? files = await this.OpenFilePicker.Handle(options);
         foreach (String file in files)
         {
-            ItemViewModel? parentItem = this.ItemsTree.RowSelection!.SelectedItem;
+            ItemViewModel? parentItem = this.ItemsTree.RowSelection.SelectedItem;
             String? parentId = UploadFileParentId(parentItem);
             await this.tabletService.UploadFile(file, parentId).ConfigureAwait(true);
         }
