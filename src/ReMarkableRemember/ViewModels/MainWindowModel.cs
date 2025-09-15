@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Platform.Storage;
+using DynamicData.Binding;
 using ReactiveUI;
 using ReMarkableRemember.Enumerations;
 using ReMarkableRemember.Helper;
@@ -245,7 +246,20 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private IObservable<Boolean> OpenItem_CanExecute()
     {
-        return this.ItemsTree.RowSelection.WhenAnyValue(selection => selection.SelectedItem).Select(item => Path.Exists(item?.SyncPath));
+        return Observable.Create<Boolean>(observer =>
+        {
+            IDisposable? selectedItemObservable = null;
+
+            return this.ItemsTree.RowSelection.WhenAnyValue(s => s.SelectedItem).Subscribe(selectedItem =>
+            {
+                selectedItemObservable?.Dispose();
+                selectedItemObservable = null;
+
+                if (selectedItem == null) { return; }
+
+                selectedItemObservable = selectedItem.WhenAnyPropertyChanged().Subscribe(item => observer.OnNext(Path.Exists(item?.SyncPath)));
+            });
+        });
     }
 
     private async Task Restart(Job job)
