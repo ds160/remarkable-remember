@@ -255,9 +255,12 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
                 selectedItemObservable?.Dispose();
                 selectedItemObservable = null;
 
-                if (selectedItem == null) { return; }
+                observer.OnNext(Path.Exists(selectedItem?.SyncPath));
 
-                selectedItemObservable = selectedItem.WhenAnyPropertyChanged().Subscribe(item => observer.OnNext(Path.Exists(item?.SyncPath)));
+                if (selectedItem != null)
+                {
+                    selectedItemObservable = selectedItem.WhenAnyPropertyChanged().Subscribe(item => observer.OnNext(Path.Exists(item?.SyncPath)));
+                }
             });
         });
     }
