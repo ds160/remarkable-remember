@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -238,9 +237,9 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     private void OpenItem()
     {
         ItemViewModel? selectedItem = this.ItemsTree.RowSelection.SelectedItem;
-        if (selectedItem?.SyncPath != null)
+        if (selectedItem?.CanOpen() == true)
         {
-            Process.Start(new ProcessStartInfo(selectedItem.SyncPath) { UseShellExecute = true });
+            selectedItem.Open();
         }
     }
 
@@ -253,14 +252,10 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
             return this.ItemsTree.RowSelection.WhenAnyValue(s => s.SelectedItem).Subscribe(selectedItem =>
             {
                 selectedItemObservable?.Dispose();
-                selectedItemObservable = null;
 
-                observer.OnNext(Path.Exists(selectedItem?.SyncPath));
+                observer.OnNext(selectedItem?.CanOpen() == true);
 
-                if (selectedItem != null)
-                {
-                    selectedItemObservable = selectedItem.WhenAnyPropertyChanged().Subscribe(item => observer.OnNext(Path.Exists(item?.SyncPath)));
-                }
+                selectedItemObservable = selectedItem?.WhenAnyPropertyChanged().Subscribe(item => observer.OnNext(item?.CanOpen() == true));
             });
         });
     }

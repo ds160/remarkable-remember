@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -124,11 +125,24 @@ public sealed class ItemViewModel : ViewModelBase
         this.RaiseChanged(RaiseChangedAdditional.Parent);
     }
 
+    internal Boolean CanOpen()
+    {
+        return Path.Exists(this.SyncPath);
+    }
+
     internal async Task<String> HandWritingRecognition()
     {
         Notebook notebook = await this.tabletService.GetNotebook(this.Id).ConfigureAwait(true);
         IEnumerable<String> pages = await Task.WhenAll(notebook.Pages.Select(page => this.handWritingRecognitionService.Recognize(page))).ConfigureAwait(true);
         return String.Join(Environment.NewLine, pages);
+    }
+
+    internal void Open()
+    {
+        if (Path.Exists(this.SyncPath))
+        {
+            Process.Start(new ProcessStartInfo(this.SyncPath) { UseShellExecute = true });
+        }
     }
 
     private void RaiseChanged(RaiseChangedAdditional additional)
