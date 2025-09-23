@@ -15,7 +15,9 @@
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="WindowBackground">#151515</SolidColorBrush>
+                    <SolidColorBrush x:Key="DialogBackground">#101010</SolidColorBrush>
+                    <SolidColorBrush x:Key="DialogForeground">#BBBBBB</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowBackground">#141414</SolidColorBrush>
                     <SolidColorBrush x:Key="WindowForeground">#CCCCCC</SolidColorBrush>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>

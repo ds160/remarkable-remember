@@ -21,7 +21,7 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.6" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.6" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-    <PackageReference Include="NLog" Version="6.0.3" />
+    <PackageReference Include="NLog" Version="6.0.4" />
   </ItemGroup>
 
   <ItemGroup>
