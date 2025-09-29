@@ -91,7 +91,7 @@ jobs:
 
   build-windows:
     needs: create-release-on-tag
-    runs-on: windows-latest
+    runs-on: windows-2022
     strategy:
       matrix:
         arch: ["win-x64", "win-arm64"]
