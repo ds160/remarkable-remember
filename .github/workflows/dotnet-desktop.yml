@@ -91,7 +91,7 @@ jobs:
 
   build-windows:
     needs: create-release-on-tag
-    runs-on: windows-2022
+    runs-on: windows-latest
     strategy:
       matrix:
         arch: ["win-x64", "win-arm64"]
@@ -99,6 +99,10 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v5
+      -
+        name: Install InnoSetup
+        shell: cmd
+        run: choco upgrade innosetup -y --no-progress
       -
         name: Install PupNet Deploy
         run: dotnet tool install -g KuiperZone.PupNet
