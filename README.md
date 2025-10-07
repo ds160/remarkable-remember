@@ -55,7 +55,7 @@ Clone the repository, install .NET Core SDK 8, and build the project with `dotne
 
 ## Dependencies and Acknowledgment
 
-- I'm using [Avalonia](https://github.com/AvaloniaUI/Avalonia) for the UI, [NLog](https://github.com/NLog/NLog) for logging, [Svg.Skia](https://github.com/wieslawsoltes/Svg.Skia) for SVG files, and [SSH.NET](https://github.com/sshnet/SSH.NET) for the SFTP and SSH communication.
+- I'm using [Avalonia](https://github.com/AvaloniaUI/Avalonia) for the UI, [NLog](https://github.com/NLog/NLog) for logging, [Svg.Controls.Avalonia](https://github.com/wieslawsoltes/Svg.Skia) for SVG files, and [SSH.NET](https://github.com/sshnet/SSH.NET) for the SFTP and SSH communication.
 - I got inspired by [rmscene](https://github.com/ricklupton/rmscene) to parse the reMarkable Lines File (version 6) and do handwriting recognition via MyScript.
 - I'm using the [Lamy Eraser](https://github.com/isaacwisdom/RemarkableLamyEraser/tree/v1) sources that turns the button on the Lamy Pen into an eraser on the reMarkable tablet.
 - I'm using the [WebInterface-OnBoot](https://github.com/rM-self-serve/webinterface-onboot) sources that eliminates the need to switch on the `USB connection` setting after connecting the USB cable.
