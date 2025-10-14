@@ -10,5 +10,7 @@ updates:
       interval: "weekly"
     ignore:
       - dependency-name: "Microsoft*"
-        update-types: 
+        update-types:
           - "version-update:semver-major"
+      - dependency-name: "Avalonia.Controls.TreeDataGrid"
+        versions: [ ">=11.2.0" ]
