@@ -58,9 +58,6 @@ public sealed class ConnectionStatusViewModel
             case Jobs.InstallLamyEraser:
                 return this.hasBasicConnection && this.information?.LamyEraserSupport == true;
 
-            case Jobs.InstallWebInterfaceOnBoot:
-                return this.hasBasicConnection && this.information?.WebInterfaceOnBootSupport == true;
-
             case Jobs.Sync:
             case Jobs.Download:
             case Jobs.Upload:

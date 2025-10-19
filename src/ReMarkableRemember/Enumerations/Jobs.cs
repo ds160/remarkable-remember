@@ -17,8 +17,7 @@ public enum Jobs
     ManageTemplates = 0x0080,
     SetSyncTargetDirectory = 0x0100,
     InstallLamyEraser = 0x0200,
-    InstallWebInterfaceOnBoot = 0x0400,
-    Settings = 0x0800
+    Settings = 0x0400
 }
 
 public static class JobsExtensions
@@ -36,7 +35,6 @@ public static class JobsExtensions
         if (job.HasFlag(Jobs.UploadTemplate)) { jobs.Add("Uploading Template"); }
         if (job.HasFlag(Jobs.ManageTemplates)) { jobs.Add("Managing Templates"); }
         if (job.HasFlag(Jobs.InstallLamyEraser)) { jobs.Add("Installing Lamy Eraser"); }
-        if (job.HasFlag(Jobs.InstallWebInterfaceOnBoot)) { jobs.Add("Installing WebInterface-OnBoot"); }
 
         return (jobs.Count > 0) ? String.Join(" and ", jobs) : null;
     }

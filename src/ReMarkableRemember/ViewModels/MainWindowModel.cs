@@ -61,7 +61,6 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         this.CommandExecute = ReactiveCommand.CreateFromTask(() => this.Execute(Jobs.Backup | Jobs.Sync), this.Execute_CanExecute(Jobs.Backup | Jobs.Sync));
         this.CommandHandwritingRecognition = ReactiveCommand.CreateFromTask(this.HandwritingRecognition, this.HandwritingRecognition_CanExecute());
         this.CommandInstallLamyEraser = ReactiveCommand.CreateFromTask(this.InstallLamyEraser, this.InstallLamyEraser_CanExecute());
-        this.CommandInstallWebInterfaceOnBoot = ReactiveCommand.CreateFromTask(this.InstallWebInterfaceOnBoot, this.InstallWebInterfaceOnBoot_CanExecute());
         this.CommandManageTemplates = ReactiveCommand.CreateFromTask(this.ManageTemplates, this.ManageTemplates_CanExecute());
         this.CommandOpenItem = ReactiveCommand.Create(this.OpenItem, this.OpenItem_CanExecute());
         this.CommandSettings = ReactiveCommand.CreateFromTask(this.Settings, this.Settings_CanExecute());
@@ -181,23 +180,6 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     private IObservable<Boolean> InstallLamyEraser_CanExecute()
     {
         IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status.CheckJob(Jobs.InstallLamyEraser));
-        IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None);
-
-        return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
-    }
-
-    private async Task InstallWebInterfaceOnBoot()
-    {
-        using Job job = new Job(Jobs.InstallWebInterfaceOnBoot, this);
-
-        await this.tabletService.InstallWebInterfaceOnBoot().ConfigureAwait(true);
-
-        await this.Restart(job).ConfigureAwait(true);
-    }
-
-    private IObservable<Boolean> InstallWebInterfaceOnBoot_CanExecute()
-    {
-        IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status.CheckJob(Jobs.InstallWebInterfaceOnBoot));
         IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None);
 
         return Observable.CombineLatest(connectionStatus, jobs, (value1, value2) => value1 && value2);
@@ -454,8 +436,6 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     public ICommand CommandHandwritingRecognition { get; }
 
     public ICommand CommandInstallLamyEraser { get; }
-
-    public ICommand CommandInstallWebInterfaceOnBoot { get; }
 
     public ICommand CommandManageTemplates { get; }
 

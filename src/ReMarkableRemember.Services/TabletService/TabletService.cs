@@ -284,39 +284,6 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
         }
     }
 
-    public async Task InstallWebInterfaceOnBoot(String release = "v1.2.4")
-    {
-        await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
-
-        try
-        {
-            (SftpClient SftpClient, TabletInformation Information) tablet = await this.CreateSftpClientWithInformation().ConfigureAwait(false);
-            using SftpClient sftpClient = tablet.SftpClient;
-            using SshClient sshClient = await this.CreateSshClient().ConfigureAwait(false);
-
-            if (!tablet.Information.WebInterfaceOnBootSupport) { throw new TabletException(TabletError.NotSupported, $"WebInterface-OnBoot is not compatible with reMarkable software version {tablet.Information.SoftwareVersion}."); }
-
-            await ExecuteSshCommand(sshClient, "systemctl disable --now webinterface-onboot.service", false).ConfigureAwait(false);
-
-            String serviceText = await this.gitHubClient.GetStringAsync(new Uri($"https://github.com/rM-self-serve/webinterface-onboot/releases/download/{release}/webinterface-onboot.service")).ConfigureAwait(false);
-            await FileWrite(sftpClient, "/lib/systemd/system/webinterface-onboot.service", serviceText).ConfigureAwait(false);
-
-            Byte[] serviceBytes = await this.gitHubClient.GetByteArrayAsync(new Uri($"https://github.com/rM-self-serve/webinterface-onboot/releases/download/{release}/webinterface-onboot")).ConfigureAwait(false);
-            await FileWrite(sftpClient, "/home/root/.local/bin/webinterface-onboot", serviceBytes).ConfigureAwait(false);
-
-            await ExecuteSshCommand(sshClient, "chmod +x /home/root/.local/bin/webinterface-onboot").ConfigureAwait(false);
-
-            Boolean applyHack = tablet.Information.WebInterfaceOnBootHack;
-            if (applyHack) { await ExecuteSshCommand(sshClient, "/home/root/.local/bin/webinterface-onboot apply-hack -y").ConfigureAwait(false); }
-
-            await ExecuteSshCommand(sshClient, "systemctl enable --now webinterface-onboot.service").ConfigureAwait(false);
-        }
-        finally
-        {
-            this.sshSemaphore.Release();
-        }
-    }
-
     public async Task Restart()
     {
         await this.sshSemaphore.WaitAsync().ConfigureAwait(false);

@@ -88,7 +88,6 @@
                     <Button ToolTip.Tip="Manage Templates" Command="{Binding CommandManageTemplates}">&#xeaf3;</Button>
 
                     <Button ToolTip.Tip="Install Lamy Eraser" Command="{Binding CommandInstallLamyEraser}" Margin="0, 16, 0, 0">&#xe3c9;</Button>
-                    <Button ToolTip.Tip="Install WebInterface-OnBoot" Command="{Binding CommandInstallWebInterfaceOnBoot}">&#xefe6;</Button>
                 </StackPanel>
 
                 <StackPanel Grid.Row="1">

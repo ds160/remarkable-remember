@@ -15,11 +15,9 @@ The application is a cross-platform management tool for your reMarkable tablet. 
 - Backup notebooks and folders
 - Template management
 - Handwriting recognition via MyScript
-- Install [Lamy Eraser](https://github.com/isaacwisdom/RemarkableLamyEraser/tree/v1)[^1] and [WebInterface-OnBoot](https://github.com/rM-self-serve/webinterface-onboot)[^2] via WiFi or USB
+- Install [Lamy Eraser](https://github.com/isaacwisdom/RemarkableLamyEraser/tree/v1)[^1] via WiFi or USB
 
 [^1]: Lamy Eraser works for reMarkable 1 and reMarkable 2
-
-[^2]: WebInterface-OnBoot works until software version 3.15
 
 ## Installation
 
@@ -37,7 +35,7 @@ Set the folder if you want to back up your notebooks and folders.
 
 ## Usage
 
-Connect your reMarkable tablet via USB for full functionality and activate the `USB connection` for downloading PDF documents. Navigate to `Settings > Storage` and enable the feature. Optionally, you can use the [WebInterface-OnBoot](https://github.com/rM-self-serve/webinterface-onboot) program to eliminate the need to switch on the `USB connection` setting after connecting the USB cable.
+Connect your reMarkable tablet via USB for full functionality and activate the `USB connection` for downloading PDF documents. Navigate to `Settings > Storage` and enable the feature.
 
 If you connect your reMarkable tablet via WiFi most functions work, but downloading PDFs and uploading PDFs and EPUBs are not supported.
 
@@ -58,7 +56,6 @@ Clone the repository, install .NET Core SDK 8, and build the project with `dotne
 - I'm using [Avalonia](https://github.com/AvaloniaUI/Avalonia) for the UI, [NLog](https://github.com/NLog/NLog) for logging, [Svg.Controls.Avalonia](https://github.com/wieslawsoltes/Svg.Skia) for SVG files, and [SSH.NET](https://github.com/sshnet/SSH.NET) for the SFTP and SSH communication.
 - I got inspired by [rmscene](https://github.com/ricklupton/rmscene) to parse the reMarkable Lines File (version 6) and do handwriting recognition via MyScript.
 - I'm using the [Lamy Eraser](https://github.com/isaacwisdom/RemarkableLamyEraser/tree/v1) sources that turns the button on the Lamy Pen into an eraser on the reMarkable tablet.
-- I'm using the [WebInterface-OnBoot](https://github.com/rM-self-serve/webinterface-onboot) sources that eliminates the need to switch on the `USB connection` setting after connecting the USB cable.
 - I'm using [PupNet Deploy](https://github.com/kuiperzone/PupNet-Deploy) for the deployment.
 
 Thanks to the developers for their beautiful work.

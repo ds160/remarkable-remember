@@ -25,8 +25,6 @@ public interface ITabletService : IDisposable
 
     Task InstallLamyEraser(Boolean press, Boolean undo, Boolean leftHanded);
 
-    Task InstallWebInterfaceOnBoot(String release = "v1.2.4");
-
     Task Restart();
 
     Task UploadFile(String path, String? parentId);
