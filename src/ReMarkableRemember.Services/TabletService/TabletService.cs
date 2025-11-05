@@ -198,17 +198,19 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
         {
             using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
 
-            IEnumerable<ISftpFile> files = await Task.Run(() => client.ListDirectory(PATH_NOTEBOOKS)).ConfigureAwait(false);
-
             List<TabletItem> allItems = new List<TabletItem>();
-            foreach (ISftpFile file in files.Where(file => file.IsRegularFile && file.Name.EndsWith(".metadata", StringComparison.Ordinal)))
+            IAsyncEnumerable<ISftpFile> files = client.ListDirectoryAsync(PATH_NOTEBOOKS, CancellationToken.None);
+            await foreach (ISftpFile file in files.ConfigureAwait(false))
             {
-                String metaDataFileText = await Task.Run(() => client.ReadAllText(file.FullName)).ConfigureAwait(false);
-                MetaDataFile metaDataFile = JsonSerializer.Deserialize<MetaDataFile>(metaDataFileText, jsonSerializerOptions);
-                if (metaDataFile.Deleted != true)
+                if (file.IsRegularFile && file.Name.EndsWith(".metadata", StringComparison.Ordinal))
                 {
-                    String id = Path.GetFileNameWithoutExtension(file.Name);
-                    allItems.Add(new TabletItem(id, metaDataFile.LastModified, metaDataFile.Parent, metaDataFile.Type, metaDataFile.VisibleName));
+                    String metaDataFileText = await Task.Run(() => client.ReadAllText(file.FullName)).ConfigureAwait(false);
+                    MetaDataFile metaDataFile = JsonSerializer.Deserialize<MetaDataFile>(metaDataFileText, jsonSerializerOptions);
+                    if (metaDataFile.Deleted != true)
+                    {
+                        String id = Path.GetFileNameWithoutExtension(file.Name);
+                        allItems.Add(new TabletItem(id, metaDataFile.LastModified, metaDataFile.Parent, metaDataFile.Type, metaDataFile.VisibleName));
+                    }
                 }
             }
 
@@ -362,9 +364,11 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
     private static async Task BackupFiles(SftpClient client, String sourceDirectory, String targetDirectory, Func<ISftpFile, Boolean> filter)
     {
-        IEnumerable<ISftpFile> files = await Task.Run(() => client.ListDirectory(sourceDirectory)).ConfigureAwait(false);
-        foreach (ISftpFile file in files.Where(filter))
+        IAsyncEnumerable<ISftpFile> files = client.ListDirectoryAsync(sourceDirectory, CancellationToken.None);
+        await foreach (ISftpFile file in files.ConfigureAwait(false))
         {
+            if (!filter(file)) { continue; }
+
             String targetPath = Path.Combine(targetDirectory, file.Name);
 
             if (file.IsDirectory)
@@ -375,7 +379,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
             if (file.IsRegularFile)
             {
                 using Stream fileStream = FileSystem.Create(targetPath);
-                await Task.Run(() => client.DownloadFile(file.FullName, fileStream)).ConfigureAwait(false);
+                await client.DownloadFileAsync(file.FullName, fileStream).ConfigureAwait(false);
             }
         }
     }
@@ -493,9 +497,13 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
         }
     }
 
-    private static async Task FileDelete(SftpClient client, String path)
+    private static async Task FileDelete(SftpClient client, String path, CancellationToken cancellationToken = default)
     {
-        await Task.Run(() => { if (client.Exists(path)) { client.DeleteFile(path); } }).ConfigureAwait(false);
+        Boolean exists = await client.ExistsAsync(path, cancellationToken).ConfigureAwait(false);
+        if (exists)
+        {
+            await client.DeleteFileAsync(path, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private static async Task FileWrite(SftpClient client, String path, Object content, Boolean contentRequired = true)
