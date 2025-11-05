@@ -12,5 +12,5 @@ public interface IHandWritingRecognitionService
 
     IEnumerable<String> SupportedLanguages { get; }
 
-    Task<String> Recognize(Notebook.Page page, String? language = null);
+    Task<IEnumerable<String>> Recognize(Notebook notebook);
 }

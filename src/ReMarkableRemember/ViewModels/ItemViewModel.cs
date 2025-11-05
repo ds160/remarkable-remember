@@ -133,7 +133,7 @@ public sealed class ItemViewModel : ViewModelBase
     internal async Task<String> HandWritingRecognition()
     {
         Notebook notebook = await this.tabletService.GetNotebook(this.Id).ConfigureAwait(true);
-        IEnumerable<String> pages = await Task.WhenAll(notebook.Pages.Select(page => this.handWritingRecognitionService.Recognize(page))).ConfigureAwait(true);
+        IEnumerable<String> pages = await this.handWritingRecognitionService.Recognize(notebook).ConfigureAwait(true);
         return String.Join(Environment.NewLine, pages);
     }
 

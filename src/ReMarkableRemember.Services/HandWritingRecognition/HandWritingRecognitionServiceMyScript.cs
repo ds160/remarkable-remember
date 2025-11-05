@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using ReMarkableRemember.Common.Notebook;
 using ReMarkableRemember.Services.ConfigurationService;
@@ -20,6 +21,8 @@ namespace ReMarkableRemember.Services.HandWritingRecognition;
 
 public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWritingRecognitionConfigurationMyScript>, IHandWritingRecognitionService
 {
+    private const Int32 MAX_TASKS = 4;
+
     private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private static readonly List<String> supportedLanguages = new List<String>()
     {
@@ -106,35 +109,51 @@ public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWrit
         get { return supportedLanguages; }
     }
 
-    public async Task<String> Recognize(Notebook.Page page, String? language = null)
+    public async Task<IEnumerable<String>> Recognize(Notebook notebook)
     {
-        language ??= this.Configuration.Language;
+        String language = this.Configuration.Language;
         if (!supportedLanguages.Contains(language)) { throw new HandWritingRecognitionException($"Language is not supported by MyScript: {language}"); }
 
-        String requestBody = BuildRequestBody(page, language);
-        String hmac = this.CalculateHmac(requestBody);
+        using SemaphoreSlim throttler = new SemaphoreSlim(MAX_TASKS);
 
-        using HttpClient client = new HttpClient();
-        client.DefaultRequestHeaders.Add("applicationKey", this.Configuration.ApplicationKey);
-        client.DefaultRequestHeaders.Add("hmac", hmac);
-        client.DefaultRequestHeaders.Add("accept", $"{MediaTypeNames.Text.Plain}, {MediaTypeNames.Application.Json}");
+        return await Task.WhenAll(notebook.Pages.Select(page => this.Recognize(page, language, throttler))).ConfigureAwait(false);
+    }
 
-        using StringContent requestContent = new StringContent(requestBody, Encoding.UTF8, MediaTypeNames.Application.Json);
-        HttpResponseMessage response = await client.PostAsync(new Uri("https://cloud.myscript.com/api/v4.0/iink/batch"), requestContent).ConfigureAwait(false);
+    private async Task<String> Recognize(Notebook.Page page, String language, SemaphoreSlim throttler)
+    {
+        await throttler.WaitAsync().ConfigureAwait(false);
 
-        if (response.StatusCode == HttpStatusCode.Unauthorized)
+        try
         {
-            throw new HandWritingRecognitionException("MyScript authorization information not configured or wrong.");
-        }
+            String requestBody = BuildRequestBody(page, language);
+            String hmac = this.CalculateHmac(requestBody);
 
-        if (response.StatusCode == HttpStatusCode.RequestEntityTooLarge)
+            using HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("applicationKey", this.Configuration.ApplicationKey);
+            client.DefaultRequestHeaders.Add("hmac", hmac);
+            client.DefaultRequestHeaders.Add("accept", $"{MediaTypeNames.Text.Plain}, {MediaTypeNames.Application.Json}");
+
+            using StringContent requestContent = new StringContent(requestBody, Encoding.UTF8, MediaTypeNames.Application.Json);
+            HttpResponseMessage response = await client.PostAsync(new Uri("https://cloud.myscript.com/api/v4.0/iink/batch"), requestContent).ConfigureAwait(false);
+
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                throw new HandWritingRecognitionException("MyScript authorization information not configured or wrong.");
+            }
+
+            if (response.StatusCode == HttpStatusCode.RequestEntityTooLarge)
+            {
+                throw new HandWritingRecognitionException($"MyScript cannot analyze page {page.Index + 1}, it has to much content.");
+            }
+
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        }
+        finally
         {
-            throw new HandWritingRecognitionException($"MyScript cannot analyze page {page.Index + 1}, it has to much content.");
+            throttler.Release();
         }
-
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
     }
 
     private static String BuildRequestBody(Notebook.Page page, String language)
