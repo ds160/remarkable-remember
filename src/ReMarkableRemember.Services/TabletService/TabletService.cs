@@ -107,7 +107,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
             String templatesFileText = await Task.Run(() => client.ReadAllText(templatesFilePath)).ConfigureAwait(false);
             TemplatesFile templatesFile = JsonSerializer.Deserialize<TemplatesFile>(templatesFileText, jsonSerializerOptions);
 
-            Int32 index = templatesFile.Templates.FindIndex((item) => String.CompareOrdinal(item.Filename, tabletTemplate.FileName) == 0);
+            Int32 index = templatesFile.Templates.FindIndex((item) => String.Equals(item.Filename, tabletTemplate.FileName, StringComparison.Ordinal));
             if (index > -1)
             {
                 templatesFile.Templates.RemoveAt(index);
@@ -342,7 +342,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
             String templatesFileText = await Task.Run(() => client.ReadAllText(templatesFilePath)).ConfigureAwait(false);
             TemplatesFile templatesFile = JsonSerializer.Deserialize<TemplatesFile>(templatesFileText, jsonSerializerOptions);
 
-            Int32 index = templatesFile.Templates.FindIndex((item) => String.CompareOrdinal(item.Filename, tabletTemplate.FileName) == 0);
+            Int32 index = templatesFile.Templates.FindIndex((item) => String.Equals(item.Filename, tabletTemplate.FileName, StringComparison.Ordinal));
             if (index > -1)
             {
                 templatesFile.Templates[index] = TemplatesFile.Template.Convert(tabletTemplate);

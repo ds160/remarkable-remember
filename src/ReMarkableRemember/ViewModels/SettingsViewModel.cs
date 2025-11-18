@@ -35,7 +35,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         this.tabletConfiguration = tabletService.Configuration;
 
         this.backup = this.tabletConfiguration.Backup;
-        this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.CompareOrdinal(language.Code, this.handWritingRecognitionConfiguration.Language) == 0);
+        this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionConfiguration.Language, StringComparison.Ordinal));
         this.myScriptApplicationKey = this.myScriptConfiguration?.ApplicationKey ?? String.Empty;
         this.myScriptHmacKey = this.myScriptConfiguration?.HmacKey ?? String.Empty;
         this.tabletIp = this.tabletConfiguration.IP;

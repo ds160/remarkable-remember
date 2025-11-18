@@ -50,7 +50,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
 
         this.connectionStatus = new ConnectionStatusViewModel();
-        this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.CompareOrdinal(language.Code, this.handWritingRecognitionService.Configuration.Language) == 0);
+        this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionService.Configuration.Language, StringComparison.Ordinal));
         this.hasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
         this.hasItems = false;
         this.jobs = Jobs.None;
@@ -278,7 +278,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         await this.ShowDialog.Handle(new SettingsViewModel(this.handWritingRecognitionService, this.tabletService));
 
         this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
-        this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.CompareOrdinal(language.Code, this.handWritingRecognitionService.Configuration.Language) == 0);
+        this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionService.Configuration.Language, StringComparison.Ordinal));
     }
 
     private IObservable<Boolean> Settings_CanExecute()
