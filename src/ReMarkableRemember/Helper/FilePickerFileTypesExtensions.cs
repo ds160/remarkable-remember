@@ -2,6 +2,7 @@ using System;
 using Avalonia.Platform.Storage;
 
 namespace ReMarkableRemember.Helper;
+
 internal static class FilePickerFileTypesExtensions
 {
     public static FilePickerFileType Epub { get; } = new FilePickerFileType("EPUB e-book")
