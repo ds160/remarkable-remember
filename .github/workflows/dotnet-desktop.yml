@@ -16,7 +16,7 @@ jobs:
       -
         name: Checkout
         if: github.ref_type == 'tag'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       -
         name: Create Release
         if: github.ref_type == 'tag'
@@ -39,7 +39,7 @@ jobs:
     steps:
     -
       name: Checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
     -
       name: Install PupNet Deploy
       run: dotnet tool install -g KuiperZone.PupNet
@@ -98,7 +98,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       -
         name: Install InnoSetup
         shell: cmd
@@ -139,7 +139,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       -
         name: Build Application
         run: dotnet publish src/ReMarkableRemember/ReMarkableRemember.csproj -c Release -r ${{ matrix.arch }} --self-contained -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o "bin/reMarkable Remember.app/Contents/MacOS"
