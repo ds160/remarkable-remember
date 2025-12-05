@@ -1,12 +1,14 @@
 using System;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
-using NLog;
 using ReactiveUI;
+using ReMarkableRemember.Common.FileSystem;
 using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.HandWritingRecognition;
@@ -49,8 +51,8 @@ public partial class App : Application
 
     private async void ExceptionHandler(Exception exception)
     {
-        Logger logger = LogManager.GetCurrentClassLogger();
-        logger.Error(exception);
+        String logFilePath = FileSystem.CreateApplicationDataFilePath("logs.txt");
+        File.AppendAllText(logFilePath, $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff", CultureInfo.InvariantCulture)}|ERROR|{exception.Source}|{exception}{Environment.NewLine}");
 
         if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
         {
