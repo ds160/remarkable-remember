@@ -70,7 +70,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         this.ClearErrors(nameof(this.TabletIp));
 
         if (String.IsNullOrEmpty(host)) { return; }
-        if (IpRegex().Match(host).Success) { return; }
+        if (IpRegex().IsMatch(host)) { return; }
 
         this.AddError(nameof(this.TabletIp), "Invalid IP address");
     }
