@@ -6,8 +6,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ReactiveUI;
-using ReMarkableRemember.Services.HandWritingRecognition;
-using ReMarkableRemember.Services.HandWritingRecognition.Configuration;
+using ReMarkableRemember.Services.HandWritingRecognitionService;
+using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
 using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Services.TabletService.Configuration;
 

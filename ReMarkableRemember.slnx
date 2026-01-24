@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/ReMarkableRemember.Common/">
+    <Project Path="src/ReMarkableRemember.Common/FileSystem/ReMarkableRemember.Common.FileSystem.csproj" />
+    <Project Path="src/ReMarkableRemember.Common/Notebook/ReMarkableRemember.Common.Notebook.csproj" />
+  </Folder>
+  <Folder Name="/ReMarkableRemember.Services/">
+    <Project Path="src/ReMarkableRemember.Services/ConfigurationService/ReMarkableRemember.Services.ConfigurationService.csproj" />
+    <Project Path="src/ReMarkableRemember.Services/DataService/ReMarkableRemember.Services.DataService.csproj" />
+    <Project Path="src/ReMarkableRemember.Services/HandWritingRecognitionService/ReMarkableRemember.Services.HandWritingRecognitionService.csproj" />
+    <Project Path="src/ReMarkableRemember.Services/TabletService/ReMarkableRemember.Services.TabletService.csproj" />
+  </Folder>
+  <Project Path="src/ReMarkableRemember/ReMarkableRemember.csproj" />
+</Solution>

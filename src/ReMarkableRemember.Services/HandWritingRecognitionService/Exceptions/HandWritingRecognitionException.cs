@@ -1,6 +1,6 @@
 using System;
 
-namespace ReMarkableRemember.Services.HandWritingRecognition.Exceptions;
+namespace ReMarkableRemember.Services.HandWritingRecognitionService.Exceptions;
 
 public class HandWritingRecognitionException : Exception
 {

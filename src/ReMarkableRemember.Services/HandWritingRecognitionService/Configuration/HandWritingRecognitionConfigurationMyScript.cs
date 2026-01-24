@@ -1,7 +1,7 @@
 using System;
 using ReMarkableRemember.Services.ConfigurationService.Configuration;
 
-namespace ReMarkableRemember.Services.HandWritingRecognition.Configuration;
+namespace ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
 
 public sealed class HandWritingRecognitionConfigurationMyScript : ConfigurationBase, IHandWritingRecognitionConfiguration
 {

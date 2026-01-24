@@ -14,10 +14,10 @@ using System.Threading.Tasks;
 using ReMarkableRemember.Common.Notebook;
 using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.ConfigurationService.Service;
-using ReMarkableRemember.Services.HandWritingRecognition.Configuration;
-using ReMarkableRemember.Services.HandWritingRecognition.Exceptions;
+using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
+using ReMarkableRemember.Services.HandWritingRecognitionService.Exceptions;
 
-namespace ReMarkableRemember.Services.HandWritingRecognition;
+namespace ReMarkableRemember.Services.HandWritingRecognitionService;
 
 public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWritingRecognitionConfigurationMyScript>, IHandWritingRecognitionService
 {

@@ -11,7 +11,7 @@ using ReactiveUI;
 using ReMarkableRemember.Common.FileSystem;
 using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.DataService;
-using ReMarkableRemember.Services.HandWritingRecognition;
+using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.ViewModels;
 using ReMarkableRemember.Views;

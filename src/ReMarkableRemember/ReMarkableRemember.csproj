@@ -28,7 +28,7 @@
     <ProjectReference Include="..\ReMarkableRemember.Common\Notebook\ReMarkableRemember.Common.Notebook.csproj" />
     <ProjectReference Include="..\ReMarkableRemember.Services\ConfigurationService\ReMarkableRemember.Services.ConfigurationService.csproj" />
     <ProjectReference Include="..\ReMarkableRemember.Services\DataService\ReMarkableRemember.Services.DataService.csproj" />
-    <ProjectReference Include="..\ReMarkableRemember.Services\HandWritingRecognition\ReMarkableRemember.Services.HandWritingRecognition.csproj" />
+    <ProjectReference Include="..\ReMarkableRemember.Services\HandWritingRecognitionService\ReMarkableRemember.Services.HandWritingRecognitionService.csproj" />
     <ProjectReference Include="..\ReMarkableRemember.Services\TabletService\ReMarkableRemember.Services.TabletService.csproj" />
   </ItemGroup>
 </Project>

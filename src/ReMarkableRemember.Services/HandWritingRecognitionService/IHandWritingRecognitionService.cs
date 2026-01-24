@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ReMarkableRemember.Common.Notebook;
-using ReMarkableRemember.Services.HandWritingRecognition.Configuration;
+using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
 
-namespace ReMarkableRemember.Services.HandWritingRecognition;
+namespace ReMarkableRemember.Services.HandWritingRecognitionService;
 
 public interface IHandWritingRecognitionService
 {

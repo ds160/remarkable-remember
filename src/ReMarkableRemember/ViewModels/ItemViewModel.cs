@@ -10,7 +10,7 @@ using ReMarkableRemember.Common.FileSystem;
 using ReMarkableRemember.Common.Notebook;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.DataService.Models;
-using ReMarkableRemember.Services.HandWritingRecognition;
+using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Services.TabletService.Models;
 
