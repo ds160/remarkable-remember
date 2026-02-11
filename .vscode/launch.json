@@ -6,7 +6,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/ReMarkableRemember/bin/Debug/net8.0/ReMarkableRemember.dll",
+            "program": "${workspaceFolder}/src/ReMarkableRemember/bin/Debug/net10.0/ReMarkableRemember.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
