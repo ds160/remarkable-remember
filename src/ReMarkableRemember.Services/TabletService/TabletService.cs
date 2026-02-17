@@ -240,7 +240,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
             if (contentFile.FormatVersion is not (1 or 2)) { throw new TabletException($"Invalid reMarkable file format version: '{contentFile.FormatVersion}'."); }
 
             List<Byte[]> pageBuffers = new List<Byte[]>();
-            IEnumerable<String> pages = contentFile.FormatVersion == 1 ? contentFile.Pages : contentFile.CPages.Pages.Where(page => page.Deleted == null).Select(page => page.Id);
+            IEnumerable<String> pages = contentFile.CPages?.Pages.Where(page => page.Deleted == null).Select(page => page.Id) ?? contentFile.Pages ?? [];
             foreach (String page in pages)
             {
                 Byte[] pageBuffer = await Task.Run(() => client.ReadAllBytes($"{PATH_NOTEBOOKS}{id}/{page}.rm")).ConfigureAwait(false);
@@ -594,10 +594,10 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
     private struct ContentFile
     {
-        public PagesContainer CPages { get; set; }
+        public PagesContainer? CPages { get; set; }
         public String FileType { get; set; }
         public Int32 FormatVersion { get; set; }
-        public IEnumerable<String> Pages { get; set; }
+        public IEnumerable<String>? Pages { get; set; }
 
         public struct PagesContainer
         {
