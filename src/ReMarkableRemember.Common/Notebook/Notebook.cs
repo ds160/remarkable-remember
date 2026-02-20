@@ -19,22 +19,16 @@ public sealed class Notebook
     {
         internal Page(Byte[] buffer, Int32 index, Int32 resolution)
         {
-            this.Index = index;
-            this.Resolution = resolution;
-
             PageBuffer pageBuffer = new PageBuffer(buffer);
-            String header = pageBuffer.ReadString(43);
-            switch (header)
+
+            this.Index = index;
+            this.Lines = pageBuffer.ReadString(43) switch
             {
-                case "reMarkable .lines file, version=5          ":
-                    this.Lines = V5Parse(pageBuffer);
-                    break;
-                case "reMarkable .lines file, version=6          ":
-                    this.Lines = V6Parse(pageBuffer);
-                    break;
-                default:
-                    throw new NotebookException("Unknown reMarkable .lines file header.");
-            }
+                "reMarkable .lines file, version=5          " => V5Parse(pageBuffer),
+                "reMarkable .lines file, version=6          " => V6Parse(pageBuffer),
+                _ => throw new NotebookException("Unknown reMarkable .lines file header."),
+            };
+            this.Resolution = resolution;
         }
 
         public Int32 Index { get; }

@@ -28,11 +28,11 @@ public sealed class HandWritingRecognitionLanguageViewModel
 
     private static String GetDisplayName(String code)
     {
-        switch (code)
+        return code switch
         {
-            case "az_AZ": return CultureInfo.GetCultureInfo("az").DisplayName;
-            case "bs_BA": return CultureInfo.GetCultureInfo("bs").DisplayName;
-            default: return CultureInfo.GetCultureInfo(code).DisplayName;
-        }
+            "az_AZ" => CultureInfo.GetCultureInfo("az").DisplayName,
+            "bs_BA" => CultureInfo.GetCultureInfo("bs").DisplayName,
+            _ => CultureInfo.GetCultureInfo(code).DisplayName,
+        };
     }
 }

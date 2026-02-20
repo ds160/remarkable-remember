@@ -584,12 +584,12 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
     {
         if (file.Length >= 100 * 1024 * 1024) { throw new TabletException("File is to large."); }
 
-        switch (file.Extension.ToUpperInvariant())
+        return file.Extension.ToUpperInvariant() switch
         {
-            case ".PDF": return "application/pdf";
-            case ".EPUB": return "application/epub+zip";
-            default: throw new TabletException("File type is not supported.");
-        }
+            ".PDF" => "application/pdf",
+            ".EPUB" => "application/epub+zip",
+            _ => throw new TabletException("File type is not supported."),
+        };
     }
 
     private struct ContentFile
