@@ -30,12 +30,6 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     private readonly IHandWritingRecognitionService handWritingRecognitionService;
     private readonly ITabletService tabletService;
 
-    private ConnectionStatusViewModel connectionStatus;
-    private HandWritingRecognitionLanguageViewModel handWritingRecognitionLanguage;
-    private Boolean hasBackupDirectory;
-    private Boolean hasItems;
-    private Jobs jobs;
-
     public MainWindowModel(IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ITabletService tabletService)
     {
         this.dataService = dataService;
@@ -49,11 +43,11 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         this.OpenSaveFilePicker = new Interaction<FilePickerSaveOptions, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
 
-        this.connectionStatus = new ConnectionStatusViewModel();
-        this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionService.Configuration.Language, StringComparison.Ordinal));
-        this.hasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
-        this.hasItems = false;
-        this.jobs = Jobs.None;
+        this.ConnectionStatus = new ConnectionStatusViewModel();
+        this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionService.Configuration.Language, StringComparison.Ordinal));
+        this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
+        this.HasItems = false;
+        this.Jobs = Jobs.None;
 
         this.CommandAbout = ReactiveCommand.CreateFromTask(this.About);
         this.CommandBackup = ReactiveCommand.CreateFromTask(() => this.Execute(Jobs.Backup), this.Execute_CanExecute(Jobs.Backup));
@@ -451,42 +445,19 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     public ICommand CommandUploadTemplate { get; }
 
-    public ConnectionStatusViewModel ConnectionStatus
-    {
-        get { return this.connectionStatus; }
-        private set { this.RaiseAndSetIfChanged(ref this.connectionStatus, value); }
-    }
+    public ConnectionStatusViewModel ConnectionStatus { get; private set { this.RaiseAndSetIfChanged(ref field, value); } }
 
     public ItemsTreeViewModel ItemsTree { get; }
 
-    private Boolean HasBackupDirectory
-    {
-        get { return this.hasBackupDirectory; }
-        set { this.RaiseAndSetIfChanged(ref this.hasBackupDirectory, value); }
-    }
+    private Boolean HasBackupDirectory { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
-    public Boolean HasItems
-    {
-        get { return this.hasItems; }
-        private set { this.RaiseAndSetIfChanged(ref this.hasItems, value); }
-    }
+    public Boolean HasItems { get; private set { this.RaiseAndSetIfChanged(ref field, value); } }
 
-    private Jobs Jobs
-    {
-        get { return this.jobs; }
-        set { this.RaiseAndSetIfChanged(ref this.jobs, value); }
-    }
+    private Jobs Jobs { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
-    public String? JobsText
-    {
-        get { return this.Jobs.GetDisplayText(); }
-    }
+    public String? JobsText { get { return this.Jobs.GetDisplayText(); } }
 
-    public HandWritingRecognitionLanguageViewModel HandWritingRecognitionLanguage
-    {
-        get { return this.handWritingRecognitionLanguage; }
-        set { this.RaiseAndSetIfChanged(ref this.handWritingRecognitionLanguage, value); }
-    }
+    public HandWritingRecognitionLanguageViewModel HandWritingRecognitionLanguage { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
     public IEnumerable<HandWritingRecognitionLanguageViewModel> HandWritingRecognitionLanguages { get; }
 
@@ -498,10 +469,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     public Interaction<DialogWindowModel, Boolean> ShowDialog { get; }
 
-    public static String Title
-    {
-        get { return $"reMarkable Remember - {Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)}"; }
-    }
+    public static String Title { get { return $"reMarkable Remember - {Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)}"; } }
 
     private sealed class Job : IDisposable
     {

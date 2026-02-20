@@ -19,11 +19,6 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
     private readonly IDataService dataService;
     private readonly ITabletService tabletService;
 
-    private String category;
-    private TemplateIconViewModel icon;
-    private String name;
-    private String sourceFilePath;
-
     public TemplateUploadViewModel(IDataService dataService, ITabletService tabletService) : base("Template", "Upload", "Cancel")
     {
         this.dataService = dataService;
@@ -31,10 +26,10 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
 
         this.Icons = TemplateIconViewModel.GetIcons();
 
-        this.category = String.Empty;
-        this.icon = this.Icons.First();
-        this.name = String.Empty;
-        this.sourceFilePath = String.Empty;
+        this.Category = String.Empty;
+        this.Icon = this.Icons.First();
+        this.Name = String.Empty;
+        this.SourceFilePath = String.Empty;
 
         this.CommandSetSourceFilePath = ReactiveCommand.CreateFromTask(this.SetSourceFilePath);
 
@@ -45,15 +40,15 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
 
     public ICommand CommandSetSourceFilePath { get; }
 
-    public String Category { get { return this.category; } set { this.RaiseAndSetIfChanged(ref this.category, value); } }
+    public String Category { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
-    public TemplateIconViewModel Icon { get { return this.icon; } set { this.RaiseAndSetIfChanged(ref this.icon, value); } }
+    public TemplateIconViewModel Icon { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
     public IEnumerable<TemplateIconViewModel> Icons { get; }
 
-    public String Name { get { return this.name; } set { this.RaiseAndSetIfChanged(ref this.name, value); } }
+    public String Name { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
-    public String SourceFilePath { get { return this.sourceFilePath; } private set { this.RaiseAndSetIfChanged(ref this.sourceFilePath, value); } }
+    public String SourceFilePath { get; private set { this.RaiseAndSetIfChanged(ref field, value); } }
 
     private void CheckProperty(String value, String propertyName, String? displayName = null)
     {

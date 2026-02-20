@@ -15,13 +15,6 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed partial class SettingsViewModel : DialogWindowModel
 {
-    private String backup;
-    private HandWritingRecognitionLanguageViewModel handWritingRecognitionLanguage;
-    private String myScriptApplicationKey;
-    private String myScriptHmacKey;
-    private String tabletIp;
-    private String tabletPassword;
-
     private readonly IHandWritingRecognitionConfiguration handWritingRecognitionConfiguration;
     private readonly HandWritingRecognitionConfigurationMyScript? myScriptConfiguration;
     private readonly ITabletConfiguration tabletConfiguration;
@@ -34,12 +27,12 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         this.myScriptConfiguration = handWritingRecognitionService.Configuration as HandWritingRecognitionConfigurationMyScript;
         this.tabletConfiguration = tabletService.Configuration;
 
-        this.backup = this.tabletConfiguration.Backup;
-        this.handWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionConfiguration.Language, StringComparison.Ordinal));
-        this.myScriptApplicationKey = this.myScriptConfiguration?.ApplicationKey ?? String.Empty;
-        this.myScriptHmacKey = this.myScriptConfiguration?.HmacKey ?? String.Empty;
-        this.tabletIp = this.tabletConfiguration.IP;
-        this.tabletPassword = this.tabletConfiguration.Password;
+        this.Backup = this.tabletConfiguration.Backup;
+        this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionConfiguration.Language, StringComparison.Ordinal));
+        this.MyScriptApplicationKey = this.myScriptConfiguration?.ApplicationKey ?? String.Empty;
+        this.MyScriptHmacKey = this.myScriptConfiguration?.HmacKey ?? String.Empty;
+        this.TabletIp = this.tabletConfiguration.IP;
+        this.TabletPassword = this.tabletConfiguration.Password;
 
         this.CommandSetBackup = ReactiveCommand.CreateFromTask(this.SetBackup);
 
@@ -49,21 +42,21 @@ public sealed partial class SettingsViewModel : DialogWindowModel
 
     public ICommand CommandSetBackup { get; }
 
-    public String Backup { get { return this.backup; } private set { this.RaiseAndSetIfChanged(ref this.backup, value); } }
+    public String Backup { get; private set { this.RaiseAndSetIfChanged(ref field, value); } }
 
-    public HandWritingRecognitionLanguageViewModel HandWritingRecognitionLanguage { get { return this.handWritingRecognitionLanguage; } set { this.RaiseAndSetIfChanged(ref this.handWritingRecognitionLanguage, value); } }
+    public HandWritingRecognitionLanguageViewModel HandWritingRecognitionLanguage { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
     public IEnumerable<HandWritingRecognitionLanguageViewModel> HandWritingRecognitionLanguages { get; }
 
     public Boolean HasMyScript { get { return this.myScriptConfiguration != null; } }
 
-    public String MyScriptApplicationKey { get { return this.myScriptApplicationKey; } set { this.RaiseAndSetIfChanged(ref this.myScriptApplicationKey, value); } }
+    public String MyScriptApplicationKey { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
-    public String MyScriptHmacKey { get { return this.myScriptHmacKey; } set { this.RaiseAndSetIfChanged(ref this.myScriptHmacKey, value); } }
+    public String MyScriptHmacKey { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
-    public String TabletIp { get { return this.tabletIp; } set { this.RaiseAndSetIfChanged(ref this.tabletIp, value); } }
+    public String TabletIp { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
-    public String TabletPassword { get { return this.tabletPassword; } set { this.RaiseAndSetIfChanged(ref this.tabletPassword, value); } }
+    public String TabletPassword { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
     private void CheckTabletIp(String host)
     {
