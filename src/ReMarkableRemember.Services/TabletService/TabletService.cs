@@ -247,7 +247,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
                 pageBuffers.Add(pageBuffer);
             }
 
-            return new Notebook(pageBuffers, tablet.Information.Resolution);
+            return Notebook.Parse(pageBuffers, tablet.Information.Resolution);
         }
         finally
         {

@@ -119,7 +119,7 @@ public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWrit
         return await Task.WhenAll(notebook.Pages.Select(page => this.Recognize(page, language, throttler))).ConfigureAwait(false);
     }
 
-    private async Task<String> Recognize(Notebook.Page page, String language, SemaphoreSlim throttler)
+    private async Task<String> Recognize(Page page, String language, SemaphoreSlim throttler)
     {
         await throttler.WaitAsync().ConfigureAwait(false);
 
@@ -156,20 +156,20 @@ public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWrit
         }
     }
 
-    private static String BuildRequestBody(Notebook.Page page, String language)
+    private static String BuildRequestBody(Page page, String language)
     {
         List<BatchInput.Stroke> strokes = new List<BatchInput.Stroke>();
-        foreach (Notebook.Page.Line line in page.Lines)
+        foreach (Line line in page.Lines)
         {
             if (line.Type is
-                not Notebook.Page.Line.PenType.EraseArea and
-                not Notebook.Page.Line.PenType.Eraser and
-                not Notebook.Page.Line.PenType.Highlighter1 and
-                not Notebook.Page.Line.PenType.Highlighter2)
+                not PenType.EraseArea and
+                not PenType.Eraser and
+                not PenType.Highlighter1 and
+                not PenType.Highlighter2)
             {
                 List<Double> x = new List<Double>();
                 List<Double> y = new List<Double>();
-                foreach (Notebook.Page.Line.Point point in line.Points)
+                foreach (Point point in line.Points)
                 {
                     x.Add(point.X);
                     y.Add(point.Y);
@@ -178,7 +178,7 @@ public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWrit
             }
         }
 
-        BatchInput batchInput = new BatchInput(page, language, strokes);
+        BatchInput batchInput = new BatchInput(language, page.Resolution, strokes);
         return JsonSerializer.Serialize(batchInput, jsonSerializerOptions);
     }
 
@@ -191,12 +191,12 @@ public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWrit
 
     private sealed class BatchInput
     {
-        public BatchInput(Notebook.Page page, String language, List<Stroke> strokes)
+        public BatchInput(String language, Int32 resolution, List<Stroke> strokes)
         {
             this.Configuration = new { Lang = language };
             this.ContentType = "Text";
-            this.XDPI = page.Resolution;
-            this.YDPI = page.Resolution;
+            this.XDPI = resolution;
+            this.YDPI = resolution;
 
             this.StrokeGroups = new List<Object>() { new { Strokes = strokes } };
         }
