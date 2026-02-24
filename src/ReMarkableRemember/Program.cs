@@ -1,7 +1,6 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
-using ReactiveUI.Avalonia.Splat;
 
 namespace ReMarkableRemember;
 
@@ -15,7 +14,7 @@ public sealed class Program
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace()
-            .UseReactiveUIWithDryIoc(container => DependencyManager.Setup(container, args))
+            .UseReactiveUIWithDependencyManager(args)
             .StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
     }
 }

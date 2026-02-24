@@ -66,7 +66,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         this.WhenAnyValue(vm => vm.Jobs).Subscribe(jobs => this.RaisePropertyChanged(nameof(this.JobsText)));
         this.WhenAnyValue(vm => vm.HandWritingRecognitionLanguage).Subscribe(this.SaveHandWritingRecognitionLanguage);
 
-        DefaultScheduler.Instance.Schedule(this.Update);
+        RxApp.MainThreadScheduler.Schedule(this.Update);
     }
 
     private async Task About()
