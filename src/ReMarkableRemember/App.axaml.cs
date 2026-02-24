@@ -54,10 +54,10 @@ public partial class App : Application
         String logFilePath = FileSystem.CreateApplicationDataFilePath("logs.txt");
         File.AppendAllText(logFilePath, $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff", CultureInfo.InvariantCulture)}|ERROR|{exception.Source}|{exception}{Environment.NewLine}");
 
-        if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
+        if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.IsVisible == true)
         {
             DialogWindow dialog = new DialogWindow() { DataContext = MessageViewModel.Error(exception) };
-            await dialog.ShowDialog<Boolean?>(desktop.MainWindow).ConfigureAwait(true);
+            await dialog.ShowDialog(desktop.MainWindow).ConfigureAwait(true);
         }
     }
 }

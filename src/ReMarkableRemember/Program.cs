@@ -14,7 +14,7 @@ public sealed class Program
                   .UsePlatformDetect()
                   .WithInterFont()
                   .LogToTrace()
-                  .UseReactiveUI()
+                  .UseReactiveUI(_ => { })
                   .StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
     }
 }
