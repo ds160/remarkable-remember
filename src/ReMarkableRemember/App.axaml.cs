@@ -1,18 +1,12 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reactive;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using ReMarkableRemember.Common.FileSystem;
-using ReMarkableRemember.Services.ConfigurationService;
-using ReMarkableRemember.Services.DataService;
-using ReMarkableRemember.Services.HandWritingRecognitionService;
-using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.ViewModels;
 using ReMarkableRemember.Views;
 
@@ -33,15 +27,7 @@ public partial class App : Application
     {
         if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            ServiceProvider services = new ServiceCollection()
-                .AddSingleton<IConfigurationService, ConfigurationServiceDataService>()
-                .AddSingleton<IDataService>(DataServiceSqlite.Create(desktop.Args?.FirstOrDefault()))
-                .AddSingleton<IHandWritingRecognitionService, HandWritingRecognitionServiceMyScript>()
-                .AddSingleton<ITabletService, TabletService>()
-                .AddSingleton<MainWindowModel>()
-                .BuildServiceProvider();
-
-            Object dataContext = services.GetRequiredService<MainWindowModel>();
+            Object dataContext = DependencyManager.GetRequired<MainWindowModel>();
             desktop.MainWindow = new MainWindow() { DataContext = dataContext };
             this.DataContext = dataContext;
         }
