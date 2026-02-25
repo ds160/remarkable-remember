@@ -2,30 +2,36 @@ using System;
 using System.Linq;
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
-using ReactiveUI.Avalonia.Splat;
+using ReactiveUI.Avalonia;
 using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.ViewModels;
-using Splat;
 
 namespace ReMarkableRemember;
 
 public static class DependencyManager
 {
-    public static T GetRequired<T>()
+    private static IServiceProvider? serviceProvider;
+
+    public static T GetRequired<T>() where T : notnull
     {
-        return AppLocator.Current.GetService<T>() ?? throw new ArgumentException($"{typeof(T)} is not registered.");
+        if (serviceProvider is null) { throw new InvalidOperationException(); }
+
+        return serviceProvider.GetRequiredService<T>();
     }
 
     public static AppBuilder UseReactiveUIWithDependencyManager(this AppBuilder builder, String[] args)
     {
-        return builder.UseReactiveUIWithMicrosoftDependencyResolver(container => container
+        serviceProvider = new ServiceCollection()
             .AddSingleton<IConfigurationService, ConfigurationServiceDataService>()
             .AddSingleton<IDataService>(DataServiceSqlite.Create(args?.FirstOrDefault()))
             .AddSingleton<IHandWritingRecognitionService, HandWritingRecognitionServiceMyScript>()
             .AddSingleton<ITabletService, TabletService>()
-            .AddSingleton<MainWindowModel>(), null);
+            .AddSingleton<MainWindowModel>()
+            .BuildServiceProvider();
+
+        return builder.UseReactiveUI(_ => { });
     }
 }
