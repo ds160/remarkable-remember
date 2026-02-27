@@ -1,8 +1,6 @@
 using System;
 using System.Linq;
-using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
-using ReactiveUI.Avalonia;
 using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
@@ -11,27 +9,23 @@ using ReMarkableRemember.ViewModels;
 
 namespace ReMarkableRemember;
 
-public static class DependencyManager
+public sealed class DependencyManager
 {
-    private static IServiceProvider? serviceProvider;
+    private readonly IServiceProvider serviceProvider;
 
-    public static T Resolve<T>() where T : notnull
+    public DependencyManager(String[]? args)
     {
-        if (serviceProvider is null) { throw new InvalidOperationException(); }
-
-        return serviceProvider.GetRequiredService<T>();
-    }
-
-    public static AppBuilder UseReactiveUIWithDependencyManager(this AppBuilder builder, String[] args)
-    {
-        serviceProvider = new ServiceCollection()
+        this.serviceProvider = new ServiceCollection()
             .AddSingleton<IConfigurationService, ConfigurationServiceDataService>()
             .AddSingleton<IDataService>(DataServiceSqlite.Create(args?.FirstOrDefault()))
             .AddSingleton<IHandWritingRecognitionService, HandWritingRecognitionServiceMyScript>()
             .AddSingleton<ITabletService, TabletService>()
             .AddSingleton<MainWindowModel>()
             .BuildServiceProvider();
+    }
 
-        return builder.UseReactiveUI(_ => { });
+    public T Resolve<T>() where T : notnull
+    {
+        return this.serviceProvider.GetRequiredService<T>();
     }
 }

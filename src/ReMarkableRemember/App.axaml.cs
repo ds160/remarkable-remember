@@ -21,7 +21,8 @@ public partial class App : Application
     {
         if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            Object dataContext = DependencyManager.Resolve<MainWindowModel>();
+            DependencyManager dependencyManager = new DependencyManager(desktop.Args);
+            Object dataContext = dependencyManager.Resolve<MainWindowModel>();
             desktop.MainWindow = new MainWindow() { DataContext = dataContext };
             this.DataContext = dataContext;
         }
