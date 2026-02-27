@@ -5,7 +5,6 @@ using System.Reactive;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using ReactiveUI;
 using ReMarkableRemember.Common.FileSystem;
 using ReMarkableRemember.ViewModels;
 using ReMarkableRemember.Views;
@@ -14,10 +13,13 @@ namespace ReMarkableRemember;
 
 public partial class App : Application
 {
-    public App()
+    static App()
     {
-        RxApp.DefaultExceptionHandler = Observer.Create<Exception>(this.ExceptionHandler, this.ExceptionHandler);
+        DefaultExceptionHandler = Observer.Create<Exception>(ExceptionHandler, ExceptionHandler);
     }
+
+    public static IObserver<Exception> DefaultExceptionHandler { get; }
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -27,7 +29,7 @@ public partial class App : Application
     {
         if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            Object dataContext = DependencyManager.GetRequired<MainWindowModel>();
+            Object dataContext = DependencyManager.Resolve<MainWindowModel>();
             desktop.MainWindow = new MainWindow() { DataContext = dataContext };
             this.DataContext = dataContext;
         }
@@ -35,12 +37,12 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    private async void ExceptionHandler(Exception exception)
+    private static async void ExceptionHandler(Exception exception)
     {
         String logFilePath = FileSystem.CreateApplicationDataFilePath("logs.txt");
         File.AppendAllText(logFilePath, $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff", CultureInfo.InvariantCulture)}|ERROR|{exception.Source}|{exception}{Environment.NewLine}");
 
-        if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.IsVisible == true)
+        if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow?.IsVisible == true)
         {
             DialogWindow dialog = new DialogWindow() { DataContext = MessageViewModel.Error(exception) };
             await dialog.ShowDialog(desktop.MainWindow).ConfigureAwait(true);

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reflection;
@@ -439,7 +438,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     public ICommand CommandSync { get; }
 
-    public ReactiveCommand<String, Unit> CommandSyncTargetDirectory { get; }
+    public ICommand CommandSyncTargetDirectory { get; }
 
     public ICommand CommandUploadFile { get; }
 

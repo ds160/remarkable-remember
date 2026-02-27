@@ -15,7 +15,7 @@ public static class DependencyManager
 {
     private static IServiceProvider? serviceProvider;
 
-    public static T GetRequired<T>() where T : notnull
+    public static T Resolve<T>() where T : notnull
     {
         if (serviceProvider is null) { throw new InvalidOperationException(); }
 

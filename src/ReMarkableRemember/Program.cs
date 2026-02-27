@@ -9,12 +9,19 @@ public sealed class Program
     [STAThread]
     public static void Main(String[] args)
     {
-        AppBuilder
-            .Configure<App>()
-            .UsePlatformDetect()
-            .WithInterFont()
-            .LogToTrace()
-            .UseReactiveUIWithDependencyManager(args)
-            .StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
+        try
+        {
+            AppBuilder
+                .Configure<App>()
+                .UsePlatformDetect()
+                .WithInterFont()
+                .LogToTrace()
+                .UseReactiveUIWithDependencyManager(args)
+                .StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
+        }
+        catch (Exception ex)
+        {
+            App.DefaultExceptionHandler.OnNext(ex);
+        }
     }
 }

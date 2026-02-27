@@ -52,5 +52,7 @@ public sealed partial class DialogWindow : ReactiveWindow<DialogWindowModel>
         action(this.ViewModel.CopyToClipboard.RegisterHandler(this.CopyToClipboardHandler));
         action(this.ViewModel.OpenFilePicker.RegisterHandler(this.OpenFilePickerHandler));
         action(this.ViewModel.OpenFolderPicker.RegisterHandler(this.OpenFolderPickerHandler));
+
+        this.ViewModel.RegisterErrorHandler(action);
     }
 }
