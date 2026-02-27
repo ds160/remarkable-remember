@@ -21,7 +21,7 @@ public sealed class Program
         }
         catch (Exception ex)
         {
-            App.DefaultExceptionHandler.OnNext(ex);
+            App.ExceptionHandler(ex);
         }
     }
 }

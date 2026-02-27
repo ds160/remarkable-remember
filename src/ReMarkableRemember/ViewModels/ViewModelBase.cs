@@ -68,13 +68,13 @@ public abstract class ViewModelBase : ReactiveObject, INotifyDataErrorInfo
 
     public void RegisterErrorHandler(Action<IDisposable> action)
     {
-        action(this.ThrownExceptions.Subscribe(App.DefaultExceptionHandler.OnNext));
+        action(this.ThrownExceptions.Subscribe(App.ExceptionHandler));
 
         foreach (PropertyInfo property in this.GetType().GetProperties())
         {
             if (property.GetValue(this) is IHandleObservableErrors handle)
             {
-                action(handle.ThrownExceptions.Subscribe(App.DefaultExceptionHandler.OnNext));
+                action(handle.ThrownExceptions.Subscribe(App.ExceptionHandler));
             }
         }
     }
