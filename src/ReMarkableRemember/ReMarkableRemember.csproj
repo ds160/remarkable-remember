@@ -19,7 +19,7 @@
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.12" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.12" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
-    <PackageReference Include="ReactiveUI.Avalonia" Version="11.4.3" />
+    <PackageReference Include="ReactiveUI.Avalonia" Version="11.4.7" />
     <PackageReference Include="Svg.Controls.Avalonia" Version="11.3.9.2" />
   </ItemGroup>
 
