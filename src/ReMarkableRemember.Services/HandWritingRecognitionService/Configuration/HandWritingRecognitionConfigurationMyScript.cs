@@ -5,11 +5,16 @@ namespace ReMarkableRemember.Services.HandWritingRecognitionService.Configuratio
 
 public sealed class HandWritingRecognitionConfigurationMyScript : ConfigurationBase, IHandWritingRecognitionConfiguration
 {
-    public HandWritingRecognitionConfigurationMyScript() : base("MyScript") { }
+    public HandWritingRecognitionConfigurationMyScript() : base("MyScript")
+    {
+        this.ApplicationKey = String.Empty;
+        this.HmacKey = String.Empty;
+        this.Language = "en_US";
+    }
 
-    public String ApplicationKey { get; set; } = String.Empty;
+    public String ApplicationKey { get; set; }
 
-    public String HmacKey { get; set; } = String.Empty;
+    public String HmacKey { get; set; }
 
-    public String Language { get; set; } = "en_US";
+    public String Language { get; set; }
 }

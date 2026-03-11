@@ -35,8 +35,9 @@ public sealed class Program
 
     private static async void ExceptionHandler(Exception exception)
     {
+        String date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff", CultureInfo.InvariantCulture);
         String logFilePath = FileSystem.CreateApplicationDataFilePath("logs.txt");
-        File.AppendAllText(logFilePath, $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff", CultureInfo.InvariantCulture)}|ERROR|{exception}{Environment.NewLine}");
+        File.AppendAllText(logFilePath, $"{date}|ERROR|{exception}{Environment.NewLine}");
 
         IClassicDesktopStyleApplicationLifetime? desktopApp = Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
         if (desktopApp?.MainWindow?.IsVisible == true)
