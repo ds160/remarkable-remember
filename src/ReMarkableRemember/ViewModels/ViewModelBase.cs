@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Reflection;
 using ReactiveUI;
 
 namespace ReMarkableRemember.ViewModels;
@@ -64,18 +63,5 @@ public abstract class ViewModelBase : ReactiveObject, INotifyDataErrorInfo
         }
 
         return Array.Empty<ValidationResult>();
-    }
-
-    public void RegisterErrorHandler(Action<IDisposable> action)
-    {
-        action(this.ThrownExceptions.Subscribe(App.ExceptionHandler));
-
-        foreach (PropertyInfo property in this.GetType().GetProperties())
-        {
-            if (property.GetValue(this) is IHandleObservableErrors handle)
-            {
-                action(handle.ThrownExceptions.Subscribe(App.ExceptionHandler));
-            }
-        }
     }
 }

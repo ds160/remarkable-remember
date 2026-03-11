@@ -51,7 +51,5 @@ public sealed partial class MainWindow : ReactiveWindow<MainWindowModel>
         action(this.ViewModel.OpenFilePicker.RegisterHandler(this.OpenFilePickerHandler));
         action(this.ViewModel.OpenFolderPicker.RegisterHandler(this.OpenFolderPickerHandler));
         action(this.ViewModel.OpenSaveFilePicker.RegisterHandler(this.OpenSaveFilePickerHandler));
-
-        this.ViewModel.RegisterErrorHandler(action);
     }
 }
