@@ -11,8 +11,12 @@
         <vm:AboutViewModel/>
     </Design.DataContext>
 
-    <StackPanel HorizontalAlignment="Center" Margin="0, 0, 0, 24" Spacing="32">
-        <Image Source="/Assets/About.png" Width="128"/>
+    <UserControl.Resources>
+        <StreamGeometry x:Key="Logo">M8 8C8.82048 7.2616 10.6051 6.4616 12.1435 6.4616C13.4154 6.4616 14.7486 6.91296 16 8V0.43072C15.2205 0.14352 14.441 0 13.7026 0C10.5846 0 8 2.56416 8 7.87696V8ZM8 16V8L0 0V8L8 16Z</StreamGeometry>
+    </UserControl.Resources>
+
+    <StackPanel HorizontalAlignment="Center" Margin="0, 24" Spacing="32">
+        <PathIcon Data="{StaticResource Logo}" Height="128" Width="128"/>
         <StackPanel>
             <TextBlock Text="reMarkable Remember" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
             <TextBlock Text="{Binding Source={x:Static vm:AboutViewModel.Version}}" HorizontalAlignment="Center"/>
