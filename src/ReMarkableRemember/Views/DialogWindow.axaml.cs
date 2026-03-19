@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
@@ -21,7 +23,7 @@ public sealed partial class DialogWindow : ReactiveWindow<DialogWindowModel>
     {
         if (this.Clipboard != null)
         {
-            await this.Clipboard.SetTextAsync(context.Input);
+            await this.Clipboard.SetValueAsync(DataFormat.Text, context.Input);
             context.SetOutput(true);
         }
         else
