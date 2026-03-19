@@ -3,8 +3,8 @@ using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Svg;
 using ReMarkableRemember.Helper;
 using ReMarkableRemember.ViewModels;
 
@@ -48,9 +48,11 @@ public sealed class ItemHintColumnView : StackPanel
         ToolTip.SetTip(this, ItemViewModel.GetToolTip(dateTime, hint));
     }
 
-    private static Bitmap? GetImage(DateTime? dateTime, ItemViewModel.Hint hint)
+    private static SvgImage? GetImage(DateTime? dateTime, ItemViewModel.Hint hint)
     {
         ItemViewModel.Image image = ItemViewModel.GetImage(dateTime, hint);
-        return (image != ItemViewModel.Image.None) ? new Bitmap(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/Dots/{image}.png"))) : null;
+        return (image != ItemViewModel.Image.None)
+            ? new SvgImage() { Source = SvgSource.Load(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/Dots/{image}.svg"))) }
+            : null;
     }
 }
