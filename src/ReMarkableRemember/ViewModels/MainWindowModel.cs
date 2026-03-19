@@ -18,7 +18,6 @@ using ReMarkableRemember.Services.DataService.Models;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
 using ReMarkableRemember.Services.TabletService;
-using ReMarkableRemember.Services.TabletService.Exceptions;
 using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.ViewModels;
@@ -352,8 +351,10 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
                 return false;
             }
         }
-        catch (TabletException)
+        catch (Exception exception)
         {
+            Log.Exception(exception);
+
             this.ItemsTree.Items.Clear();
             return false;
         }

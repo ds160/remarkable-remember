@@ -20,7 +20,8 @@ public abstract class ConfigurationBase : IConfiguration
 
     public async Task Save()
     {
-        await this.service!.Save(this).ConfigureAwait(false);
+        if (this.service == null) { throw new InvalidOperationException(); }
+        await this.service.Save(this).ConfigureAwait(false);
     }
 
     internal void SetService(IConfigurationService service)

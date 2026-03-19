@@ -204,12 +204,19 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
             {
                 if (file.IsRegularFile && file.Name.EndsWith(".metadata", StringComparison.Ordinal))
                 {
-                    String metaDataFileText = await Task.Run(() => client.ReadAllText(file.FullName)).ConfigureAwait(false);
-                    MetaDataFile metaDataFile = JsonSerializer.Deserialize<MetaDataFile>(metaDataFileText, jsonSerializerOptions);
-                    if (metaDataFile.Deleted != true)
+                    try
                     {
-                        String id = Path.GetFileNameWithoutExtension(file.Name);
-                        allItems.Add(new TabletItem(id, metaDataFile.LastModified, metaDataFile.Parent, metaDataFile.Type, metaDataFile.VisibleName));
+                        String metaDataFileText = await Task.Run(() => client.ReadAllText(file.FullName)).ConfigureAwait(false);
+                        MetaDataFile metaDataFile = JsonSerializer.Deserialize<MetaDataFile>(metaDataFileText, jsonSerializerOptions);
+                        if (metaDataFile.Deleted != true)
+                        {
+                            String id = Path.GetFileNameWithoutExtension(file.Name);
+                            allItems.Add(new TabletItem(id, metaDataFile.LastModified, metaDataFile.Parent, metaDataFile.Type, metaDataFile.VisibleName));
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        throw new TabletException($"Failed to read {file.FullName}.", exception);
                     }
                 }
             }
