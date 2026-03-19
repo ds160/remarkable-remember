@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Svg;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -11,13 +11,13 @@ public sealed class MessageViewModel : DialogWindowModel
 
     private MessageViewModel(String title, String message) : base(title, "Yes", "No")
     {
-        this.Icon = new Bitmap(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/Question.png")));
+        this.Icon = LoadIcon("Question");
         this.Message = message;
     }
 
     private MessageViewModel(Exception exception) : base("Error", "OK")
     {
-        this.Icon = new Bitmap(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/Error.png")));
+        this.Icon = LoadIcon("Error");
         this.Message = exception.Message;
     }
 
@@ -31,7 +31,12 @@ public sealed class MessageViewModel : DialogWindowModel
         return new MessageViewModel(title, message);
     }
 
-    public Bitmap Icon { get; }
+    public SvgImage Icon { get; }
 
     public String Message { get; }
+
+    private static SvgImage LoadIcon(String svg)
+    {
+        return new SvgImage() { Source = SvgSource.Load(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/{svg}.svg"))) };
+    }
 }
