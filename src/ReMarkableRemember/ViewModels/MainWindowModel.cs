@@ -28,6 +28,8 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     private readonly IHandWritingRecognitionService handWritingRecognitionService;
     private readonly ITabletService tabletService;
 
+    private String? itemsNotReadable;
+
     public MainWindowModel(IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ITabletService tabletService)
     {
         this.dataService = dataService;
@@ -331,12 +333,19 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
                 {
                     using Job? job = this.HasItems ? null : new Job(Jobs.GetItems, this);
 
-                    IEnumerable<TabletItem> tabletItemsAll = await this.tabletService.GetItems().ConfigureAwait(true);
-                    IEnumerable<TabletItem> tabletItems = tabletItemsAll.Where(item => !item.Trashed).ToArray();
+                    TabletItems tabletItems = await this.tabletService.GetItems().ConfigureAwait(true);
+                    IEnumerable<TabletItem> tabletItemsNotTrashed = tabletItems.Items.Where(item => !item.Trashed).ToArray();
 
-                    await ItemViewModel.UpdateItems(tabletItems, this.ItemsTree.Items, null, this.dataService, this.handWritingRecognitionService, this.tabletService).ConfigureAwait(true);
+                    await ItemViewModel.UpdateItems(tabletItemsNotTrashed, this.ItemsTree.Items, null, this.dataService, this.handWritingRecognitionService, this.tabletService).ConfigureAwait(true);
 
                     this.ItemsTree.Sort(new Comparison<ItemViewModel>(ItemViewModel.Compare));
+
+                    String itemsNotReadable = String.Join(Environment.NewLine, tabletItems.NotReadable);
+                    if (!String.IsNullOrEmpty(itemsNotReadable) && !String.Equals(itemsNotReadable, this.itemsNotReadable, StringComparison.Ordinal))
+                    {
+                        await this.ShowDialog.Handle(MessageViewModel.Error($"Failed to read following files from tablet:{Environment.NewLine}{itemsNotReadable}"));
+                    }
+                    this.itemsNotReadable = itemsNotReadable;
 
                     return true;
                 }

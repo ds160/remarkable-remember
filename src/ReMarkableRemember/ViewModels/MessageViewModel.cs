@@ -7,36 +7,42 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class MessageViewModel : DialogWindowModel
 {
-    private static readonly String? assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
-
-    private MessageViewModel(String title, String message) : base(title, "Yes", "No")
+    private enum Icon
     {
-        this.Icon = LoadIcon("Question");
-        this.Message = message;
+        Error,
+        Question
     }
 
-    private MessageViewModel(Exception exception) : base("Error", "OK")
+    private static readonly String? assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+
+    private MessageViewModel(String title, String message, Icon icon, String textClose, String? textCancel = null)
+        : base(title, textClose, textCancel)
     {
-        this.Icon = LoadIcon("Error");
-        this.Message = exception.Message;
+        this.Image = LoadImage(icon);
+        this.Message = message;
     }
 
     internal static MessageViewModel Error(Exception exception)
     {
-        return new MessageViewModel(exception);
+        return Error(exception.Message);
+    }
+
+    internal static MessageViewModel Error(String message)
+    {
+        return new MessageViewModel("Error", message, Icon.Error, "OK");
     }
 
     internal static MessageViewModel Question(String title, String message)
     {
-        return new MessageViewModel(title, message);
+        return new MessageViewModel(title, message, Icon.Question, "Yes", "No");
     }
 
-    public SvgImage Icon { get; }
+    public SvgImage Image { get; }
 
     public String Message { get; }
 
-    private static SvgImage LoadIcon(String svg)
+    private static SvgImage LoadImage(Icon icon)
     {
-        return new SvgImage() { Source = SvgSource.Load(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/{svg}.svg"))) };
+        return new SvgImage() { Source = SvgSource.Load(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/{icon}.svg"))) };
     }
 }

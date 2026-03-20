@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using ReMarkableRemember.Common.Notebook;
 using ReMarkableRemember.Services.TabletService.Configuration;
@@ -19,7 +18,7 @@ public interface ITabletService : IDisposable
 
     Task<TabletConnectionStatus> GetConnectionStatus();
 
-    Task<IEnumerable<TabletItem>> GetItems();
+    Task<TabletItems> GetItems();
 
     Task<Notebook> GetNotebook(String id);
 

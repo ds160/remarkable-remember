@@ -12,7 +12,7 @@
     </Design.DataContext>
 
     <StackPanel Orientation="Horizontal" Spacing="16">
-        <Image Source="{Binding Icon}" Width="50"/>
+        <Image Source="{Binding Image}" Height="50" Width="50"/>
         <TextBlock Text="{Binding Message}" TextWrapping="Wrap" MaxWidth="800"/>
     </StackPanel>
 </UserControl>

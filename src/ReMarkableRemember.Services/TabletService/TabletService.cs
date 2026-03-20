@@ -190,7 +190,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
         return new TabletConnectionStatus(information, null);
     }
 
-    public async Task<IEnumerable<TabletItem>> GetItems()
+    public async Task<TabletItems> GetItems()
     {
         await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -199,6 +199,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
             using SftpClient client = await this.CreateSftpClient().ConfigureAwait(false);
 
             List<TabletItem> allItems = new List<TabletItem>();
+            Dictionary<String, Exception> notReadable = new Dictionary<String, Exception>();
             IAsyncEnumerable<ISftpFile> files = client.ListDirectoryAsync(PATH_NOTEBOOKS, CancellationToken.None);
             await foreach (ISftpFile file in files.ConfigureAwait(false))
             {
@@ -216,14 +217,14 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
                     }
                     catch (Exception exception)
                     {
-                        throw new TabletException($"Failed to read {file.FullName}.", exception);
+                        notReadable.Add(file.FullName, exception);
                     }
                 }
             }
 
             IEnumerable<TabletItem> items = allItems.Where(item => String.IsNullOrEmpty(item.ParentCollectionId) || item.Trashed);
             foreach (TabletItem item in items) { UpdateItems(item, allItems); }
-            return items;
+            return new TabletItems(items, notReadable);
         }
         finally
         {
