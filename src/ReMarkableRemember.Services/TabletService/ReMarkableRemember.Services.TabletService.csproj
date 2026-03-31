@@ -5,6 +5,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ReMarkableRemember.Common\FileSystem\ReMarkableRemember.Common.FileSystem.csproj" />
+    <ProjectReference Include="..\..\ReMarkableRemember.Common\Localization\ReMarkableRemember.Common.Localization.csproj" />
     <ProjectReference Include="..\..\ReMarkableRemember.Common\Notebook\ReMarkableRemember.Common.Notebook.csproj" />
     <ProjectReference Include="..\ConfigurationService\ReMarkableRemember.Services.ConfigurationService.csproj" />
   </ItemGroup>

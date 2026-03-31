@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Services.TabletService.Exceptions;
 
 namespace ReMarkableRemember.Services.TabletService.Models;
@@ -9,6 +10,7 @@ public sealed class TabletTemplate
 {
     private static readonly Dictionary<String, (String, Boolean)> iconCodes = new Dictionary<String, (String, Boolean)>()
     {
+#warning Translation - at runtime
         { "\uE9FE", ("Blank", false) },
         { "\uE9FD", ("Blank", true) },
         { "\uE9AA", ("Checklist double", true) },
@@ -112,7 +114,7 @@ public sealed class TabletTemplate
         this.IconCode = iconCode;
         this.Name = name;
 
-        if (this.BytesPng.Length == 0 && this.BytesSvg.Length == 0) { throw new TabletException($"A PNG or SVG image is required to upload a template."); }
+        if (this.BytesPng.Length == 0 && this.BytesSvg.Length == 0) { throw new TabletException(Language.Current.TabletTemplateImageRequired); }
     }
 
     public Byte[] BytesPng { get; }

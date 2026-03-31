@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Common.Notebook.Exceptions;
 
 namespace ReMarkableRemember.Common.Notebook;
@@ -26,7 +27,7 @@ public sealed class Notebook
         {
             "reMarkable .lines file, version=5          " => new PageVersion5(pageBuffer, index, resolution),
             "reMarkable .lines file, version=6          " => new PageVersion6(pageBuffer, index, resolution),
-            _ => throw new NotebookException("Unknown reMarkable .lines file header."),
+            _ => throw new NotebookException(Language.Current.NotebookHeaderUnknown),
         };
     }
 }

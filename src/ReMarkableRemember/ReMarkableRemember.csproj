@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ReMarkableRemember.Common\FileSystem\ReMarkableRemember.Common.FileSystem.csproj" />
+    <ProjectReference Include="..\ReMarkableRemember.Common\Localization\ReMarkableRemember.Common.Localization.csproj" />
     <ProjectReference Include="..\ReMarkableRemember.Common\Notebook\ReMarkableRemember.Common.Notebook.csproj" />
     <ProjectReference Include="..\ReMarkableRemember.Services\ConfigurationService\ReMarkableRemember.Services.ConfigurationService.csproj" />
     <ProjectReference Include="..\ReMarkableRemember.Services\DataService\ReMarkableRemember.Services.DataService.csproj" />

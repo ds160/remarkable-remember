@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Common.Notebook.Exceptions;
 
 namespace ReMarkableRemember.Common.Notebook;
@@ -113,8 +114,8 @@ internal sealed class PageBuffer
         Int32 tagIndex = tag >> 4;
         Int32 tagType = tag & 0xF;
 
-        if (tagIndex != expectedIndex) { throw new NotebookException("Invalid reMarkable .lines file block tag index."); }
-        if (tagType != (Int32)expectedType) { throw new NotebookException("Invalid reMarkable .lines file block tag type."); }
+        if (tagIndex != expectedIndex) { throw new NotebookException(Language.Current.NotebookBlockTagIndexInvalid); }
+        if (tagType != (Int32)expectedType) { throw new NotebookException(Language.Current.NotebookBlockTagTypeInvalid); }
     }
 
     private Int32 ReadUIntVariable()

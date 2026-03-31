@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/ReMarkableRemember.Common/">
     <Project Path="src/ReMarkableRemember.Common/FileSystem/ReMarkableRemember.Common.FileSystem.csproj" />
+    <Project Path="src/ReMarkableRemember.Common/Localization/ReMarkableRemember.Common.Localization.csproj" />
     <Project Path="src/ReMarkableRemember.Common/Notebook/ReMarkableRemember.Common.Notebook.csproj" />
   </Folder>
   <Folder Name="/ReMarkableRemember.Services/">

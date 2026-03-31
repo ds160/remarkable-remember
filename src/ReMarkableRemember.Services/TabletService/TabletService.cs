@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ReMarkableRemember.Common.FileSystem;
+using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Common.Notebook;
 using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.ConfigurationService.Service;
@@ -244,8 +245,8 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
             String contentFileText = await Task.Run(() => client.ReadAllText($"{PATH_NOTEBOOKS}{id}.content")).ConfigureAwait(false);
             ContentFile contentFile = JsonSerializer.Deserialize<ContentFile>(contentFileText, jsonSerializerOptions);
 
-            if (contentFile.FileType != "notebook") { throw new TabletException("Invalid reMarkable file type."); }
-            if (contentFile.FormatVersion is not (1 or 2)) { throw new TabletException($"Invalid reMarkable file format version: '{contentFile.FormatVersion}'."); }
+            if (contentFile.FileType != "notebook") { throw new TabletException(Language.Current.TabletFileTypeInvalid(contentFile.FileType)); }
+            if (contentFile.FormatVersion is not (1 or 2)) { throw new TabletException(Language.Current.TabletFileFormatVersionInvalid(contentFile.FormatVersion)); }
 
             List<Byte[]> pageBuffers = new List<Byte[]>();
             IEnumerable<String> pages = contentFile.CPages?.Pages.Where(page => page.Deleted == null).Select(page => page.Id) ?? contentFile.Pages ?? [];
@@ -273,7 +274,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
             using SftpClient sftpClient = tablet.SftpClient;
             using SshClient sshClient = await this.CreateSshClient().ConfigureAwait(false);
 
-            if (!tablet.Information.LamyEraserSupport) { throw new TabletException(TabletError.NotSupported, $"Lamy Eraser is not supported on {tablet.Information.Type.GetDisplayText()}."); }
+            if (!tablet.Information.LamyEraserSupport) { throw new TabletException(TabletError.NotSupported, Language.Current.TabletLamyEraserNotSupported(tablet.Information.Type.GetDisplayText())); }
 
             await ExecuteSshCommand(sshClient, "systemctl disable --now LamyEraser.service", false).ConfigureAwait(false);
 
@@ -437,27 +438,27 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
         {
             if (exception.SocketErrorCode is SocketError.ConnectionRefused)
             {
-                throw new TabletException(TabletError.SshNotConfigured, "SSH protocol information are not configured or wrong.", exception);
+                throw new TabletException(TabletError.SshNotConfigured, Language.Current.TabletSshNotConfigured, exception);
             }
 
             if (exception.SocketErrorCode is SocketError.HostDown or SocketError.HostUnreachable or SocketError.NetworkDown or SocketError.NetworkUnreachable)
             {
-                throw new TabletException(TabletError.SshNotConnected, "reMarkable is not connected via WiFi or USB.", exception);
+                throw new TabletException(TabletError.SshNotConnected, Language.Current.TabletSshNotConnected, exception);
             }
 
             throw new TabletException(exception.Message, exception);
         }
         catch (SshAuthenticationException exception)
         {
-            throw new TabletException(TabletError.SshNotConfigured, "SSH protocol information are not configured or wrong.", exception);
+            throw new TabletException(TabletError.SshNotConfigured, Language.Current.TabletSshNotConfigured, exception);
         }
         catch (SshConnectionException exception)
         {
-            throw new TabletException(TabletError.SshNotConnected, "reMarkable is not connected via WiFi or USB.", exception);
+            throw new TabletException(TabletError.SshNotConnected, Language.Current.TabletSshNotConnected, exception);
         }
         catch (SshOperationTimeoutException exception)
         {
-            throw new TabletException(TabletError.SshNotConnected, "reMarkable is not connected via WiFi or USB.", exception);
+            throw new TabletException(TabletError.SshNotConnected, Language.Current.TabletSshNotConnected, exception);
         }
     }
 
@@ -476,12 +477,12 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
                 {
                     if (socketException.SocketErrorCode is SocketError.ConnectionRefused)
                     {
-                        throw new TabletException(TabletError.UsbNotActived, "USB web interface is not activated.", exception);
+                        throw new TabletException(TabletError.UsbNotActived, Language.Current.TabletUsbNotActived, exception);
                     }
 
                     if (socketException.SocketErrorCode is SocketError.HostDown or SocketError.HostUnreachable or SocketError.NetworkDown or SocketError.NetworkUnreachable)
                     {
-                        throw new TabletException(TabletError.UsbNotConnected, "reMarkable is not connected via USB.", exception);
+                        throw new TabletException(TabletError.UsbNotConnected, Language.Current.TabletUsbNotConnected, exception);
                     }
                 }
 
@@ -492,7 +493,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
         }
         catch (TaskCanceledException exception)
         {
-            throw new TabletException(TabletError.UsbNotConnected, "reMarkable is not connected via USB.", exception);
+            throw new TabletException(TabletError.UsbNotConnected, Language.Current.TabletUsbNotConnected, exception);
         }
     }
 
@@ -544,7 +545,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
         }
         else
         {
-            throw new TabletException(TabletError.NotSupported, "The reMarkable software verion cannot be identified.");
+            throw new TabletException(TabletError.NotSupported, Language.Current.TabletSoftwareVersionUnknown);
         }
     }
 
@@ -557,7 +558,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
         if (versionInformation.Contains(VERSION_INFORMATION_RMPP)) { return TabletType.rMPaperPro; }
         if (versionInformation.Contains(VERSION_INFORMATION_RMPP_MOVE)) { return TabletType.rMPaperProMove; }
 
-        throw new TabletException(TabletError.NotSupported, "The connected reMarkable is not supported.");
+        throw new TabletException(TabletError.NotSupported, Language.Current.TabletNotSupported);
     }
 
     private static String InstallLamyEraserOptions(String serviceText, Boolean press, Boolean undo, Boolean leftHanded)
@@ -590,13 +591,13 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
     private static String UploadFileCheck(FileInfo file)
     {
-        if (file.Length >= 100 * 1024 * 1024) { throw new TabletException("File is to large."); }
+        if (file.Length >= 100 * 1024 * 1024) { throw new TabletException(Language.Current.TabletFileTooLarge); }
 
         return file.Extension.ToUpperInvariant() switch
         {
             ".PDF" => "application/pdf",
             ".EPUB" => "application/epub+zip",
-            _ => throw new TabletException("File type is not supported."),
+            _ => throw new TabletException(Language.Current.TabletFileTypeNotSupported(file.Extension)),
         };
     }
 

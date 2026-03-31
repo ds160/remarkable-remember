@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Common.Notebook.Exceptions;
 
 namespace ReMarkableRemember.Common.Notebook;
@@ -54,9 +55,9 @@ internal sealed class PageVersion6(PageBuffer buffer, Int32 index, Int32 resolut
         Byte versionCurrent = buffer.ReadByte();
         Byte type = buffer.ReadByte();
 
-        if (unknown != 0) { throw new NotebookException($"Invalid reMarkable .lines file block header: '{unknown}'."); }
-        if (versionMinimum > versionCurrent) { throw new NotebookException("Invalid reMarkable .lines file block header version."); }
-        if (versionCurrent > 2) { throw new NotebookException($"Unknown reMarkable .lines file block header version: '{versionCurrent}'."); }
+        if (unknown != 0) { throw new NotebookException(Language.Current.NotebookBlockHeaderInvalid(unknown)); }
+        if (versionMinimum > versionCurrent) { throw new NotebookException(Language.Current.NotebookBlockHeaderVersionInvalid); }
+        if (versionCurrent > 2) { throw new NotebookException(Language.Current.NotebookBlockHeaderVersionUnknown(versionCurrent)); }
 
         return new BlockHeader(buffer.Position + length, length, type, versionCurrent);
     }

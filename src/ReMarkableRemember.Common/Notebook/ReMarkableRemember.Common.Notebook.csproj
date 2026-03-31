@@ -1,2 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Localization\ReMarkableRemember.Common.Localization.csproj" />
+  </ItemGroup>
 </Project>

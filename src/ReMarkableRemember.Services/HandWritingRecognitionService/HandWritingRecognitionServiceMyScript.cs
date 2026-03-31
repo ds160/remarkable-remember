@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Common.Notebook;
 using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.ConfigurationService.Service;
@@ -112,7 +113,7 @@ public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWrit
     public async Task<IEnumerable<String>> Recognize(Notebook notebook)
     {
         String language = this.Configuration.Language;
-        if (!supportedLanguages.Contains(language)) { throw new HandWritingRecognitionException($"Language is not supported by MyScript: {language}"); }
+        if (!supportedLanguages.Contains(language)) { throw new HandWritingRecognitionException(Language.Current.MyScriptLanguageNotSupported(language)); }
 
         using SemaphoreSlim throttler = new SemaphoreSlim(MAX_TASKS);
 
@@ -138,12 +139,12 @@ public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWrit
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                throw new HandWritingRecognitionException("MyScript authorization information not configured or wrong.");
+                throw new HandWritingRecognitionException(Language.Current.MyScriptAuthorizationError);
             }
 
             if (response.StatusCode == HttpStatusCode.RequestEntityTooLarge)
             {
-                throw new HandWritingRecognitionException($"MyScript cannot analyze page {page.Index + 1}, it has to much content.");
+                throw new HandWritingRecognitionException(Language.Current.MyScriptPageAnalyzeError(page.Index + 1));
             }
 
             response.EnsureSuccessStatusCode();
