@@ -5,21 +5,27 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using ReactiveUI;
+using ReMarkableRemember.Common.Localization;
 
 namespace ReMarkableRemember.ViewModels;
 
-public abstract class ViewModelBase : ReactiveObject, INotifyDataErrorInfo
+public abstract class ViewModelBase : ReactiveObject, ILocalizedViewModel, INotifyDataErrorInfo
 {
     private readonly Dictionary<String, List<ValidationResult>> errors;
 
     protected ViewModelBase()
     {
         this.errors = new Dictionary<String, List<ValidationResult>>();
+
+#warning Check unsubscibe
+        Language.CurrentChanged += (_, _) => this.OnLocalStringsChanged();
     }
 
     public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
     public Boolean HasErrors { get { return this.errors.Count > 0; } }
+
+    public ILocalStrings LocalStrings { get { return Language.Current; } }
 
     protected void AddError(String propertyName, String errorMessage)
     {
@@ -63,5 +69,10 @@ public abstract class ViewModelBase : ReactiveObject, INotifyDataErrorInfo
         }
 
         return Array.Empty<ValidationResult>();
+    }
+
+    protected virtual void OnLocalStringsChanged()
+    {
+        this.RaisePropertyChanged(nameof(this.LocalStrings));
     }
 }

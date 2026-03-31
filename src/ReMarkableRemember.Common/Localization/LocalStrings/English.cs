@@ -15,6 +15,9 @@ internal class English : ILocalStrings
     public String NotebookBlockTagTypeInvalid { get { return "Invalid reMarkable .lines file block tag type."; } }
     public String NotebookHeaderUnknown { get { return "Unknown reMarkable .lines file header."; } }
 
+    public String SettingsTabletIp { get { return "reMarkable IP"; } }
+    public String SettingsTabletIpPlaceholder { get { return "Can be left blank if connected via USB"; } }
+
     public String TabletFileFormatVersionInvalid(Int32 formatVersion) { return $"Invalid reMarkable file format version: '{formatVersion}'."; }
     public String TabletFileTooLarge { get { return "File is too large."; } }
     public String TabletFileTypeInvalid(String type) { return $"Invalid reMarkable file type: '{type}'."; }

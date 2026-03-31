@@ -15,6 +15,9 @@ public interface ILocalStrings
     String NotebookBlockTagTypeInvalid { get; }
     String NotebookHeaderUnknown { get; }
 
+    String SettingsTabletIp { get; }
+    String SettingsTabletIpPlaceholder { get; }
+
     String TabletFileFormatVersionInvalid(Int32 formatVersion);
     String TabletFileTooLarge { get; }
     String TabletFileTypeInvalid(String type);
