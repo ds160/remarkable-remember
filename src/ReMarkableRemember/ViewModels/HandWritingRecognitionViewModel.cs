@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ReactiveUI;
+using ReMarkableRemember.Common.Localization;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -10,7 +11,8 @@ public sealed class HandwritingRecognitionViewModel : DialogWindowModel
 {
     private readonly String originalText;
 
-    public HandwritingRecognitionViewModel(String text) : base("Handwriting Recognition", "Close")
+    public HandwritingRecognitionViewModel(String text)
+        : base(Language.Current.HandwritingRecognitionTitle, Language.Current.ButtonClose)
     {
         this.originalText = text;
 

@@ -16,9 +16,6 @@ public abstract class ViewModelBase : ReactiveObject, ILocalizedViewModel, INoti
     protected ViewModelBase()
     {
         this.errors = new Dictionary<String, List<ValidationResult>>();
-
-#warning Check unsubscibe
-        Language.CurrentChanged += (_, _) => this.OnLocalStringsChanged();
     }
 
     public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
@@ -69,10 +66,5 @@ public abstract class ViewModelBase : ReactiveObject, ILocalizedViewModel, INoti
         }
 
         return Array.Empty<ValidationResult>();
-    }
-
-    protected virtual void OnLocalStringsChanged()
-    {
-        this.RaisePropertyChanged(nameof(this.LocalStrings));
     }
 }

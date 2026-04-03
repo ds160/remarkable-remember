@@ -2,12 +2,13 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
+using ReMarkableRemember.Common.Localization;
 
 namespace ReMarkableRemember.ViewModels;
 
 public sealed class AboutViewModel : DialogWindowModel
 {
-    public AboutViewModel() : base("About", "GitHub", "Close")
+    public AboutViewModel() : base(Language.Current.AboutTitle, "GitHub", Language.Current.ButtonClose)
     {
     }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Services.TabletService;
 
 namespace ReMarkableRemember.ViewModels;
@@ -8,7 +9,8 @@ public sealed partial class LamyEraserViewModel : DialogWindowModel
 {
     private readonly ITabletService tabletService;
 
-    internal LamyEraserViewModel(ITabletService tabletService) : base("Lamy Eraser Options", "Install", "Cancel")
+    internal LamyEraserViewModel(ITabletService tabletService)
+        : base(Language.Current.LamyEraserTitle, Language.Current.ButtonInstall, Language.Current.ButtonCancel)
     {
         this.tabletService = tabletService;
 

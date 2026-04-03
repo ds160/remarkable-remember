@@ -11,6 +11,7 @@ using System.Windows.Input;
 using Avalonia.Platform.Storage;
 using DynamicData.Binding;
 using ReactiveUI;
+using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Enumerations;
 using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.DataService;
@@ -84,7 +85,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
             FilePickerSaveOptions options = new FilePickerSaveOptions()
             {
                 DefaultExtension = "pdf",
-                FileTypeChoices = new[] { FilePickerFileTypes.Pdf },
+                FileTypeChoices = new[] { FilePickerFileTypesExtensions.Pdf },
                 SuggestedFileName = selectedItem.Name
             };
             String? targetPath = await this.OpenSaveFilePicker.Handle(options);
@@ -243,14 +244,14 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         String reason = String.Empty;
         if (job.IsJob(Jobs.ManageTemplates) || job.IsJob(Jobs.UploadTemplate))
         {
-            reason = "The template information has been changed. ";
+            reason = $"{Language.Current.TabletRestartReasonTemplate} ";
         }
 
-        MessageViewModel message = MessageViewModel.Question("Restart", String.Join(Environment.NewLine,
-            $"{reason}A restart is required for the changes to take effect.",
-            "Please save your work on your tablet by going to the main screen before restarting.",
-            "",
-            "Would you like to restart your reMarkable tablet now?"));
+        MessageViewModel message = MessageViewModel.Question(Language.Current.TabletRestartTitle, String.Join(Environment.NewLine,
+            $"{reason}{Language.Current.TabletRestartTakeEffect}",
+            Language.Current.TabletRestartSaveWork,
+            String.Empty,
+            Language.Current.TabletRestartQuestion));
 
         if (await this.ShowDialog.Handle(message))
         {
@@ -289,7 +290,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
             if (Boolean.TryParse(setString, out Boolean set) && set)
             {
-                String? targetDirectory = await this.OpenFolderPicker.Handle("Sync Target Folder");
+                String? targetDirectory = await this.OpenFolderPicker.Handle(Language.Current.SyncTargetFolder);
                 if (targetDirectory != null)
                 {
                     await selectedItem.SetSyncTargetDirectory(targetDirectory).ConfigureAwait(true);
@@ -343,7 +344,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
                     String itemsNotReadable = String.Join(Environment.NewLine, tabletItems.NotReadable);
                     if (!String.IsNullOrEmpty(itemsNotReadable) && !String.Equals(itemsNotReadable, this.itemsNotReadable, StringComparison.Ordinal))
                     {
-                        await this.ShowDialog.Handle(MessageViewModel.Error($"Failed to read following files from tablet:{Environment.NewLine}{itemsNotReadable}"));
+                        await this.ShowDialog.Handle(MessageViewModel.Error($"{Language.Current.TabletItemsNotReadable}{Environment.NewLine}{itemsNotReadable}"));
                     }
                     this.itemsNotReadable = itemsNotReadable;
 
@@ -377,7 +378,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Jobs.Upload, this);
 
-        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = true, FileTypeFilter = new[] { FilePickerFileTypes.Pdf, FilePickerFileTypesExtensions.Epub } };
+        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = true, FileTypeFilter = new[] { FilePickerFileTypesExtensions.Pdf, FilePickerFileTypesExtensions.Epub } };
         IEnumerable<String>? files = await this.OpenFilePicker.Handle(options);
         foreach (String file in files)
         {

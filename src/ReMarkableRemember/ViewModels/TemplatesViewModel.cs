@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Services.TabletService.Models;
@@ -16,7 +17,7 @@ public sealed class TemplatesViewModel : DialogWindowModel
     private readonly ObservableCollection<TemplateViewModel> templates;
 
     public TemplatesViewModel(IEnumerable<TabletTemplate> templates, IDataService dataService, ITabletService tabletService)
-        : base("Templates", "Restore", "Close")
+        : base(Language.Current.TemplatesTitle, Language.Current.ButtonRestore, Language.Current.ButtonClose)
     {
         this.templates = new ObservableCollection<TemplateViewModel>();
 

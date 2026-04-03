@@ -2,7 +2,7 @@ using System.Windows.Input;
 
 namespace ReMarkableRemember.ViewModels;
 
-public interface IAppModel
+public interface IAppModel : ILocalizedViewModel
 {
     ICommand CommandAbout { get; }
 

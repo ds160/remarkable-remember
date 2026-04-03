@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using Avalonia.Platform;
 using Avalonia.Svg;
+using ReMarkableRemember.Common.Localization;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -29,12 +30,12 @@ public sealed class MessageViewModel : DialogWindowModel
 
     internal static MessageViewModel Error(String message)
     {
-        return new MessageViewModel("Error", message, Icon.Error, "OK");
+        return new MessageViewModel(Language.Current.ErrorTitle, message, Icon.Error, Language.Current.ButtonOK);
     }
 
     internal static MessageViewModel Question(String title, String message)
     {
-        return new MessageViewModel(title, message, Icon.Question, "Yes", "No");
+        return new MessageViewModel(title, message, Icon.Question, Language.Current.ButtonYes, Language.Current.ButtonNo);
     }
 
     public SvgImage Image { get; }

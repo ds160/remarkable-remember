@@ -1,4 +1,5 @@
 using System;
+using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Enumerations;
 using ReMarkableRemember.Services.TabletService.Models;
 
@@ -22,14 +23,14 @@ public sealed class ConnectionStatusViewModel
         this.Tablet = (this.information != null) ? $"{this.information.Type.GetDisplayText()} ({this.information.SoftwareVersion})" : null;
         this.Text = connectionStatus.Error switch
         {
-            null => "Connected",
-            TabletError.NotSupported => "Connected reMarkable not supported",
-            TabletError.Unknown => "Not connected",
-            TabletError.SshNotConfigured => "SSH protocol information are not configured or wrong",
-            TabletError.SshNotConnected => "Not connected via WiFi or USB",
-            TabletError.UsbNotActived => "USB connection is not activated",
-            TabletError.UsbNotConnected => "Not connected via USB",
-            _ => "Not connected",
+            null => Language.Current.TabletStatusConnected,
+            TabletError.NotSupported => Language.Current.TabletStatusNotSupported,
+            TabletError.Unknown => Language.Current.TabletStatusNotConnected,
+            TabletError.SshNotConfigured => Language.Current.TabletStatusSshNotConfigured,
+            TabletError.SshNotConnected => Language.Current.TabletStatusSshNotConnected,
+            TabletError.UsbNotActived => Language.Current.TabletStatusUsbNotActived,
+            TabletError.UsbNotConnected => Language.Current.TabletStatusUsbNotConnected,
+            _ => Language.Current.TabletStatusNotConnected,
         };
     }
 

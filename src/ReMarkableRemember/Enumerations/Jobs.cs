@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ReMarkableRemember.Common.Localization;
 
 namespace ReMarkableRemember.Enumerations;
 
@@ -26,16 +27,16 @@ public static class JobsExtensions
     {
         List<String> jobs = new List<String>();
 
-        if (job.HasFlag(Jobs.GetItems)) { jobs.Add("Getting Items"); }
-        if (job.HasFlag(Jobs.Sync)) { jobs.Add("Syncing"); }
-        if (job.HasFlag(Jobs.Backup)) { jobs.Add("Backup"); }
-        if (job.HasFlag(Jobs.HandwritingRecognition)) { jobs.Add("Handwriting Recognition"); }
-        if (job.HasFlag(Jobs.Download)) { jobs.Add("Downloading File"); }
-        if (job.HasFlag(Jobs.Upload)) { jobs.Add("Uploading File"); }
-        if (job.HasFlag(Jobs.UploadTemplate)) { jobs.Add("Uploading Template"); }
-        if (job.HasFlag(Jobs.ManageTemplates)) { jobs.Add("Managing Templates"); }
-        if (job.HasFlag(Jobs.InstallLamyEraser)) { jobs.Add("Installing Lamy Eraser"); }
+        if (job.HasFlag(Jobs.GetItems)) { jobs.Add(Language.Current.JobGetItems); }
+        if (job.HasFlag(Jobs.Sync)) { jobs.Add(Language.Current.JobSync); }
+        if (job.HasFlag(Jobs.Backup)) { jobs.Add(Language.Current.JobBackup); }
+        if (job.HasFlag(Jobs.HandwritingRecognition)) { jobs.Add(Language.Current.JobHandwritingRecognition); }
+        if (job.HasFlag(Jobs.Download)) { jobs.Add(Language.Current.JobDownload); }
+        if (job.HasFlag(Jobs.Upload)) { jobs.Add(Language.Current.JobUpload); }
+        if (job.HasFlag(Jobs.UploadTemplate)) { jobs.Add(Language.Current.JobUploadTemplate); }
+        if (job.HasFlag(Jobs.ManageTemplates)) { jobs.Add(Language.Current.JobManageTemplates); }
+        if (job.HasFlag(Jobs.InstallLamyEraser)) { jobs.Add(Language.Current.JobInstallLamyEraser); }
 
-        return (jobs.Count > 0) ? String.Join(" and ", jobs) : null;
+        return (jobs.Count > 0) ? String.Join(Language.Current.JobAndJoin, jobs) : null;
     }
 }

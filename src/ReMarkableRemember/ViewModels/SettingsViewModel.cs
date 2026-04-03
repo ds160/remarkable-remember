@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ReactiveUI;
+using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
 using ReMarkableRemember.Services.TabletService;
@@ -19,7 +20,8 @@ public sealed partial class SettingsViewModel : DialogWindowModel
     private readonly HandWritingRecognitionConfigurationMyScript? myScriptConfiguration;
     private readonly ITabletConfiguration tabletConfiguration;
 
-    internal SettingsViewModel(IHandWritingRecognitionService handWritingRecognitionService, ITabletService tabletService) : base("Settings", "Save", "Cancel")
+    internal SettingsViewModel(IHandWritingRecognitionService handWritingRecognitionService, ITabletService tabletService)
+        : base(Language.Current.SettingsTitle, Language.Current.ButtonSave, Language.Current.ButtonCancel)
     {
         this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(handWritingRecognitionService);
 
@@ -65,7 +67,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         if (String.IsNullOrEmpty(host)) { return; }
         if (IpRegex().IsMatch(host)) { return; }
 
-        this.AddError(nameof(this.TabletIp), "Invalid IP address");
+        this.AddError(nameof(this.TabletIp), Language.Current.SettingsTabletIpInvalid);
     }
 
     private void CheckTabletPassword(String password)
@@ -74,7 +76,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
 
         if (String.IsNullOrEmpty(password))
         {
-            this.AddError(nameof(this.TabletPassword), "Password is required");
+            this.AddError(nameof(this.TabletPassword), Language.Current.SettingsTabletPasswordRequired);
         }
     }
 
@@ -103,7 +105,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
 
     private async Task SetBackup()
     {
-        String? backupFolder = await this.OpenFolderPicker.Handle("Backup Folder");
+        String? backupFolder = await this.OpenFolderPicker.Handle(Language.Current.SettingsBackupFolder);
         this.Backup = backupFolder ?? String.Empty;
     }
 }

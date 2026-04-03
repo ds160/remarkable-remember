@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
+using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.DataService.Models;
@@ -19,7 +20,8 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
     private readonly IDataService dataService;
     private readonly ITabletService tabletService;
 
-    public TemplateUploadViewModel(IDataService dataService, ITabletService tabletService) : base("Template", "Upload", "Cancel")
+    public TemplateUploadViewModel(IDataService dataService, ITabletService tabletService)
+        : base(Language.Current.TemplateTitle, Language.Current.ButtonUpload, Language.Current.ButtonCancel)
     {
         this.dataService = dataService;
         this.tabletService = tabletService;
@@ -35,7 +37,7 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
 
         this.WhenAnyValue(vm => vm.Category).Subscribe(value => this.CheckProperty(value, nameof(this.Category)));
         this.WhenAnyValue(vm => vm.Name).Subscribe(value => this.CheckProperty(value, nameof(this.Name)));
-        this.WhenAnyValue(vm => vm.SourceFilePath).Subscribe(value => this.CheckProperty(value, nameof(this.SourceFilePath), "Source File"));
+        this.WhenAnyValue(vm => vm.SourceFilePath).Subscribe(value => this.CheckProperty(value, nameof(this.SourceFilePath), Language.Current.TemplateSourceFile));
     }
 
     public ICommand CommandSetSourceFilePath { get; }
@@ -56,7 +58,7 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
 
         if (String.IsNullOrEmpty(value))
         {
-            this.AddError(propertyName, $"{displayName ?? propertyName} is required");
+            this.AddError(propertyName, Language.Current.TemplatePropertyRequired(displayName ?? propertyName));
         }
     }
 
@@ -73,7 +75,7 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
 
     private async Task SetSourceFilePath()
     {
-        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = false, Title = "Template", FileTypeFilter = new[] { FilePickerFileTypes.ImagePng, FilePickerFileTypesExtensions.ImageSvg } };
+        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = false, Title = Language.Current.TemplateTitle, FileTypeFilter = new[] { FilePickerFileTypesExtensions.ImagePng, FilePickerFileTypesExtensions.ImageSvg } };
         IEnumerable<String>? files = await this.OpenFilePicker.Handle(options);
         String? file = files?.SingleOrDefault();
         if (file != null)

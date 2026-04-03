@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ReactiveUI;
 using ReMarkableRemember.Common.FileSystem;
+using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Common.Notebook;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.DataService.Models;
@@ -239,13 +240,13 @@ public sealed class ItemViewModel : ViewModelBase
 
     public static String? GetToolTip(DateTime? dateTime, Hint hint)
     {
-        if (hint.HasFlag(Hint.ExistsInTarget)) { return "Exists already in target directory"; }
-        if (hint.HasFlag(Hint.New)) { return "New"; }
-        if (hint.HasFlag(Hint.Modified)) { return "Modified"; }
-        if (hint.HasFlag(Hint.SyncPathChanged)) { return "Sync path changed"; }
-        if (hint.HasFlag(Hint.NotFoundInTarget)) { return "Not found in target directory"; }
+        if (hint.HasFlag(Hint.ExistsInTarget)) { return Language.Current.ItemHintExistsInTarget; }
+        if (hint.HasFlag(Hint.New)) { return Language.Current.ItemHintNew; }
+        if (hint.HasFlag(Hint.Modified)) { return Language.Current.ItemHintModified; }
+        if (hint.HasFlag(Hint.SyncPathChanged)) { return Language.Current.ItemHintSyncPathChanged; }
+        if (hint.HasFlag(Hint.NotFoundInTarget)) { return Language.Current.ItemHintNotFoundInTarget; }
 
-        if (hint == Hint.None) { return (dateTime != null) ? "Up-to-date" : null; }
+        if (hint == Hint.None) { return (dateTime != null) ? Language.Current.ItemHintUpToDate : null; }
 
         throw new NotImplementedException();
     }

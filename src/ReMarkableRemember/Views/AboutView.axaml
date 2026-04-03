@@ -21,6 +21,6 @@
             <TextBlock Text="reMarkable Remember" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
             <TextBlock Text="{Binding Source={x:Static vm:AboutViewModel.Version}}" HorizontalAlignment="Center"/>
         </StackPanel>
-        <TextBlock>A cross-platform management application for the reMarkable tablet.</TextBlock>
+        <TextBlock Text="{Binding LocalStrings.AboutText}"/>
     </StackPanel>
 </UserControl>
