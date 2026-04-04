@@ -5,7 +5,7 @@ using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.ViewModels;
 
-public sealed class ConnectionStatusViewModel
+public sealed class ConnectionStatusViewModel : ViewModelBase
 {
     private readonly TabletError? error;
     private readonly Boolean hasBasicConnection;
