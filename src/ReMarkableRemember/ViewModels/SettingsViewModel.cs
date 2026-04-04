@@ -9,6 +9,8 @@ using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
+using ReMarkableRemember.Services.LocalizationService;
+using ReMarkableRemember.Services.LocalizationService.Configuration;
 using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Services.TabletService.Configuration;
 
@@ -17,15 +19,17 @@ namespace ReMarkableRemember.ViewModels;
 public sealed partial class SettingsViewModel : DialogWindowModel
 {
     private readonly IHandWritingRecognitionConfiguration handWritingRecognitionConfiguration;
+    private readonly ILocalizationConfiguration localizationConfiguration;
     private readonly HandWritingRecognitionConfigurationMyScript? myScriptConfiguration;
     private readonly ITabletConfiguration tabletConfiguration;
 
-    internal SettingsViewModel(IHandWritingRecognitionService handWritingRecognitionService, ITabletService tabletService)
+    internal SettingsViewModel(IHandWritingRecognitionService handWritingRecognitionService, ILocalizationService localizationService, ITabletService tabletService)
         : base(Language.Current.SettingsTitle, Language.Current.ButtonSave, Language.Current.ButtonCancel)
     {
         this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(handWritingRecognitionService);
 
         this.handWritingRecognitionConfiguration = handWritingRecognitionService.Configuration;
+        this.localizationConfiguration = localizationService.Configuration;
         this.myScriptConfiguration = handWritingRecognitionService.Configuration as HandWritingRecognitionConfigurationMyScript;
         this.tabletConfiguration = tabletService.Configuration;
 
@@ -84,6 +88,10 @@ public sealed partial class SettingsViewModel : DialogWindowModel
     {
         this.handWritingRecognitionConfiguration.Language = this.HandWritingRecognitionLanguage.Code;
         await this.handWritingRecognitionConfiguration.Save().ConfigureAwait(true);
+
+        // this.localizationConfiguration.CultureCode;
+        // this.localizationConfiguration.DateTimeFormat;
+        await this.localizationConfiguration.Save().ConfigureAwait(true);
 
         if (this.myScriptConfiguration != null)
         {

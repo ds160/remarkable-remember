@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
+using ReMarkableRemember.Services.LocalizationService;
 using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.ViewModels;
 using ReMarkableRemember.Views;
@@ -38,6 +39,7 @@ public partial class App : Application
             .AddSingleton<IConfigurationService, ConfigurationServiceDataService>()
             .AddSingleton<IDataService>(DataServiceSqlite.Create(args?.FirstOrDefault()))
             .AddSingleton<IHandWritingRecognitionService, HandWritingRecognitionServiceMyScript>()
+            .AddSingleton<ILocalizationService, LocalizationService>()
             .AddSingleton<ITabletService, TabletService>()
             .AddSingleton<MainWindowModel>()
             .BuildServiceProvider();

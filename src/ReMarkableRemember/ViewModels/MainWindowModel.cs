@@ -18,6 +18,7 @@ using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.DataService.Models;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
+using ReMarkableRemember.Services.LocalizationService;
 using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Services.TabletService.Models;
 
@@ -27,17 +28,19 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 {
     private readonly IDataService dataService;
     private readonly IHandWritingRecognitionService handWritingRecognitionService;
+    private readonly ILocalizationService localizationService;
     private readonly ITabletService tabletService;
 
     private String? itemsNotReadable;
 
-    public MainWindowModel(IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ITabletService tabletService)
+    public MainWindowModel(IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ILocalizationService localizationService, ITabletService tabletService)
     {
         this.dataService = dataService;
         this.handWritingRecognitionService = handWritingRecognitionService;
+        this.localizationService = localizationService;
         this.tabletService = tabletService;
 
-        this.ItemsTree = new ItemsTreeViewModel();
+        this.ItemsTree = new ItemsTreeViewModel(this.localizationService);
         this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.handWritingRecognitionService);
         this.OpenFilePicker = new Interaction<FilePickerOpenOptions, IEnumerable<String>?>();
         this.OpenFolderPicker = new Interaction<String, String?>();
@@ -270,7 +273,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Jobs.Settings, this);
 
-        if (await this.ShowDialog.Handle(new SettingsViewModel(this.handWritingRecognitionService, this.tabletService)))
+        if (await this.ShowDialog.Handle(new SettingsViewModel(this.handWritingRecognitionService, this.localizationService, this.tabletService)))
         {
             // Update properties
             this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);

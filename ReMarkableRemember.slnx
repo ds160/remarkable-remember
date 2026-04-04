@@ -8,6 +8,7 @@
     <Project Path="src/ReMarkableRemember.Services/ConfigurationService/ReMarkableRemember.Services.ConfigurationService.csproj" />
     <Project Path="src/ReMarkableRemember.Services/DataService/ReMarkableRemember.Services.DataService.csproj" />
     <Project Path="src/ReMarkableRemember.Services/HandWritingRecognitionService/ReMarkableRemember.Services.HandWritingRecognitionService.csproj" />
+    <Project Path="src/ReMarkableRemember.Services/LocalizationService/ReMarkableRemember.Services.LocalizationService.csproj" />
     <Project Path="src/ReMarkableRemember.Services/TabletService/ReMarkableRemember.Services.TabletService.csproj" />
   </Folder>
   <Project Path="src/ReMarkableRemember/ReMarkableRemember.csproj" />

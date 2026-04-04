@@ -6,6 +6,7 @@ using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Svg;
 using ReMarkableRemember.Helper;
+using ReMarkableRemember.Services.LocalizationService;
 using ReMarkableRemember.ViewModels;
 
 namespace ReMarkableRemember.Views;
@@ -17,13 +18,15 @@ public sealed class ItemHintColumnView : StackPanel
     private readonly Func<DateTime?> dateTime;
     private readonly Func<ItemViewModel.Hint> hint;
     private readonly Image image;
+    private readonly ILocalizationService localizationService;
     private readonly TextBlock textBlock;
 
-    internal ItemHintColumnView(ItemViewModel item, Func<ItemViewModel, DateTime?> dateTime, Func<ItemViewModel, ItemViewModel.Hint> hint)
+    internal ItemHintColumnView(ILocalizationService localizationService, ItemViewModel item, Func<ItemViewModel, DateTime?> dateTime, Func<ItemViewModel, ItemViewModel.Hint> hint)
     {
         this.dateTime = () => dateTime(item);
         this.hint = () => hint(item);
         this.image = new Image() { Height = 10.0, Width = 10.0 };
+        this.localizationService = localizationService;
         this.textBlock = new TextBlock();
 
         this.Children.Add(this.image);
@@ -43,7 +46,7 @@ public sealed class ItemHintColumnView : StackPanel
         ItemViewModel.Hint hint = this.hint();
 
         this.image.Source = GetImage(dateTime, hint);
-        this.textBlock.Text = dateTime?.ToDisplayString();
+        this.textBlock.Text = dateTime?.ToDisplayString(this.localizationService.Configuration.DateTimeFormat);
 
         ToolTip.SetTip(this, ItemViewModel.GetToolTip(dateTime, hint));
     }
