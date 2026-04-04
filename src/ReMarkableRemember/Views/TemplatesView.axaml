@@ -23,8 +23,8 @@
                         <StackPanel Margin="16, 0" Spacing="4">
                             <TextBlock HorizontalAlignment="Center" Text="{Binding Name}" FontWeight="Bold"/>
                             <TextBlock HorizontalAlignment="Center" Text="{Binding Category}"/>
-                            <Image HorizontalAlignment="Center" Source="{Binding Icon.Image}" Height="120" Margin="8"/>
-                            <Button HorizontalAlignment="Center" Content="Delete" Command="{Binding CommandDelete}"/>
+                            <Image HorizontalAlignment="Center" Source="{Binding Icon}" Height="120" Margin="8"/>
+                            <Button HorizontalAlignment="Center" Content="{Binding LocalStrings.ButtonDelete}" Command="{Binding CommandDelete}"/>
                         </StackPanel>
                     </DockPanel>
                 </DataTemplate>

@@ -12,6 +12,7 @@ public interface ILocalStrings
 
     String ButtonCancel { get; }
     String ButtonClose { get; }
+    String ButtonDelete { get; }
     String ButtonInstall { get; }
     String ButtonNo { get; }
     String ButtonOK { get; }
@@ -27,6 +28,8 @@ public interface ILocalStrings
     String FilePickerPng { get; }
     String FilePickerSvg { get; }
 
+    String HandwritingRecognitionCopyToClipboard { get; }
+    String HandwritingRecognitionRemoveLineEndings { get; }
     String HandwritingRecognitionTitle { get; }
 
     String ItemHintExistsInTarget { get; }
@@ -35,12 +38,13 @@ public interface ILocalStrings
     String ItemHintNotFoundInTarget { get; }
     String ItemHintSyncPathChanged { get; }
     String ItemHintUpToDate { get; }
+    String ItemSyncTargetFolder { get; }
 
-    String ItemsTreeViewBackupInformation { get; }
-    String ItemsTreeViewName { get; }
-    String ItemsTreeViewModified { get; }
-    String ItemsTreeViewSyncInformation { get; }
-    String ItemsTreeViewSyncPath { get; }
+    String ItemsTreeHeaderBackupInformation { get; }
+    String ItemsTreeHeaderName { get; }
+    String ItemsTreeHeaderModified { get; }
+    String ItemsTreeHeaderSyncInformation { get; }
+    String ItemsTreeHeaderSyncPath { get; }
 
     String JobAndJoin { get; }
     String JobBackup { get; }
@@ -53,7 +57,31 @@ public interface ILocalStrings
     String JobUpload { get; }
     String JobUploadTemplate { get; }
 
+    String LamyEraserEraseBehavior { get; }
+    String LamyEraserEraseBehaviorPress { get; }
+    String LamyEraserEraseBehaviorToggle { get; }
+    String LamyEraserDoubleClickBehavior { get; }
+    String LamyEraserDoubleClickBehaviorRedo { get; }
+    String LamyEraserDoubleClickBehaviorUndo { get; }
+    String LamyEraserLeftHanded { get; }
+    String LamyEraserLeftHandedNo { get; }
+    String LamyEraserLeftHandedYes { get; }
     String LamyEraserTitle { get; }
+
+    String MenuBackup { get; }
+    String MenuDownload { get; }
+    String MenuHandwritingRecognition { get; }
+    String MenuHandwritingRecognitionLanguage { get; }
+    String MenuLamyEraser { get; }
+    String MenuOpen { get; }
+    String MenuSettings { get; }
+    String MenuSync { get; }
+    String MenuSyncAndBackup { get; }
+    String MenuSyncDirectoryReset { get; }
+    String MenuSyncDirectorySet { get; }
+    String MenuTemplates { get; }
+    String MenuTemplateUpload { get; }
+    String MenuUpload { get; }
 
     String MyScriptAuthorizationError { get; }
     String MyScriptLanguageNotSupported(String language);
@@ -67,19 +95,16 @@ public interface ILocalStrings
     String NotebookHeaderUnknown { get; }
 
     String SettingsBackupFolder { get; }
+    String SettingsLanguageHandwritingRecognition { get; }
+    String SettingsMyScriptApplicationKey { get; }
+    String SettingsMyScriptHmacKey { get; }
+    String SettingsTabletPassword { get; }
+    String SettingsTabletPasswordPlaceholder { get; }
     String SettingsTabletPasswordRequired { get; }
     String SettingsTabletIp { get; }
     String SettingsTabletIpInvalid { get; }
     String SettingsTabletIpPlaceholder { get; }
     String SettingsTitle { get; }
-
-    String SyncTargetFolder { get; }
-
-    String TemplatePropertyRequired(String name);
-    String TemplateSourceFile { get; }
-    String TemplateTitle { get; }
-
-    String TemplatesTitle { get; }
 
     String TabletFileFormatVersionInvalid(Int32 formatVersion);
     String TabletFileTooLarge { get; }
@@ -106,4 +131,13 @@ public interface ILocalStrings
     String TabletTemplateImageRequired { get; }
     String TabletUsbNotActived { get; }
     String TabletUsbNotConnected { get; }
+
+    String TemplateCategory { get; }
+    String TemplateIcon { get; }
+    String TemplateName { get; }
+    String TemplatePropertyRequired(String name);
+    String TemplateSourceFilePath { get; }
+    String TemplateTitle { get; }
+
+    String TemplatesTitle { get; }
 }

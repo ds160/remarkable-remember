@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using ReMarkableRemember.Common.Localization.LocalStrings;
 
@@ -20,9 +19,5 @@ public static class Language
             "en" => new English(),
             _ => new Default(),
         };
-
-        CurrentChanged?.Invoke(null, EventArgs.Empty);
     }
-
-    public static event EventHandler? CurrentChanged;
 }

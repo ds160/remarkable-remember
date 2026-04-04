@@ -19,8 +19,8 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <CheckBox Grid.Column="0" IsChecked="{Binding RemoveLineEndings}">Remove Line Endings</CheckBox>
-            <Button Grid.Column="2" Command="{Binding CommandCopyTextToClipboard}" Content="Copy To Clipboard"/>
+            <CheckBox Grid.Column="0" IsChecked="{Binding RemoveLineEndings}" Content="{Binding LocalStrings.HandwritingRecognitionRemoveLineEndings}"/>
+            <Button Grid.Column="2" Command="{Binding CommandCopyTextToClipboard}" Content="{Binding LocalStrings.HandwritingRecognitionCopyToClipboard}"/>
         </Grid>
 
         <TextBox Text="{Binding Text}" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="700" MaxWidth="700"/>

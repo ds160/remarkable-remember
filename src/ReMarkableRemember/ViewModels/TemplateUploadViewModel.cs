@@ -26,7 +26,7 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
         this.dataService = dataService;
         this.tabletService = tabletService;
 
-        this.Icons = TemplateIconViewModel.GetIcons();
+        this.Icons = TemplateIconViewModel.GetIcons().OrderBy(icon => icon.Name).ToArray();
 
         this.Category = String.Empty;
         this.Icon = this.Icons.First();
@@ -35,9 +35,9 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
 
         this.CommandSetSourceFilePath = ReactiveCommand.CreateFromTask(this.SetSourceFilePath);
 
-        this.WhenAnyValue(vm => vm.Category).Subscribe(value => this.CheckProperty(value, nameof(this.Category)));
-        this.WhenAnyValue(vm => vm.Name).Subscribe(value => this.CheckProperty(value, nameof(this.Name)));
-        this.WhenAnyValue(vm => vm.SourceFilePath).Subscribe(value => this.CheckProperty(value, nameof(this.SourceFilePath), Language.Current.TemplateSourceFile));
+        this.WhenAnyValue(vm => vm.Category).Subscribe(value => this.CheckProperty(value, nameof(this.Category), Language.Current.TemplateCategory));
+        this.WhenAnyValue(vm => vm.Name).Subscribe(value => this.CheckProperty(value, nameof(this.Name), Language.Current.TemplateName));
+        this.WhenAnyValue(vm => vm.SourceFilePath).Subscribe(value => this.CheckProperty(value, nameof(this.SourceFilePath), Language.Current.TemplateSourceFilePath));
     }
 
     public ICommand CommandSetSourceFilePath { get; }
@@ -52,13 +52,13 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
 
     public String SourceFilePath { get; private set { this.RaiseAndSetIfChanged(ref field, value); } }
 
-    private void CheckProperty(String value, String propertyName, String? displayName = null)
+    private void CheckProperty(String value, String propertyName, String displayName)
     {
         this.ClearErrors(propertyName);
 
         if (String.IsNullOrEmpty(value))
         {
-            this.AddError(propertyName, Language.Current.TemplatePropertyRequired(displayName ?? propertyName));
+            this.AddError(propertyName, Language.Current.TemplatePropertyRequired(displayName));
         }
     }
 

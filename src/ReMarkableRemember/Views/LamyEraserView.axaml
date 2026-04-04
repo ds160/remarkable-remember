@@ -13,22 +13,23 @@
     </Design.DataContext>
 
     <StackPanel>
-        <TextBlock>Erase Behavior</TextBlock>
+        <TextBlock Text="{Binding LocalStrings.LamyEraserEraseBehavior}"/>
         <ComboBox SelectedIndex="{Binding Press}" Margin="0, 8, 0, 24" MinWidth="500">
-            <ComboBoxItem>Press the button to erase, press the button again to switch back</ComboBoxItem>
-            <ComboBoxItem>Press and hold to erase, release to switch back</ComboBoxItem>
+            <ComboBoxItem Content="{Binding LocalStrings.LamyEraserEraseBehaviorToggle}"/>
+            <ComboBoxItem Content="{Binding LocalStrings.LamyEraserEraseBehaviorPress}"/>
+            <ComboBoxItem></ComboBoxItem>
         </ComboBox>
 
-        <TextBlock>Double Click Behavior</TextBlock>
+        <TextBlock Text="{Binding LocalStrings.LamyEraserDoubleClickBehavior}"/>
         <ComboBox SelectedIndex="{Binding Undo}" Margin="0, 8, 0, 24" MinWidth="150">
-            <ComboBoxItem>Redo</ComboBoxItem>
-            <ComboBoxItem>Undo</ComboBoxItem>
+            <ComboBoxItem Content="{Binding LocalStrings.LamyEraserDoubleClickBehaviorRedo}"/>
+            <ComboBoxItem Content="{Binding LocalStrings.LamyEraserDoubleClickBehaviorUndo}"/>
         </ComboBox>
 
-        <TextBlock>Left Handed</TextBlock>
+        <TextBlock Text="{Binding LocalStrings.LamyEraserLeftHanded}"/>
         <ComboBox SelectedIndex="{Binding LeftHanded}" Margin="0, 8, 0, 0" MinWidth="150">
-            <ComboBoxItem>No</ComboBoxItem>
-            <ComboBoxItem>Yes</ComboBoxItem>
+            <ComboBoxItem Content="{Binding LocalStrings.LamyEraserLeftHandedNo}"/>
+            <ComboBoxItem Content="{Binding LocalStrings.LamyEraserLeftHandedYes}"/>
         </ComboBox>
     </StackPanel>
 </UserControl>

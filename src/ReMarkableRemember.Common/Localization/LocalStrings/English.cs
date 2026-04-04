@@ -12,6 +12,7 @@ internal class English : ILocalStrings
 
     public String ButtonCancel { get { return "Cancel"; } }
     public String ButtonClose { get { return "Close"; } }
+    public String ButtonDelete { get { return "Delete"; } }
     public String ButtonInstall { get { return "Install"; } }
     public String ButtonNo { get { return "No"; } }
     public String ButtonOK { get { return "OK"; } }
@@ -27,6 +28,8 @@ internal class English : ILocalStrings
     public String FilePickerPng { get { return "PNG image"; } }
     public String FilePickerSvg { get { return "SVG image"; } }
 
+    public String HandwritingRecognitionCopyToClipboard { get { return "Copy To Clipboard"; } }
+    public String HandwritingRecognitionRemoveLineEndings { get { return "Remove Line Endings"; } }
     public String HandwritingRecognitionTitle { get { return "Handwriting Recognition"; } }
 
     public String ItemHintExistsInTarget { get { return "Exists already in target directory"; } }
@@ -35,12 +38,13 @@ internal class English : ILocalStrings
     public String ItemHintNotFoundInTarget { get { return "Not found in target directory"; } }
     public String ItemHintSyncPathChanged { get { return "Sync path changed"; } }
     public String ItemHintUpToDate { get { return "Up-to-date"; } }
+    public String ItemSyncTargetFolder { get { return "Sync Target Folder"; } }
 
-    public String ItemsTreeViewBackupInformation { get { return "Backup Information"; } }
-    public String ItemsTreeViewName { get { return "Name"; } }
-    public String ItemsTreeViewModified { get { return "Modified"; } }
-    public String ItemsTreeViewSyncInformation { get { return "Sync Information"; } }
-    public String ItemsTreeViewSyncPath { get { return "Sync Path"; } }
+    public String ItemsTreeHeaderBackupInformation { get { return "Backup Information"; } }
+    public String ItemsTreeHeaderName { get { return "Name"; } }
+    public String ItemsTreeHeaderModified { get { return "Modified"; } }
+    public String ItemsTreeHeaderSyncInformation { get { return "Sync Information"; } }
+    public String ItemsTreeHeaderSyncPath { get { return "Sync Path"; } }
 
     public String JobAndJoin { get { return " and "; } }
     public String JobBackup { get { return "Backup"; } }
@@ -53,7 +57,31 @@ internal class English : ILocalStrings
     public String JobUpload { get { return "Uploading File"; } }
     public String JobUploadTemplate { get { return "Uploading Template"; } }
 
+    public String LamyEraserEraseBehavior { get { return "Erase Behavior"; } }
+    public String LamyEraserEraseBehaviorPress { get { return "Press and hold to erase, release to switch back"; } }
+    public String LamyEraserEraseBehaviorToggle { get { return "Press the button to erase, press the button again to switch back"; } }
+    public String LamyEraserDoubleClickBehavior { get { return "Double Click Behavior"; } }
+    public String LamyEraserDoubleClickBehaviorRedo { get { return "Redo"; } }
+    public String LamyEraserDoubleClickBehaviorUndo { get { return "Undo"; } }
+    public String LamyEraserLeftHanded { get { return "Left Handed"; } }
+    public String LamyEraserLeftHandedNo { get { return "No"; } }
+    public String LamyEraserLeftHandedYes { get { return "Yes"; } }
     public String LamyEraserTitle { get { return "Lamy Eraser Options"; } }
+
+    public String MenuBackup { get { return "Backup Items"; } }
+    public String MenuDownload { get { return "Download File"; } }
+    public String MenuHandwritingRecognition { get { return "Handwriting Recognition"; } }
+    public String MenuHandwritingRecognitionLanguage { get { return "Language for Handwriting Recognition"; } }
+    public String MenuLamyEraser { get { return "Install Lamy Eraser"; } }
+    public String MenuOpen { get { return "Open"; } }
+    public String MenuSettings { get { return "Settings"; } }
+    public String MenuSync { get { return "Sync Items"; } }
+    public String MenuSyncAndBackup { get { return "Sync & Backup Items"; } }
+    public String MenuSyncDirectoryReset { get { return "Reset Sync Directory"; } }
+    public String MenuSyncDirectorySet { get { return "Set Sync Directory"; } }
+    public String MenuTemplates { get { return "Manage Templates"; } }
+    public String MenuTemplateUpload { get { return "Upload Template"; } }
+    public String MenuUpload { get { return "Upload File"; } }
 
     public String MyScriptAuthorizationError { get { return "MyScript authorization information not configured or wrong."; } }
     public String MyScriptLanguageNotSupported(String language) { return $"Language is not supported by MyScript: {language}"; }
@@ -67,19 +95,16 @@ internal class English : ILocalStrings
     public String NotebookHeaderUnknown { get { return "Unknown reMarkable .lines file header."; } }
 
     public String SettingsBackupFolder { get { return "Backup Folder"; } }
+    public String SettingsLanguageHandwritingRecognition { get { return "Language for Handwriting Recognition"; } }
+    public String SettingsMyScriptApplicationKey { get { return "MyScript Application Key"; } }
+    public String SettingsMyScriptHmacKey { get { return "MyScript HMAC Key"; } }
+    public String SettingsTabletPassword { get { return "reMarkable Password"; } }
+    public String SettingsTabletPasswordPlaceholder { get { return "SSH protocol password, see 'Copyrights and licenses'"; } }
     public String SettingsTabletPasswordRequired { get { return "Password is required"; } }
     public String SettingsTabletIp { get { return "reMarkable IP"; } }
     public String SettingsTabletIpInvalid { get { return "Invalid IP address"; } }
     public String SettingsTabletIpPlaceholder { get { return "Can be left blank if connected via USB"; } }
     public String SettingsTitle { get { return "Settings"; } }
-
-    public String SyncTargetFolder { get { return "Sync Target Folder"; } }
-
-    public String TemplatePropertyRequired(String name) { return $"{name} is required"; }
-    public String TemplateSourceFile { get { return "Source File"; } }
-    public String TemplateTitle { get { return "Template"; } }
-
-    public String TemplatesTitle { get { return "Templates"; } }
 
     public String TabletFileFormatVersionInvalid(Int32 formatVersion) { return $"Invalid reMarkable file format version: '{formatVersion}'."; }
     public String TabletFileTooLarge { get { return "File is too large."; } }
@@ -106,4 +131,13 @@ internal class English : ILocalStrings
     public String TabletTemplateImageRequired { get { return "A PNG or SVG image is required to upload a template."; } }
     public String TabletUsbNotActived { get { return "USB web interface is not activated."; } }
     public String TabletUsbNotConnected { get { return "reMarkable is not connected via USB."; } }
+
+    public String TemplateCategory { get { return "Category"; } }
+    public String TemplateIcon { get { return "Icon"; } }
+    public String TemplateName { get { return "Name"; } }
+    public String TemplatePropertyRequired(String name) { return $"{name} is required"; }
+    public String TemplateSourceFilePath { get { return "Source File Path"; } }
+    public String TemplateTitle { get { return "Template"; } }
+
+    public String TemplatesTitle { get { return "Templates"; } }
 }

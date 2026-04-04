@@ -7,6 +7,7 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class ConnectionStatusViewModel
 {
+    private readonly TabletError? error;
     private readonly Boolean hasBasicConnection;
     private readonly TabletInformation? information;
 
@@ -16,29 +17,35 @@ public sealed class ConnectionStatusViewModel
 
     public ConnectionStatusViewModel(TabletConnectionStatus connectionStatus)
     {
+        this.error = connectionStatus.Error;
         this.hasBasicConnection = connectionStatus.Error is null or (not TabletError.NotSupported and not TabletError.Unknown and not TabletError.SshNotConfigured and not TabletError.SshNotConnected);
         this.information = connectionStatus.Information;
 
-        this.IsConnected = connectionStatus.Error is null;
+        this.IsConnected = this.error is null;
         this.Tablet = (this.information != null) ? $"{this.information.Type.GetDisplayText()} ({this.information.SoftwareVersion})" : null;
-        this.Text = connectionStatus.Error switch
-        {
-            null => Language.Current.TabletStatusConnected,
-            TabletError.NotSupported => Language.Current.TabletStatusNotSupported,
-            TabletError.Unknown => Language.Current.TabletStatusNotConnected,
-            TabletError.SshNotConfigured => Language.Current.TabletStatusSshNotConfigured,
-            TabletError.SshNotConnected => Language.Current.TabletStatusSshNotConnected,
-            TabletError.UsbNotActived => Language.Current.TabletStatusUsbNotActived,
-            TabletError.UsbNotConnected => Language.Current.TabletStatusUsbNotConnected,
-            _ => Language.Current.TabletStatusNotConnected,
-        };
     }
 
     public Boolean IsConnected { get; }
 
     public String? Tablet { get; }
 
-    public String Text { get; }
+    public String Text
+    {
+        get
+        {
+            return this.error switch
+            {
+                null => Language.Current.TabletStatusConnected,
+                TabletError.NotSupported => Language.Current.TabletStatusNotSupported,
+                TabletError.Unknown => Language.Current.TabletStatusNotConnected,
+                TabletError.SshNotConfigured => Language.Current.TabletStatusSshNotConfigured,
+                TabletError.SshNotConnected => Language.Current.TabletStatusSshNotConnected,
+                TabletError.UsbNotActived => Language.Current.TabletStatusUsbNotActived,
+                TabletError.UsbNotConnected => Language.Current.TabletStatusUsbNotConnected,
+                _ => Language.Current.TabletStatusNotConnected,
+            };
+        }
+    }
 
     public Boolean CheckJob(Jobs job)
     {

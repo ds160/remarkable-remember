@@ -270,10 +270,18 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Jobs.Settings, this);
 
-        await this.ShowDialog.Handle(new SettingsViewModel(this.handWritingRecognitionService, this.tabletService));
+        if (await this.ShowDialog.Handle(new SettingsViewModel(this.handWritingRecognitionService, this.tabletService)))
+        {
+            // Update properties
+            this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
+            this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionService.Configuration.Language, StringComparison.Ordinal));
 
-        this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
-        this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionService.Configuration.Language, StringComparison.Ordinal));
+            // Update localized strings
+            this.ItemsTree.SetLocalizedHeaders();
+            this.RaisePropertyChanged(nameof(this.ConnectionStatus));
+            this.RaisePropertyChanged(nameof(this.JobsText));
+            this.RaisePropertyChanged(nameof(this.LocalStrings));
+        }
     }
 
     private IObservable<Boolean> Settings_CanExecute()
@@ -290,7 +298,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
             if (Boolean.TryParse(setString, out Boolean set) && set)
             {
-                String? targetDirectory = await this.OpenFolderPicker.Handle(Language.Current.SyncTargetFolder);
+                String? targetDirectory = await this.OpenFolderPicker.Handle(Language.Current.ItemSyncTargetFolder);
                 if (targetDirectory != null)
                 {
                     await selectedItem.SetSyncTargetDirectory(targetDirectory).ConfigureAwait(true);

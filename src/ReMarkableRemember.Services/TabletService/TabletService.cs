@@ -648,7 +648,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
                     Categories = new List<String>() { template.Category },
                     Filename = template.FileName,
                     IconCode = template.IconCode,
-                    Landscape = TabletTemplate.IsLandscape(template.IconCode),
+                    Landscape = template.Landscape,
                     Name = template.Name
                 };
             }

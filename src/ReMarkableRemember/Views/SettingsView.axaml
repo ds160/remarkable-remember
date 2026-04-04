@@ -16,16 +16,16 @@
         <TextBlock Text="{Binding LocalStrings.SettingsTabletIp}"/>
         <TextBox Text="{Binding TabletIp}" Watermark="{Binding LocalStrings.SettingsTabletIpPlaceholder}" Margin="0, 8, 0, 16"/>
 
-        <TextBlock>reMarkable Password</TextBlock>
-        <TextBox Text="{Binding TabletPassword}" Watermark="SSH protocol password, see 'Copyrights and licenses'" Margin="0, 8, 0, 48"/>
+        <TextBlock Text="{Binding LocalStrings.SettingsTabletPassword}"/>
+        <TextBox Text="{Binding TabletPassword}" Watermark="{Binding LocalStrings.SettingsTabletPasswordPlaceholder}" Margin="0, 8, 0, 48"/>
 
-        <TextBlock IsVisible="{Binding HasMyScript}">MyScript Application Key</TextBlock>
+        <TextBlock IsVisible="{Binding HasMyScript}" Text="{Binding LocalStrings.SettingsMyScriptApplicationKey}"/>
         <TextBox IsVisible="{Binding HasMyScript}" Text="{Binding MyScriptApplicationKey}" Margin="0, 8, 0, 16"/>
 
-        <TextBlock IsVisible="{Binding HasMyScript}">MyScript HMAC Key</TextBlock>
+        <TextBlock IsVisible="{Binding HasMyScript}" Text="{Binding LocalStrings.SettingsMyScriptHmacKey}"/>
         <TextBox IsVisible="{Binding HasMyScript}" Text="{Binding MyScriptHmacKey}" Margin="0, 8, 0, 16"/>
 
-        <TextBlock>Language for Handwriting Recognition</TextBlock>
+        <TextBlock Text="{Binding LocalStrings.SettingsLanguageHandwritingRecognition}"/>
         <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding HandWritingRecognitionLanguages}" SelectedItem="{Binding HandWritingRecognitionLanguage}" Margin="0, 8, 0, 48">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
@@ -34,7 +34,7 @@
             </ComboBox.ItemTemplate>
         </ComboBox>
 
-        <TextBlock>Backup Folder</TextBlock>
+        <TextBlock Text="{Binding LocalStrings.SettingsBackupFolder}"/>
         <DockPanel Margin="0, 8, 0, 16">
             <Button DockPanel.Dock="Right" Command="{Binding CommandSetBackup}" Content="..."  VerticalAlignment="Top"/>
             <TextBox Text="{Binding Backup}" Margin="0, 0, 8, 0" IsReadOnly="True"/>
