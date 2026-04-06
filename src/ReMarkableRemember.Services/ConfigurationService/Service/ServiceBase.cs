@@ -2,13 +2,10 @@ using ReMarkableRemember.Services.ConfigurationService.Configuration;
 
 namespace ReMarkableRemember.Services.ConfigurationService.Service;
 
-public abstract class ServiceBase<T> where T : ConfigurationBase, new()
+public abstract class ServiceBase<T> : ServiceBaseWithConfiguration<T> where T : ConfigurationBase, new()
 {
     protected ServiceBase(IConfigurationService configurationService)
+        : base(configurationService, new T())
     {
-        this.Configuration = configurationService.Load<T>();
-        this.Configuration.SetService(configurationService);
     }
-
-    public T Configuration { get; }
 }

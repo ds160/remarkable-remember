@@ -18,20 +18,16 @@ public class ConfigurationServiceDataService : IConfigurationService
         this.dataService = dataService;
     }
 
-    public T Load<T>() where T : IConfiguration, new()
+    public async Task Load<T>(T configuration) where T : IConfiguration
     {
-        T configuration = new T();
-
         List<SettingData> settings = GetSettings(configuration);
-        this.dataService.LoadSettings(settings).Wait();
+        await this.dataService.LoadSettings(settings).ConfigureAwait(false);
 
         Dictionary<String, PropertyInfo> properties = GetProperties(configuration);
         foreach (SettingData setting in settings)
         {
             properties[setting.Key].SetValue(configuration, setting.Value);
         }
-
-        return configuration;
     }
 
     public async Task Save<T>(T configuration) where T : IConfiguration

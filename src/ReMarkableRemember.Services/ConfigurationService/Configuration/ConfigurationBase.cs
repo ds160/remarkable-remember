@@ -24,8 +24,9 @@ public abstract class ConfigurationBase : IConfiguration
         await this.service.Save(this).ConfigureAwait(false);
     }
 
-    internal void SetService(IConfigurationService service)
+    internal void Load(IConfigurationService service)
     {
         this.service = service;
+        this.service.Load(this).Wait();
     }
 }
