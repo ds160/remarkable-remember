@@ -133,8 +133,63 @@ public interface ILocalStrings
     String TabletUsbNotConnected { get; }
 
     String TemplateCategory { get; }
+    String TemplateFileNameBlank { get; }
+    String TemplateFileNameChecklistDouble { get; }
+    String TemplateFileNameChecklist { get; }
+    String TemplateFileNameDayplanner { get; }
+    String TemplateFileNameDotsBottom { get; }
+    String TemplateFileNameDotsTop { get; }
+    String TemplateFileNameGridBottom { get; }
+    String TemplateFileNameGridMarginLarge { get; }
+    String TemplateFileNameGridMargin { get; }
+    String TemplateFileNameGridTop { get; }
+    String TemplateFileNameLinesBottom { get; }
+    String TemplateFileNameLinesMedium { get; }
+    String TemplateFileNameLinesSmall { get; }
+    String TemplateFileNameLinesTop { get; }
+    String TemplateFileNameMarginMedium { get; }
+    String TemplateFileNameMarginSmall { get; }
+    String TemplateFileNameOneStoryboard1 { get; }
+    String TemplateFileNameOneStoryboard2 { get; }
+    String TemplateFileNameOneStoryboard { get; }
+    String TemplateFileNameTwoStoryboards { get; }
+    String TemplateFileNameFourStoryboards { get; }
+    String TemplateFileNameWeekplannerUS { get; }
+    String TemplateFileNameWeekplanner { get; }
+    String TemplateFileNameCornell { get; }
+    String TemplateFileNameDotsSmall { get; }
+    String TemplateFileNameDotsLarge { get; }
+    String TemplateFileNameGridLarge { get; }
+    String TemplateFileNameGridMedium { get; }
+    String TemplateFileNameGridSmall { get; }
+    String TemplateFileNameLinedBottom { get; }
+    String TemplateFileNameLinedHeading { get; }
+    String TemplateFileNameLinedTop { get; }
+    String TemplateFileNameLinesLarge { get; }
+    String TemplateFileNameMarginLarge { get; }
+    String TemplateFileNameUSCollege { get; }
+    String TemplateFileNameUSLegal { get; }
+    String TemplateFileNameWeekplanner1 { get; }
+    String TemplateFileNameWeekplanner2 { get; }
+    String TemplateFileNameIsometric { get; }
+    String TemplateFileNamePerspective1 { get; }
+    String TemplateFileNamePerspective2 { get; }
+    String TemplateFileNameCalligraphyLarge { get; }
+    String TemplateFileNameCalligraphyMedium { get; }
+    String TemplateFileNamePianoSheetLarge { get; }
+    String TemplateFileNamePianoSheetMedium { get; }
+    String TemplateFileNamePianoSheetSmall { get; }
+    String TemplateFileNameMusic { get; }
+    String TemplateFileNameMusicBassTablature { get; }
+    String TemplateFileNameMusicGuitarChords { get; }
+    String TemplateFileNameMusicGuitarTablature { get; }
+    String TemplateFileNameHexagonLarge { get; }
+    String TemplateFileNameHexagonMedium { get; }
+    String TemplateFileNameHexagonSmall { get; }
     String TemplateIcon { get; }
+    String TemplateLandscape { get; }
     String TemplateName { get; }
+    String TemplatePortrait { get; }
     String TemplatePropertyRequired(String name);
     String TemplateSourceFilePath { get; }
     String TemplateTitle { get; }

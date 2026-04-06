@@ -133,8 +133,63 @@ internal class English : ILocalStrings
     public String TabletUsbNotConnected { get { return "reMarkable is not connected via USB."; } }
 
     public String TemplateCategory { get { return "Category"; } }
+    public String TemplateFileNameBlank { get { return "Blank"; } }
+    public String TemplateFileNameChecklistDouble { get { return "Checklist double"; } }
+    public String TemplateFileNameChecklist { get { return "Checklist"; } }
+    public String TemplateFileNameDayplanner { get { return "Dayplanner"; } }
+    public String TemplateFileNameDotsBottom { get { return "Dots bottom"; } }
+    public String TemplateFileNameDotsTop { get { return "Dots top"; } }
+    public String TemplateFileNameGridBottom { get { return "Grid bottom"; } }
+    public String TemplateFileNameGridMarginLarge { get { return "Grid margin large"; } }
+    public String TemplateFileNameGridMargin { get { return "Grid margin"; } }
+    public String TemplateFileNameGridTop { get { return "Grid top"; } }
+    public String TemplateFileNameLinesBottom { get { return "Lines bottom"; } }
+    public String TemplateFileNameLinesMedium { get { return "Lines medium"; } }
+    public String TemplateFileNameLinesSmall { get { return "Lines small"; } }
+    public String TemplateFileNameLinesTop { get { return "Lines top"; } }
+    public String TemplateFileNameMarginMedium { get { return "Margin medium"; } }
+    public String TemplateFileNameMarginSmall { get { return "Margin small"; } }
+    public String TemplateFileNameOneStoryboard1 { get { return "One storyboard 1"; } }
+    public String TemplateFileNameOneStoryboard2 { get { return "One storyboard 2"; } }
+    public String TemplateFileNameOneStoryboard { get { return "One storyboard"; } }
+    public String TemplateFileNameTwoStoryboards { get { return "Two storyboards"; } }
+    public String TemplateFileNameFourStoryboards { get { return "Four storyboards"; } }
+    public String TemplateFileNameWeekplannerUS { get { return "Weekplanner US"; } }
+    public String TemplateFileNameWeekplanner { get { return "Weekplanner"; } }
+    public String TemplateFileNameCornell { get { return "Cornell"; } }
+    public String TemplateFileNameDotsSmall { get { return "Dots small"; } }
+    public String TemplateFileNameDotsLarge { get { return "Dots large"; } }
+    public String TemplateFileNameGridLarge { get { return "Grid large"; } }
+    public String TemplateFileNameGridMedium { get { return "Grid medium"; } }
+    public String TemplateFileNameGridSmall { get { return "Grid small"; } }
+    public String TemplateFileNameLinedBottom { get { return "Lined bottom"; } }
+    public String TemplateFileNameLinedHeading { get { return "Lined heading"; } }
+    public String TemplateFileNameLinedTop { get { return "Lined top"; } }
+    public String TemplateFileNameLinesLarge { get { return "Lines large"; } }
+    public String TemplateFileNameMarginLarge { get { return "Margin large"; } }
+    public String TemplateFileNameUSCollege { get { return "US College"; } }
+    public String TemplateFileNameUSLegal { get { return "US Legal"; } }
+    public String TemplateFileNameWeekplanner1 { get { return "Weekplanner 1"; } }
+    public String TemplateFileNameWeekplanner2 { get { return "Weekplanner 2"; } }
+    public String TemplateFileNameIsometric { get { return "Isometric"; } }
+    public String TemplateFileNamePerspective1 { get { return "Perspective 1"; } }
+    public String TemplateFileNamePerspective2 { get { return "Perspective 2"; } }
+    public String TemplateFileNameCalligraphyLarge { get { return "Calligraphy large"; } }
+    public String TemplateFileNameCalligraphyMedium { get { return "Calligraphy medium"; } }
+    public String TemplateFileNamePianoSheetLarge { get { return "Piano sheet large"; } }
+    public String TemplateFileNamePianoSheetMedium { get { return "Piano sheet medium"; } }
+    public String TemplateFileNamePianoSheetSmall { get { return "Piano sheet small"; } }
+    public String TemplateFileNameMusic { get { return "Music"; } }
+    public String TemplateFileNameMusicBassTablature { get { return "Music Bass tablature"; } }
+    public String TemplateFileNameMusicGuitarChords { get { return "Music Guitar chords"; } }
+    public String TemplateFileNameMusicGuitarTablature { get { return "Music Guitar tablature"; } }
+    public String TemplateFileNameHexagonLarge { get { return "Hexagon large"; } }
+    public String TemplateFileNameHexagonMedium { get { return "Hexagon medium"; } }
+    public String TemplateFileNameHexagonSmall { get { return "Hexagon small"; } }
     public String TemplateIcon { get { return "Icon"; } }
+    public String TemplateLandscape { get { return "Landscape"; } }
     public String TemplateName { get { return "Name"; } }
+    public String TemplatePortrait { get { return "Portrait"; } }
     public String TemplatePropertyRequired(String name) { return $"{name} is required"; }
     public String TemplateSourceFilePath { get { return "Source File Path"; } }
     public String TemplateTitle { get { return "Template"; } }
