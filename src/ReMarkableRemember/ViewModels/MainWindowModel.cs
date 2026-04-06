@@ -280,8 +280,8 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
             this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionService.Configuration.Language, StringComparison.Ordinal));
 
             // Update localized strings
-            this.ItemsTree.SetLocalizedHeaders();
-            this.RaisePropertyChanged(nameof(this.ConnectionStatus));
+            this.ConnectionStatus.UpdateLocalizedText();
+            this.ItemsTree.UpdateLocalizedHeaders();
             this.RaisePropertyChanged(nameof(this.JobsText));
             this.RaisePropertyChanged(nameof(this.LocalStrings));
         }

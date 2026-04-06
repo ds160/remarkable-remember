@@ -26,7 +26,7 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
         this.dataService = dataService;
         this.tabletService = tabletService;
 
-        this.Icons = TemplateIconViewModel.GetIcons().OrderBy(icon => icon.Name).ToArray();
+        this.Icons = TemplateIconViewModel.GetIcons();
 
         this.Category = String.Empty;
         this.Icon = this.Icons.First();

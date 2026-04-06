@@ -17,7 +17,6 @@
         <ComboBox SelectedIndex="{Binding Press}" Margin="0, 8, 0, 24" MinWidth="500">
             <ComboBoxItem Content="{Binding LocalStrings.LamyEraserEraseBehaviorToggle}"/>
             <ComboBoxItem Content="{Binding LocalStrings.LamyEraserEraseBehaviorPress}"/>
-            <ComboBoxItem></ComboBoxItem>
         </ComboBox>
 
         <TextBlock Text="{Binding LocalStrings.LamyEraserDoubleClickBehavior}"/>

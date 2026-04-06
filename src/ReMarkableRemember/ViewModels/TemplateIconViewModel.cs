@@ -32,13 +32,17 @@ public sealed class TemplateIconViewModel
     {
         get
         {
-#warning Translate
+#warning Translate + check sorting
             return this.icon.IsLandscape ? $"{this.icon.Name} (Landscape)" : $"{this.icon.Name} (Portrait)";
         }
     }
 
     internal static IEnumerable<TemplateIconViewModel> GetIcons()
     {
-        return TabletTemplateIcon.Icons.Select(icon => new TemplateIconViewModel(icon));
+        return TabletTemplateIcon.Icons
+            .Select(icon => new TemplateIconViewModel(icon))
+            .OrderBy(icon => icon.icon.IsLandscape ? 1 : 0)
+            .ThenBy(icon => icon.icon.Name)
+            .ToArray();
     }
 }

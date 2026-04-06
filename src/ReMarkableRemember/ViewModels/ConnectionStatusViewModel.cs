@@ -1,4 +1,5 @@
 using System;
+using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Enumerations;
 using ReMarkableRemember.Services.TabletService.Models;
@@ -74,5 +75,10 @@ public sealed class ConnectionStatusViewModel : ViewModelBase
             default:
                 throw new NotImplementedException();
         }
+    }
+
+    internal void UpdateLocalizedText()
+    {
+        this.RaisePropertyChanged(nameof(this.Text));
     }
 }

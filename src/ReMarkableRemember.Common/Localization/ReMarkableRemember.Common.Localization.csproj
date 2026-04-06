@@ -1,2 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <InternalsVisibleTo Include="ReMarkableRemember.Services.LocalizationService"/>
+  </ItemGroup>
 </Project>

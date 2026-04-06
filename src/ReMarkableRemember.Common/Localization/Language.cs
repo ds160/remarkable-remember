@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using ReMarkableRemember.Common.Localization.LocalStrings;
 
 namespace ReMarkableRemember.Common.Localization;
@@ -12,9 +13,9 @@ public static class Language
 
     public static ILocalStrings Current { get; private set; }
 
-    public static void Switch(String cultureCode)
+    internal static void Switch(String cultureCode)
     {
-        Current = cultureCode switch
+        Current = CultureInfo.GetCultureInfo(cultureCode).TwoLetterISOLanguageName switch
         {
             "en" => new English(),
             _ => new Default(),

@@ -21,7 +21,7 @@ public sealed class ItemsTreeViewModel : HierarchicalTreeDataGridSource<ItemView
         this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(localizationService, item => item.SyncDate, item => item.SyncHint)) { Tag = () => Language.Current.ItemsTreeHeaderSyncInformation });
         this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(localizationService, item => item.BackupDate, item => item.BackupHint)) { Tag = () => Language.Current.ItemsTreeHeaderBackupInformation });
 
-        this.SetLocalizedHeaders();
+        this.UpdateLocalizedHeaders();
     }
 
     public new ObservableCollection<ItemViewModel> Items
@@ -34,22 +34,22 @@ public sealed class ItemsTreeViewModel : HierarchicalTreeDataGridSource<ItemView
         get { return base.RowSelection!; }
     }
 
-    public void SetLocalizedHeaders()
+    internal void UpdateLocalizedHeaders()
     {
         foreach (IColumn<ItemViewModel> column in this.Columns)
         {
             if (column is HierarchicalExpanderColumn<ItemViewModel> hierarchicalExpanderColumn)
             {
-                SetLocalizedHeader(hierarchicalExpanderColumn.Inner);
+                UpdateLocalizedHeader(hierarchicalExpanderColumn.Inner);
             }
             else
             {
-                SetLocalizedHeader(column);
+                UpdateLocalizedHeader(column);
             }
         }
     }
 
-    private static void SetLocalizedHeader(IColumn<ItemViewModel> column)
+    private static void UpdateLocalizedHeader(IColumn<ItemViewModel> column)
     {
         if (column is ColumnBase<ItemViewModel> columnBase && columnBase.Tag is Func<String> action)
         {

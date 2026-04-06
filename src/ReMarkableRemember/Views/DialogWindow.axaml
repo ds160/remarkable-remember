@@ -29,14 +29,14 @@
                     HorizontalContentAlignment="Center"
                     IsCancel="True"
                     IsVisible="{Binding TextCancel, Converter={x:Static ObjectConverters.IsNotNull}}"
-                    Width="80"/>
+                    MinWidth="100"/>
             <Button Command="{Binding CommandClose}"
                     Content="{Binding TextClose}"
                     HorizontalContentAlignment="Center"
                     IsCancel="{Binding TextCancel, Converter={x:Static ObjectConverters.IsNull}}"
                     IsDefault="True"
                     IsEnabled="{Binding !HasErrors}"
-                    Width="80"/>
+                    MinWidth="100"/>
         </StackPanel>
     </Grid>
 </Window>
