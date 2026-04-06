@@ -46,7 +46,7 @@ public sealed class ItemHintColumnView : StackPanel
         ItemViewModel.Hint hint = this.hint();
 
         this.image.Source = GetImage(dateTime, hint);
-        this.textBlock.Text = dateTime?.ToDisplayString(this.localizationService.Configuration.DateTimeFormat);
+        this.textBlock.Text = dateTime?.ToDisplayString(this.localizationService.GetDateTimeFormat());
 
         ToolTip.SetTip(this, ItemViewModel.GetToolTip(dateTime, hint));
     }

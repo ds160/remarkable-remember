@@ -6,6 +6,4 @@ namespace ReMarkableRemember.Services.LocalizationService.Configuration;
 public interface ILocalizationConfiguration : IConfiguration
 {
     String CultureCode { get; set; }
-
-    String DateTimeFormat { get; set; }
 }

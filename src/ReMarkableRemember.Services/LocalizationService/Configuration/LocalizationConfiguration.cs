@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Services.ConfigurationService.Configuration;
 
@@ -9,7 +10,6 @@ public sealed class LocalizationConfiguration : ConfigurationBase, ILocalization
     public LocalizationConfiguration() : base("Localization")
     {
         this.CultureCode = String.Empty;
-        this.DateTimeFormat = "yyyy-MM-dd HH:mm";
     }
 
     public String CultureCode
@@ -17,13 +17,12 @@ public sealed class LocalizationConfiguration : ConfigurationBase, ILocalization
         get;
         set
         {
-            if (!String.Equals(field, value, StringComparison.Ordinal))
+            String cultureCode = Language.SupportedCultureCodes.SingleOrDefault(code => code.Equals(value, StringComparison.Ordinal)) ?? String.Empty;
+            if (!String.Equals(field, cultureCode, StringComparison.Ordinal))
             {
-                field = value;
-                Language.Switch(value);
+                field = cultureCode;
+                Language.Switch(cultureCode);
             }
         }
     }
-
-    public String DateTimeFormat { get; set; }
 }

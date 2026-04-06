@@ -95,6 +95,8 @@ internal class English : ILocalStrings
     public String NotebookHeaderUnknown { get { return "Unknown reMarkable .lines file header."; } }
 
     public String SettingsBackupFolder { get { return "Backup Folder"; } }
+    public String SettingsLanguageApplication { get { return "Language for Application"; } }
+    public String SettingsLanguageDefault { get { return "Default"; } }
     public String SettingsLanguageHandwritingRecognition { get { return "Language for Handwriting Recognition"; } }
     public String SettingsMyScriptApplicationKey { get { return "MyScript Application Key"; } }
     public String SettingsMyScriptHmacKey { get { return "MyScript HMAC Key"; } }

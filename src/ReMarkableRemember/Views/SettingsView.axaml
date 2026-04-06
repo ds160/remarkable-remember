@@ -35,9 +35,18 @@
         </ComboBox>
 
         <TextBlock Text="{Binding LocalStrings.SettingsBackupFolder}"/>
-        <DockPanel Margin="0, 8, 0, 16">
+        <DockPanel Margin="0, 8, 0, 48">
             <Button DockPanel.Dock="Right" Command="{Binding CommandSetBackup}" Content="..."  VerticalAlignment="Top"/>
             <TextBox Text="{Binding Backup}" Margin="0, 0, 8, 0" IsReadOnly="True"/>
         </DockPanel>
+
+        <TextBlock Text="{Binding LocalStrings.SettingsLanguageApplication}"/>
+        <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding LanguageCultureCodes}" SelectedItem="{Binding LanguageCultureCode}" Margin="0, 8, 0, 16">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding DisplayName}" />
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
     </StackPanel>
 </UserControl>

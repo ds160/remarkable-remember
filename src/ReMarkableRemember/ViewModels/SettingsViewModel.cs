@@ -27,6 +27,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         : base(Language.Current.SettingsTitle, Language.Current.ButtonSave, Language.Current.ButtonCancel)
     {
         this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(handWritingRecognitionService, localizationService);
+        this.LanguageCultureCodes = LanguageCultureCodeViewModel.GetLanguages(Language.Current.SettingsLanguageDefault);
 
         this.handWritingRecognitionConfiguration = handWritingRecognitionService.Configuration;
         this.localizationConfiguration = localizationService.Configuration;
@@ -35,6 +36,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
 
         this.Backup = this.tabletConfiguration.Backup;
         this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionConfiguration.Language, StringComparison.Ordinal));
+        this.LanguageCultureCode = this.LanguageCultureCodes.Single(language => String.Equals(language.CultureCode, this.localizationConfiguration.CultureCode, StringComparison.Ordinal));
         this.MyScriptApplicationKey = this.myScriptConfiguration?.ApplicationKey ?? String.Empty;
         this.MyScriptHmacKey = this.myScriptConfiguration?.HmacKey ?? String.Empty;
         this.TabletIp = this.tabletConfiguration.IP;
@@ -55,6 +57,10 @@ public sealed partial class SettingsViewModel : DialogWindowModel
     public IEnumerable<HandWritingRecognitionLanguageViewModel> HandWritingRecognitionLanguages { get; }
 
     public Boolean HasMyScript { get { return this.myScriptConfiguration != null; } }
+
+    public LanguageCultureCodeViewModel LanguageCultureCode { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
+
+    public IEnumerable<LanguageCultureCodeViewModel> LanguageCultureCodes { get; }
 
     public String MyScriptApplicationKey { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
@@ -89,8 +95,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         this.handWritingRecognitionConfiguration.Language = this.HandWritingRecognitionLanguage.Code;
         await this.handWritingRecognitionConfiguration.Save().ConfigureAwait(true);
 
-        // this.localizationConfiguration.CultureCode;
-        // this.localizationConfiguration.DateTimeFormat;
+        this.localizationConfiguration.CultureCode = this.LanguageCultureCode.CultureCode;
         await this.localizationConfiguration.Save().ConfigureAwait(true);
 
         if (this.myScriptConfiguration != null)

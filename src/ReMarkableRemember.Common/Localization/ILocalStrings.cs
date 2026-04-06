@@ -95,6 +95,8 @@ public interface ILocalStrings
     String NotebookHeaderUnknown { get; }
 
     String SettingsBackupFolder { get; }
+    String SettingsLanguageApplication { get; }
+    String SettingsLanguageDefault { get; }
     String SettingsLanguageHandwritingRecognition { get; }
     String SettingsMyScriptApplicationKey { get; }
     String SettingsMyScriptHmacKey { get; }

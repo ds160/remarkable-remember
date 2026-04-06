@@ -25,9 +25,13 @@ public sealed class TemplateIconViewModel
     }
 
     public String Code { get; }
+
     public Bitmap Image { get; }
+
     private Boolean IsLandscape { get; }
+
     public String Name { get; }
+
     private String SortName { get; }
 
     internal static IEnumerable<TemplateIconViewModel> GetIcons()

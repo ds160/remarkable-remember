@@ -15,7 +15,7 @@ public sealed class ItemsTreeViewModel : HierarchicalTreeDataGridSource<ItemView
     public ItemsTreeViewModel(ILocalizationService localizationService) : base(new ObservableCollection<ItemViewModel>())
     {
         this.Columns.Add(new HierarchicalExpanderColumn<ItemViewModel>(new TextColumn<ItemViewModel, String>(null, item => item.Name), item => item.Collection) { Tag = () => Language.Current.ItemsTreeHeaderName });
-        this.Columns.Add(new TextColumn<ItemViewModel, String>(null, item => item.Modified.ToDisplayString(localizationService.Configuration.DateTimeFormat)) { Tag = () => Language.Current.ItemsTreeHeaderModified });
+        this.Columns.Add(new TextColumn<ItemViewModel, String>(null, item => item.Modified.ToDisplayString(localizationService.GetDateTimeFormat())) { Tag = () => Language.Current.ItemsTreeHeaderModified });
         this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(localizationService, item => null, item => item.CombinedHint)));
         this.Columns.Add(new TextColumn<ItemViewModel, String>(null, item => item.SyncPath) { Tag = () => Language.Current.ItemsTreeHeaderSyncPath });
         this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(localizationService, item => item.SyncDate, item => item.SyncHint)) { Tag = () => Language.Current.ItemsTreeHeaderSyncInformation });
