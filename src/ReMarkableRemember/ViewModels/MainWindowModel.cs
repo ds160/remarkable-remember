@@ -41,7 +41,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         this.tabletService = tabletService;
 
         this.ItemsTree = new ItemsTreeViewModel(this.localizationService);
-        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.handWritingRecognitionService);
+        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.handWritingRecognitionService, this.localizationService);
         this.OpenFilePicker = new Interaction<FilePickerOpenOptions, IEnumerable<String>?>();
         this.OpenFolderPicker = new Interaction<String, String?>();
         this.OpenSaveFilePicker = new Interaction<FilePickerSaveOptions, String?>();
@@ -275,15 +275,16 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
         if (await this.ShowDialog.Handle(new SettingsViewModel(this.handWritingRecognitionService, this.localizationService, this.tabletService)))
         {
-            // Update properties
-            this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
-            this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionService.Configuration.Language, StringComparison.Ordinal));
-
             // Update localized strings
             this.ConnectionStatus.UpdateLocalizedText();
+            this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.handWritingRecognitionService, this.localizationService);
             this.ItemsTree.UpdateLocalizedHeaders();
             this.RaisePropertyChanged(nameof(this.JobsText));
             this.RaisePropertyChanged(nameof(this.LocalStrings));
+
+            // Update properties
+            this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
+            this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionService.Configuration.Language, StringComparison.Ordinal));
         }
     }
 
@@ -480,7 +481,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     public HandWritingRecognitionLanguageViewModel HandWritingRecognitionLanguage { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
-    public IEnumerable<HandWritingRecognitionLanguageViewModel> HandWritingRecognitionLanguages { get; }
+    public IEnumerable<HandWritingRecognitionLanguageViewModel> HandWritingRecognitionLanguages { get; private set { this.RaiseAndSetIfChanged(ref field, value); } }
 
     public Interaction<FilePickerOpenOptions, IEnumerable<String>?> OpenFilePicker { get; }
 

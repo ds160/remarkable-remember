@@ -26,7 +26,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
     internal SettingsViewModel(IHandWritingRecognitionService handWritingRecognitionService, ILocalizationService localizationService, ITabletService tabletService)
         : base(Language.Current.SettingsTitle, Language.Current.ButtonSave, Language.Current.ButtonCancel)
     {
-        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(handWritingRecognitionService);
+        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(handWritingRecognitionService, localizationService);
 
         this.handWritingRecognitionConfiguration = handWritingRecognitionService.Configuration;
         this.localizationConfiguration = localizationService.Configuration;

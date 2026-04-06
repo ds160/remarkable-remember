@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
+using ReMarkableRemember.Services.LocalizationService;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -18,12 +20,26 @@ public sealed class HandWritingRecognitionLanguageViewModel
 
     public String DisplayName { get; }
 
-    internal static IEnumerable<HandWritingRecognitionLanguageViewModel> GetLanguages(IHandWritingRecognitionService service)
+    internal static IEnumerable<HandWritingRecognitionLanguageViewModel> GetLanguages(IHandWritingRecognitionService service, ILocalizationService localizationService)
     {
-        return service.SupportedLanguages
-            .Select(code => new HandWritingRecognitionLanguageViewModel(code))
-            .OrderBy(language => language.DisplayName)
-            .ToArray();
+        List<HandWritingRecognitionLanguageViewModel> languages = new List<HandWritingRecognitionLanguageViewModel>();
+
+        Thread thread = new Thread(() =>
+        {
+            languages.AddRange(service.SupportedLanguages.Select(code => new HandWritingRecognitionLanguageViewModel(code)));
+        });
+
+        if (!String.IsNullOrEmpty(localizationService.Configuration.CultureCode))
+        {
+            CultureInfo cultureInfo = CultureInfo.GetCultureInfo(localizationService.Configuration.CultureCode);
+            thread.CurrentCulture = cultureInfo;
+            thread.CurrentUICulture = cultureInfo;
+        }
+
+        thread.Start();
+        thread.Join();
+
+        return languages.OrderBy(language => language.DisplayName).ToArray();
     }
 
     private static String GetDisplayName(String code)
