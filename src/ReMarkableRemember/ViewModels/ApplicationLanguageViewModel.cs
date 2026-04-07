@@ -13,7 +13,7 @@ public sealed class ApplicationLanguageViewModel
 
     static ApplicationLanguageViewModel()
     {
-        languages = Language.SupportedCodes
+        languages = Language.Provider.SupportedCodes
             .Select(code => new ApplicationLanguageViewModel(code, GetDisplayName(code)))
             .OrderBy(language => language.DisplayName)
             .ToArray();

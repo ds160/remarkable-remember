@@ -15,8 +15,8 @@ public sealed class SettingsConfiguration : ConfigurationBase, ISettingsConfigur
 
     public String ApplicationLanguage
     {
-        get;
-        set { field = Language.Switch(value); }
+        get { return Language.Provider.CurrentCode; }
+        set { Language.Provider.Switch(value); }
     }
 
     public String ApplicationTheme

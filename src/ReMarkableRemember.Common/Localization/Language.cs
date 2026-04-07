@@ -1,40 +1,23 @@
 using System;
-using System.Collections.Generic;
-using ReMarkableRemember.Common.Localization.LocalStrings;
 
 namespace ReMarkableRemember.Common.Localization;
 
 public static class Language
 {
-    private static readonly ILocalStrings defaultLanguage;
-    private static readonly Dictionary<String, ILocalStrings> supportedlanguages;
-
     static Language()
     {
-        defaultLanguage = new Default();
-        supportedlanguages = new Dictionary<String, ILocalStrings>()
-        {
-            { "en", new English() }
-        };
-
-        Current = defaultLanguage;
+        Provider = new LanguageProvider();
     }
 
-    public static ILocalStrings Current { get; private set; }
+    public static ILocalStrings Current { get { return Provider.Current; } }
 
-    internal static IEnumerable<String> SupportedCodes { get { return supportedlanguages.Keys; } }
+    internal static ILanguageProvider Provider { get; private set; }
 
-    internal static String Switch(String code)
+    public static void SetProvioder(ILanguageProvider provider)
     {
-        if (supportedlanguages.TryGetValue(code, out ILocalStrings? language))
-        {
-            Current = language;
-            return code;
-        }
-        else
-        {
-            Current = defaultLanguage;
-            return String.Empty;
-        }
+        String code = Provider.CurrentCode;
+
+        Provider = provider;
+        Provider.Switch(code);
     }
 }
