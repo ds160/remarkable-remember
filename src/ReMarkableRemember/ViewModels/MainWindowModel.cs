@@ -47,6 +47,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         this.OpenSaveFilePicker = new Interaction<FilePickerSaveOptions, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
 
+        this.ApplicationTheme = this.settingsService.GetApplicationTheme();
         this.ConnectionStatus = new ConnectionStatusViewModel();
         this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionService.Configuration.Language, StringComparison.Ordinal));
         this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
@@ -283,6 +284,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
             this.RaisePropertyChanged(nameof(this.LocalStrings));
 
             // Update properties
+            this.ApplicationTheme = this.settingsService.GetApplicationTheme();
             this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
             this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionService.Configuration.Language, StringComparison.Ordinal));
         }
@@ -466,6 +468,8 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     public ICommand CommandUploadFile { get; }
 
     public ICommand CommandUploadTemplate { get; }
+
+    public ApplicationThemes ApplicationTheme { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
     public ConnectionStatusViewModel ConnectionStatus { get; private set { this.RaiseAndSetIfChanged(ref field, value); } }
 

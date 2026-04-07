@@ -5,7 +5,7 @@
              x:Class="ReMarkableRemember.App"
              x:DataType="vm:IAppModel"
              Name="reMarkable Remember"
-             RequestedThemeVariant="Default">
+             RequestedThemeVariant="{Binding ApplicationTheme}">
 
     <Application.DataTemplates>
         <templates:ViewLocator/>
