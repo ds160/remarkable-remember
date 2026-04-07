@@ -10,7 +10,7 @@ public sealed class SettingsConfiguration : ConfigurationBase, ISettingsConfigur
     public SettingsConfiguration() : base("Settings")
     {
         this.ApplicationLanguage = String.Empty;
-        this.ApplicationTheme = GetDefault<ApplicationThemes>();
+        this.ApplicationTheme = Default<ApplicationThemes>();
     }
 
     public String ApplicationLanguage
@@ -22,16 +22,16 @@ public sealed class SettingsConfiguration : ConfigurationBase, ISettingsConfigur
     public String ApplicationTheme
     {
         get;
-        set { field = ParseOrDefault<ApplicationThemes>(value); }
+        set { field = Verify<ApplicationThemes>(value); }
     }
 
-    private static String GetDefault<T>() where T : struct, Enum
+    private static String Default<T>() where T : struct, Enum
     {
         return Enum.GetName<T>(default) ?? throw new NotImplementedException();
     }
 
-    private static String ParseOrDefault<T>(String value) where T : struct, Enum
+    private static String Verify<T>(String value) where T : struct, Enum
     {
-        return Enum.TryParse<T>(value, out _) ? value : GetDefault<T>();
+        return Enum.TryParse<T>(value, out _) ? value : Default<T>();
     }
 }
