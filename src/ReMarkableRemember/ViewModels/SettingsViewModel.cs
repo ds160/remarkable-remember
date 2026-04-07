@@ -9,34 +9,34 @@ using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
-using ReMarkableRemember.Services.LocalizationService;
-using ReMarkableRemember.Services.LocalizationService.Configuration;
 using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Services.TabletService.Configuration;
+using ReMarkableRemember.Settings;
+using ReMarkableRemember.Settings.Configuration;
 
 namespace ReMarkableRemember.ViewModels;
 
 public sealed partial class SettingsViewModel : DialogWindowModel
 {
     private readonly IHandWritingRecognitionConfiguration handWritingRecognitionConfiguration;
-    private readonly ILocalizationConfiguration localizationConfiguration;
     private readonly HandWritingRecognitionConfigurationMyScript? myScriptConfiguration;
+    private readonly ISettingsConfiguration settingsService;
     private readonly ITabletConfiguration tabletConfiguration;
 
-    internal SettingsViewModel(IHandWritingRecognitionService handWritingRecognitionService, ILocalizationService localizationService, ITabletService tabletService)
+    internal SettingsViewModel(IHandWritingRecognitionService handWritingRecognitionService, ISettingsService settingsService, ITabletService tabletService)
         : base(Language.Current.SettingsTitle, Language.Current.ButtonSave, Language.Current.ButtonCancel)
     {
-        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(handWritingRecognitionService, localizationService);
-        this.LanguageCultureCodes = LanguageCultureCodeViewModel.GetLanguages(Language.Current.SettingsLanguageDefault);
+        this.ApplicationLanguages = ApplicationLanguageViewModel.GetLanguages(Language.Current.SettingsLanguageDefault);
+        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(handWritingRecognitionService, settingsService);
 
         this.handWritingRecognitionConfiguration = handWritingRecognitionService.Configuration;
-        this.localizationConfiguration = localizationService.Configuration;
         this.myScriptConfiguration = handWritingRecognitionService.Configuration as HandWritingRecognitionConfigurationMyScript;
+        this.settingsService = settingsService.Configuration;
         this.tabletConfiguration = tabletService.Configuration;
 
+        this.ApplicationLanguage = this.ApplicationLanguages.Single(language => String.Equals(language.Code, this.settingsService.ApplicationLanguage, StringComparison.Ordinal));
         this.Backup = this.tabletConfiguration.Backup;
         this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionConfiguration.Language, StringComparison.Ordinal));
-        this.LanguageCultureCode = this.LanguageCultureCodes.Single(language => String.Equals(language.CultureCode, this.localizationConfiguration.CultureCode, StringComparison.Ordinal));
         this.MyScriptApplicationKey = this.myScriptConfiguration?.ApplicationKey ?? String.Empty;
         this.MyScriptHmacKey = this.myScriptConfiguration?.HmacKey ?? String.Empty;
         this.TabletIp = this.tabletConfiguration.IP;
@@ -50,6 +50,10 @@ public sealed partial class SettingsViewModel : DialogWindowModel
 
     public ICommand CommandSetBackup { get; }
 
+    public ApplicationLanguageViewModel ApplicationLanguage { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
+
+    public IEnumerable<ApplicationLanguageViewModel> ApplicationLanguages { get; }
+
     public String Backup { get; private set { this.RaiseAndSetIfChanged(ref field, value); } }
 
     public HandWritingRecognitionLanguageViewModel HandWritingRecognitionLanguage { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
@@ -57,10 +61,6 @@ public sealed partial class SettingsViewModel : DialogWindowModel
     public IEnumerable<HandWritingRecognitionLanguageViewModel> HandWritingRecognitionLanguages { get; }
 
     public Boolean HasMyScript { get { return this.myScriptConfiguration != null; } }
-
-    public LanguageCultureCodeViewModel LanguageCultureCode { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
-
-    public IEnumerable<LanguageCultureCodeViewModel> LanguageCultureCodes { get; }
 
     public String MyScriptApplicationKey { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
@@ -95,15 +95,15 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         this.handWritingRecognitionConfiguration.Language = this.HandWritingRecognitionLanguage.Code;
         await this.handWritingRecognitionConfiguration.Save().ConfigureAwait(true);
 
-        this.localizationConfiguration.CultureCode = this.LanguageCultureCode.CultureCode;
-        await this.localizationConfiguration.Save().ConfigureAwait(true);
-
         if (this.myScriptConfiguration != null)
         {
             this.myScriptConfiguration.ApplicationKey = this.MyScriptApplicationKey;
             this.myScriptConfiguration.HmacKey = this.MyScriptHmacKey;
             await this.myScriptConfiguration.Save().ConfigureAwait(true);
         }
+
+        this.settingsService.ApplicationLanguage = this.ApplicationLanguage.Code;
+        await this.settingsService.Save().ConfigureAwait(true);
 
         this.tabletConfiguration.Backup = this.Backup;
         this.tabletConfiguration.IP = this.TabletIp;

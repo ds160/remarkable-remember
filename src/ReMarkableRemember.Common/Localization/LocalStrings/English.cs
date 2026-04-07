@@ -94,12 +94,14 @@ internal class English : ILocalStrings
     public String NotebookBlockTagTypeInvalid { get { return "Invalid reMarkable .lines file block tag type."; } }
     public String NotebookHeaderUnknown { get { return "Unknown reMarkable .lines file header."; } }
 
+    public String SettingsApplicationLanguage { get { return "Language"; } }
     public String SettingsBackupFolder { get { return "Backup Folder"; } }
-    public String SettingsLanguageApplication { get { return "Language for Application"; } }
     public String SettingsLanguageDefault { get { return "Default"; } }
     public String SettingsLanguageHandwritingRecognition { get { return "Language for Handwriting Recognition"; } }
     public String SettingsMyScriptApplicationKey { get { return "MyScript Application Key"; } }
     public String SettingsMyScriptHmacKey { get { return "MyScript HMAC Key"; } }
+    public String SettingsTabHeaderApplication { get { return "Application"; } }
+    public String SettingsTabHeaderTablet { get { return "reMarkable"; } }
     public String SettingsTabletPassword { get { return "reMarkable Password"; } }
     public String SettingsTabletPasswordPlaceholder { get { return "SSH protocol password, see 'Copyrights and licenses'"; } }
     public String SettingsTabletPasswordRequired { get { return "Password is required"; } }

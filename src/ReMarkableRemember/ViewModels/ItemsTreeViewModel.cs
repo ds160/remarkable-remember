@@ -5,21 +5,21 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Helper;
-using ReMarkableRemember.Services.LocalizationService;
+using ReMarkableRemember.Settings;
 using ReMarkableRemember.Templates;
 
 namespace ReMarkableRemember.ViewModels;
 
 public sealed class ItemsTreeViewModel : HierarchicalTreeDataGridSource<ItemViewModel>
 {
-    public ItemsTreeViewModel(ILocalizationService localizationService) : base(new ObservableCollection<ItemViewModel>())
+    public ItemsTreeViewModel(ISettingsService settingsService) : base(new ObservableCollection<ItemViewModel>())
     {
         this.Columns.Add(new HierarchicalExpanderColumn<ItemViewModel>(new TextColumn<ItemViewModel, String>(null, item => item.Name), item => item.Collection) { Tag = () => Language.Current.ItemsTreeHeaderName });
-        this.Columns.Add(new TextColumn<ItemViewModel, String>(null, item => item.Modified.ToDisplayString(localizationService.GetDateTimeFormat())) { Tag = () => Language.Current.ItemsTreeHeaderModified });
-        this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(localizationService, item => null, item => item.CombinedHint)));
+        this.Columns.Add(new TextColumn<ItemViewModel, String>(null, item => item.Modified.ToDisplayString(settingsService.GetDateTimeFormat())) { Tag = () => Language.Current.ItemsTreeHeaderModified });
+        this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(settingsService, item => null, item => item.CombinedHint)));
         this.Columns.Add(new TextColumn<ItemViewModel, String>(null, item => item.SyncPath) { Tag = () => Language.Current.ItemsTreeHeaderSyncPath });
-        this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(localizationService, item => item.SyncDate, item => item.SyncHint)) { Tag = () => Language.Current.ItemsTreeHeaderSyncInformation });
-        this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(localizationService, item => item.BackupDate, item => item.BackupHint)) { Tag = () => Language.Current.ItemsTreeHeaderBackupInformation });
+        this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(settingsService, item => item.SyncDate, item => item.SyncHint)) { Tag = () => Language.Current.ItemsTreeHeaderSyncInformation });
+        this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(settingsService, item => item.BackupDate, item => item.BackupHint)) { Tag = () => Language.Current.ItemsTreeHeaderBackupInformation });
 
         this.UpdateLocalizedHeaders();
     }

@@ -12,41 +12,48 @@
         <vm:SettingsViewModel/>
     </Design.DataContext>
 
-    <StackPanel>
-        <TextBlock Text="{Binding LocalStrings.SettingsTabletIp}"/>
-        <TextBox Text="{Binding TabletIp}" Watermark="{Binding LocalStrings.SettingsTabletIpPlaceholder}" Margin="0, 8, 0, 16"/>
+    <TabControl>
+        <TabItem Header="{Binding LocalStrings.SettingsTabHeaderTablet}">
+            <StackPanel Margin="0, 16">
+                <TextBlock Text="{Binding LocalStrings.SettingsTabletIp}"/>
+                <TextBox Text="{Binding TabletIp}" Watermark="{Binding LocalStrings.SettingsTabletIpPlaceholder}" Margin="0, 8, 0, 16"/>
 
-        <TextBlock Text="{Binding LocalStrings.SettingsTabletPassword}"/>
-        <TextBox Text="{Binding TabletPassword}" Watermark="{Binding LocalStrings.SettingsTabletPasswordPlaceholder}" Margin="0, 8, 0, 48"/>
+                <TextBlock Text="{Binding LocalStrings.SettingsTabletPassword}"/>
+                <TextBox Text="{Binding TabletPassword}" Watermark="{Binding LocalStrings.SettingsTabletPasswordPlaceholder}" Margin="0, 8, 0, 48"/>
 
-        <TextBlock IsVisible="{Binding HasMyScript}" Text="{Binding LocalStrings.SettingsMyScriptApplicationKey}"/>
-        <TextBox IsVisible="{Binding HasMyScript}" Text="{Binding MyScriptApplicationKey}" Margin="0, 8, 0, 16"/>
+                <TextBlock IsVisible="{Binding HasMyScript}" Text="{Binding LocalStrings.SettingsMyScriptApplicationKey}"/>
+                <TextBox IsVisible="{Binding HasMyScript}" Text="{Binding MyScriptApplicationKey}" Margin="0, 8, 0, 16"/>
 
-        <TextBlock IsVisible="{Binding HasMyScript}" Text="{Binding LocalStrings.SettingsMyScriptHmacKey}"/>
-        <TextBox IsVisible="{Binding HasMyScript}" Text="{Binding MyScriptHmacKey}" Margin="0, 8, 0, 16"/>
+                <TextBlock IsVisible="{Binding HasMyScript}" Text="{Binding LocalStrings.SettingsMyScriptHmacKey}"/>
+                <TextBox IsVisible="{Binding HasMyScript}" Text="{Binding MyScriptHmacKey}" Margin="0, 8, 0, 16"/>
 
-        <TextBlock Text="{Binding LocalStrings.SettingsLanguageHandwritingRecognition}"/>
-        <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding HandWritingRecognitionLanguages}" SelectedItem="{Binding HandWritingRecognitionLanguage}" Margin="0, 8, 0, 48">
-            <ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding DisplayName}" />
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
+                <TextBlock Text="{Binding LocalStrings.SettingsLanguageHandwritingRecognition}"/>
+                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding HandWritingRecognitionLanguages}" SelectedItem="{Binding HandWritingRecognitionLanguage}" Margin="0, 8, 0, 48">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
 
-        <TextBlock Text="{Binding LocalStrings.SettingsBackupFolder}"/>
-        <DockPanel Margin="0, 8, 0, 48">
-            <Button DockPanel.Dock="Right" Command="{Binding CommandSetBackup}" Content="..."  VerticalAlignment="Top"/>
-            <TextBox Text="{Binding Backup}" Margin="0, 0, 8, 0" IsReadOnly="True"/>
-        </DockPanel>
-
-        <TextBlock Text="{Binding LocalStrings.SettingsLanguageApplication}"/>
-        <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding LanguageCultureCodes}" SelectedItem="{Binding LanguageCultureCode}" Margin="0, 8, 0, 16">
-            <ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding DisplayName}" />
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
-    </StackPanel>
+                <TextBlock Text="{Binding LocalStrings.SettingsBackupFolder}"/>
+                <DockPanel Margin="0, 8, 0, 0">
+                    <Button DockPanel.Dock="Right" Command="{Binding CommandSetBackup}" Content="..."  VerticalAlignment="Top"/>
+                    <TextBox Text="{Binding Backup}" Margin="0, 0, 8, 0" IsReadOnly="True"/>
+                </DockPanel>
+            </StackPanel>
+        </TabItem>
+        <TabItem Header="{Binding LocalStrings.SettingsTabHeaderApplication}">
+            <StackPanel Margin="0, 16">
+                <TextBlock Text="{Binding LocalStrings.SettingsApplicationLanguage}"/>
+                <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding ApplicationLanguages}" SelectedItem="{Binding ApplicationLanguage}" Margin="0, 8, 0, 0">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+        </TabItem>
+    </TabControl>
 </UserControl>

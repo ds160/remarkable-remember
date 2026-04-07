@@ -18,9 +18,9 @@ using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.DataService.Models;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
-using ReMarkableRemember.Services.LocalizationService;
 using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Services.TabletService.Models;
+using ReMarkableRemember.Settings;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -28,20 +28,20 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 {
     private readonly IDataService dataService;
     private readonly IHandWritingRecognitionService handWritingRecognitionService;
-    private readonly ILocalizationService localizationService;
+    private readonly ISettingsService settingsService;
     private readonly ITabletService tabletService;
 
     private String? itemsNotReadable;
 
-    public MainWindowModel(IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ILocalizationService localizationService, ITabletService tabletService)
+    public MainWindowModel(IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ISettingsService settingsService, ITabletService tabletService)
     {
         this.dataService = dataService;
         this.handWritingRecognitionService = handWritingRecognitionService;
-        this.localizationService = localizationService;
+        this.settingsService = settingsService;
         this.tabletService = tabletService;
 
-        this.ItemsTree = new ItemsTreeViewModel(this.localizationService);
-        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.handWritingRecognitionService, this.localizationService);
+        this.ItemsTree = new ItemsTreeViewModel(this.settingsService);
+        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.handWritingRecognitionService, this.settingsService);
         this.OpenFilePicker = new Interaction<FilePickerOpenOptions, IEnumerable<String>?>();
         this.OpenFolderPicker = new Interaction<String, String?>();
         this.OpenSaveFilePicker = new Interaction<FilePickerSaveOptions, String?>();
@@ -273,11 +273,11 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Jobs.Settings, this);
 
-        if (await this.ShowDialog.Handle(new SettingsViewModel(this.handWritingRecognitionService, this.localizationService, this.tabletService)))
+        if (await this.ShowDialog.Handle(new SettingsViewModel(this.handWritingRecognitionService, this.settingsService, this.tabletService)))
         {
             // Update localized strings
             this.ConnectionStatus.UpdateLocalizedText();
-            this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.handWritingRecognitionService, this.localizationService);
+            this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.handWritingRecognitionService, this.settingsService);
             this.ItemsTree.UpdateLocalizedHeaders();
             this.RaisePropertyChanged(nameof(this.JobsText));
             this.RaisePropertyChanged(nameof(this.LocalStrings));

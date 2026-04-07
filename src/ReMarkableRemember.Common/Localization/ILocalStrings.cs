@@ -94,12 +94,14 @@ public interface ILocalStrings
     String NotebookBlockTagTypeInvalid { get; }
     String NotebookHeaderUnknown { get; }
 
+    String SettingsApplicationLanguage { get; }
     String SettingsBackupFolder { get; }
-    String SettingsLanguageApplication { get; }
     String SettingsLanguageDefault { get; }
     String SettingsLanguageHandwritingRecognition { get; }
     String SettingsMyScriptApplicationKey { get; }
     String SettingsMyScriptHmacKey { get; }
+    String SettingsTabHeaderApplication { get; }
+    String SettingsTabHeaderTablet { get; }
     String SettingsTabletPassword { get; }
     String SettingsTabletPasswordPlaceholder { get; }
     String SettingsTabletPasswordRequired { get; }

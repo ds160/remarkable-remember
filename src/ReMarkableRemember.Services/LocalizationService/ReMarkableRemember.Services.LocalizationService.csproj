@@ -1,6 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\..\ReMarkableRemember.Common\Localization\ReMarkableRemember.Common.Localization.csproj" />
-    <ProjectReference Include="..\ConfigurationService\ReMarkableRemember.Services.ConfigurationService.csproj" />
-  </ItemGroup>
-</Project>

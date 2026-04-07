@@ -22,11 +22,19 @@ public static class Language
 
     public static ILocalStrings Current { get; private set; }
 
-    public static IEnumerable<String> SupportedCultureCodes { get { return supportedlanguages.Keys; } }
+    internal static IEnumerable<String> SupportedCodes { get { return supportedlanguages.Keys; } }
 
-    internal static void Switch(String cultureCode)
+    internal static String Switch(String code)
     {
-        supportedlanguages.TryGetValue(cultureCode, out ILocalStrings? language);
-        Current = language ?? defaultLanguage;
+        if (supportedlanguages.TryGetValue(code, out ILocalStrings? language))
+        {
+            Current = language;
+            return code;
+        }
+        else
+        {
+            Current = defaultLanguage;
+            return String.Empty;
+        }
     }
 }

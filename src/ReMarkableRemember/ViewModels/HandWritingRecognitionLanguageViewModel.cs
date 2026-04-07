@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
-using ReMarkableRemember.Services.LocalizationService;
+using ReMarkableRemember.Settings;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -20,18 +20,18 @@ public sealed class HandWritingRecognitionLanguageViewModel
 
     public String DisplayName { get; }
 
-    internal static IEnumerable<HandWritingRecognitionLanguageViewModel> GetLanguages(IHandWritingRecognitionService service, ILocalizationService localizationService)
+    internal static IEnumerable<HandWritingRecognitionLanguageViewModel> GetLanguages(IHandWritingRecognitionService handWritingRecognitionService, ISettingsService settingsService)
     {
         List<HandWritingRecognitionLanguageViewModel> languages = new List<HandWritingRecognitionLanguageViewModel>();
 
         Thread thread = new Thread(() =>
         {
-            languages.AddRange(service.SupportedLanguages.Select(code => new HandWritingRecognitionLanguageViewModel(code)));
+            languages.AddRange(handWritingRecognitionService.SupportedLanguages.Select(code => new HandWritingRecognitionLanguageViewModel(code)));
         });
 
-        if (!String.IsNullOrEmpty(localizationService.Configuration.CultureCode))
+        if (!String.IsNullOrEmpty(settingsService.Configuration.ApplicationLanguage))
         {
-            CultureInfo cultureInfo = CultureInfo.GetCultureInfo(localizationService.Configuration.CultureCode);
+            CultureInfo cultureInfo = CultureInfo.GetCultureInfo(settingsService.Configuration.ApplicationLanguage);
             thread.CurrentCulture = cultureInfo;
             thread.CurrentUICulture = cultureInfo;
         }
