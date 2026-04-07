@@ -95,6 +95,10 @@ public interface ILocalStrings
     String NotebookHeaderUnknown { get; }
 
     String SettingsApplicationLanguage { get; }
+    String SettingsApplicationTheme { get; }
+    String SettingsApplicationThemeDark { get; }
+    String SettingsApplicationThemeDefault { get; }
+    String SettingsApplicationThemeLight { get; }
     String SettingsBackupFolder { get; }
     String SettingsLanguageDefault { get; }
     String SettingsLanguageHandwritingRecognition { get; }

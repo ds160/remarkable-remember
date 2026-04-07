@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
+using ReMarkableRemember.Enumerations;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
 using ReMarkableRemember.Services.TabletService;
@@ -27,6 +28,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         : base(Language.Current.SettingsTitle, Language.Current.ButtonSave, Language.Current.ButtonCancel)
     {
         this.ApplicationLanguages = ApplicationLanguageViewModel.GetLanguages(Language.Current.SettingsLanguageDefault);
+        this.ApplicationThemes = EnumValues<ApplicationThemes>(EnumValuesApplicationThemes, settingsService.Configuration.ApplicationTheme, out EnumViewModel applicationTheme);
         this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(handWritingRecognitionService, settingsService);
 
         this.handWritingRecognitionConfiguration = handWritingRecognitionService.Configuration;
@@ -35,6 +37,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         this.tabletConfiguration = tabletService.Configuration;
 
         this.ApplicationLanguage = this.ApplicationLanguages.Single(language => String.Equals(language.Code, this.settingsService.ApplicationLanguage, StringComparison.Ordinal));
+        this.ApplicationTheme = applicationTheme;
         this.Backup = this.tabletConfiguration.Backup;
         this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionConfiguration.Language, StringComparison.Ordinal));
         this.MyScriptApplicationKey = this.myScriptConfiguration?.ApplicationKey ?? String.Empty;
@@ -53,6 +56,10 @@ public sealed partial class SettingsViewModel : DialogWindowModel
     public ApplicationLanguageViewModel ApplicationLanguage { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
     public IEnumerable<ApplicationLanguageViewModel> ApplicationLanguages { get; }
+
+    public EnumViewModel ApplicationTheme { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
+
+    public IEnumerable<EnumViewModel> ApplicationThemes { get; }
 
     public String Backup { get; private set { this.RaiseAndSetIfChanged(ref field, value); } }
 
@@ -90,6 +97,27 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         }
     }
 
+    private static IEnumerable<EnumViewModel> EnumValues<T>(Func<T, String> displayName, String valueToFind, out EnumViewModel selectViewModel)
+        where T : struct, Enum
+    {
+        IEnumerable<EnumViewModel> values = EnumViewModel.GetValues(displayName);
+
+        selectViewModel = values.Single(vm => String.Equals(valueToFind, vm.Value, StringComparison.Ordinal));
+
+        return values;
+    }
+
+    private static String EnumValuesApplicationThemes(ApplicationThemes theme)
+    {
+        return theme switch
+        {
+            Enumerations.ApplicationThemes.Default => Language.Current.SettingsApplicationThemeDefault,
+            Enumerations.ApplicationThemes.Light => Language.Current.SettingsApplicationThemeLight,
+            Enumerations.ApplicationThemes.Dark => Language.Current.SettingsApplicationThemeDark,
+            _ => throw new NotImplementedException(),
+        };
+    }
+
     protected override async Task<Boolean> OnClose()
     {
         this.handWritingRecognitionConfiguration.Language = this.HandWritingRecognitionLanguage.Code;
@@ -103,6 +131,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         }
 
         this.settingsService.ApplicationLanguage = this.ApplicationLanguage.Code;
+        this.settingsService.ApplicationTheme = this.ApplicationTheme.Value;
         await this.settingsService.Save().ConfigureAwait(true);
 
         this.tabletConfiguration.Backup = this.Backup;

@@ -95,6 +95,11 @@ internal class English : ILocalStrings
     public String NotebookHeaderUnknown { get { return "Unknown reMarkable .lines file header."; } }
 
     public String SettingsApplicationLanguage { get { return "Language"; } }
+    public String SettingsApplicationTheme { get { return "Theme"; } }
+    public String SettingsApplicationThemeDark { get { return "Dark"; } }
+    public String SettingsApplicationThemeDefault { get { return "System"; } }
+    public String SettingsApplicationThemeLight { get { return "Light"; } }
+
     public String SettingsBackupFolder { get { return "Backup Folder"; } }
     public String SettingsLanguageDefault { get { return "Default"; } }
     public String SettingsLanguageHandwritingRecognition { get { return "Language for Handwriting Recognition"; } }
