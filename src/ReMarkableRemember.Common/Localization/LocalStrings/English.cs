@@ -99,8 +99,10 @@ internal class English : ILocalStrings
     public String SettingsApplicationThemeDark { get { return "Dark"; } }
     public String SettingsApplicationThemeDefault { get { return "System"; } }
     public String SettingsApplicationThemeLight { get { return "Light"; } }
-
     public String SettingsBackupFolder { get { return "Backup Folder"; } }
+    public String SettingsDateTimeFormat { get { return "Time Format"; } }
+    public String SettingsDateTimeFormatHours12 { get { return "12 hours (AM/PM)"; } }
+    public String SettingsDateTimeFormatHours24 { get { return "24 hours"; } }
     public String SettingsLanguageDefault { get { return "Default"; } }
     public String SettingsLanguageHandwritingRecognition { get { return "Language for Handwriting Recognition"; } }
     public String SettingsMyScriptApplicationKey { get { return "MyScript Application Key"; } }

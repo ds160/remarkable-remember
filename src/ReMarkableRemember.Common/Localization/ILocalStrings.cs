@@ -100,6 +100,9 @@ public interface ILocalStrings
     String SettingsApplicationThemeDefault { get; }
     String SettingsApplicationThemeLight { get; }
     String SettingsBackupFolder { get; }
+    String SettingsDateTimeFormat { get; }
+    String SettingsDateTimeFormatHours12 { get; }
+    String SettingsDateTimeFormatHours24 { get; }
     String SettingsLanguageDefault { get; }
     String SettingsLanguageHandwritingRecognition { get; }
     String SettingsMyScriptApplicationKey { get; }

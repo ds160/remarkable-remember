@@ -21,7 +21,7 @@ public sealed class ItemsTreeViewModel : HierarchicalTreeDataGridSource<ItemView
         this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(settingsService, item => item.SyncDate, item => item.SyncHint)) { Tag = () => Language.Current.ItemsTreeHeaderSyncInformation });
         this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(settingsService, item => item.BackupDate, item => item.BackupHint)) { Tag = () => Language.Current.ItemsTreeHeaderBackupInformation });
 
-        this.UpdateLocalizedHeaders();
+        this.UpdateLocalizedText();
     }
 
     public new ObservableCollection<ItemViewModel> Items
@@ -34,7 +34,7 @@ public sealed class ItemsTreeViewModel : HierarchicalTreeDataGridSource<ItemView
         get { return base.RowSelection!; }
     }
 
-    internal void UpdateLocalizedHeaders()
+    internal void UpdateLocalizedText()
     {
         foreach (IColumn<ItemViewModel> column in this.Columns)
         {
@@ -46,6 +46,11 @@ public sealed class ItemsTreeViewModel : HierarchicalTreeDataGridSource<ItemView
             {
                 UpdateLocalizedHeader(column);
             }
+        }
+
+        foreach (ItemViewModel item in this.Items)
+        {
+            item.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Collection);
         }
     }
 

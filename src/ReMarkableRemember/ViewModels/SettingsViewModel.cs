@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
-using ReMarkableRemember.Enumerations;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
 using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Services.TabletService.Configuration;
 using ReMarkableRemember.Settings;
 using ReMarkableRemember.Settings.Configuration;
+using ReMarkableRemember.Settings.Enumerations;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -30,6 +30,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         this.ApplicationLanguages = ApplicationLanguageViewModel.GetLanguages(Language.Current.SettingsLanguageDefault);
         this.ApplicationThemes = EnumValues<ApplicationThemes>(EnumValuesApplicationThemes, settingsService.Configuration.ApplicationTheme, out EnumViewModel applicationTheme);
         this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(handWritingRecognitionService, settingsService);
+        this.DateTimeFormats = EnumValues<DateTimeFormats>(EnumValuesDateTimeFormats, settingsService.Configuration.DateTimeFormat, out EnumViewModel dateTimeFormat);
 
         this.handWritingRecognitionConfiguration = handWritingRecognitionService.Configuration;
         this.myScriptConfiguration = handWritingRecognitionService.Configuration as HandWritingRecognitionConfigurationMyScript;
@@ -39,6 +40,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
         this.ApplicationLanguage = this.ApplicationLanguages.Single(language => String.Equals(language.Code, this.settingsService.ApplicationLanguage, StringComparison.Ordinal));
         this.ApplicationTheme = applicationTheme;
         this.Backup = this.tabletConfiguration.Backup;
+        this.DateTimeFormat = dateTimeFormat;
         this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionConfiguration.Language, StringComparison.Ordinal));
         this.MyScriptApplicationKey = this.myScriptConfiguration?.ApplicationKey ?? String.Empty;
         this.MyScriptHmacKey = this.myScriptConfiguration?.HmacKey ?? String.Empty;
@@ -62,6 +64,10 @@ public sealed partial class SettingsViewModel : DialogWindowModel
     public IEnumerable<EnumViewModel> ApplicationThemes { get; }
 
     public String Backup { get; private set { this.RaiseAndSetIfChanged(ref field, value); } }
+
+    public EnumViewModel DateTimeFormat { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
+
+    public IEnumerable<EnumViewModel> DateTimeFormats { get; }
 
     public HandWritingRecognitionLanguageViewModel HandWritingRecognitionLanguage { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
@@ -111,9 +117,19 @@ public sealed partial class SettingsViewModel : DialogWindowModel
     {
         return theme switch
         {
-            Enumerations.ApplicationThemes.Default => Language.Current.SettingsApplicationThemeDefault,
-            Enumerations.ApplicationThemes.Light => Language.Current.SettingsApplicationThemeLight,
-            Enumerations.ApplicationThemes.Dark => Language.Current.SettingsApplicationThemeDark,
+            Settings.Enumerations.ApplicationThemes.Default => Language.Current.SettingsApplicationThemeDefault,
+            Settings.Enumerations.ApplicationThemes.Light => Language.Current.SettingsApplicationThemeLight,
+            Settings.Enumerations.ApplicationThemes.Dark => Language.Current.SettingsApplicationThemeDark,
+            _ => throw new NotImplementedException(),
+        };
+    }
+
+    private static String EnumValuesDateTimeFormats(DateTimeFormats format)
+    {
+        return format switch
+        {
+            Settings.Enumerations.DateTimeFormats.Hours24 => Language.Current.SettingsDateTimeFormatHours24,
+            Settings.Enumerations.DateTimeFormats.Hours12 => Language.Current.SettingsDateTimeFormatHours12,
             _ => throw new NotImplementedException(),
         };
     }
@@ -132,6 +148,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
 
         this.settingsService.ApplicationLanguage = this.ApplicationLanguage.Code;
         this.settingsService.ApplicationTheme = this.ApplicationTheme.Value;
+        this.settingsService.DateTimeFormat = this.DateTimeFormat.Value;
         await this.settingsService.Save().ConfigureAwait(true);
 
         this.tabletConfiguration.Backup = this.Backup;

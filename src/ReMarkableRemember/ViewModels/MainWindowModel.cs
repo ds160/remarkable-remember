@@ -279,7 +279,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
             // Update localized strings
             this.ConnectionStatus.UpdateLocalizedText();
             this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.handWritingRecognitionService, this.settingsService);
-            this.ItemsTree.UpdateLocalizedHeaders();
+            this.ItemsTree.UpdateLocalizedText();
             this.RaisePropertyChanged(nameof(this.JobsText));
             this.RaisePropertyChanged(nameof(this.LocalStrings));
 

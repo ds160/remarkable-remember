@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using ReactiveUI;
 using ReMarkableRemember.Common.FileSystem;
@@ -146,9 +147,12 @@ public sealed class ItemViewModel : ViewModelBase
         }
     }
 
-    private void RaiseChanged(RaiseChangedAdditional additional)
+    internal void RaiseChanged(RaiseChangedAdditional additional)
     {
-        this.RaisePropertyChanged();
+        foreach (PropertyInfo property in this.GetType().GetProperties())
+        {
+            this.RaisePropertyChanged(property.Name);
+        }
 
         if (additional == RaiseChangedAdditional.Collection) { this.Collection?.ToList()?.ForEach(item => item.RaiseChanged(additional)); }
         if (additional == RaiseChangedAdditional.Parent) { this.Parent?.RaiseChanged(additional); }

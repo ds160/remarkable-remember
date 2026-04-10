@@ -1,4 +1,4 @@
-namespace ReMarkableRemember.Enumerations;
+namespace ReMarkableRemember.Settings.Enumerations;
 
 public enum ApplicationThemes
 {

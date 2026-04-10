@@ -1,7 +1,7 @@
 using System;
 using ReMarkableRemember.Common.Localization;
-using ReMarkableRemember.Enumerations;
 using ReMarkableRemember.Services.ConfigurationService.Configuration;
+using ReMarkableRemember.Settings.Enumerations;
 
 namespace ReMarkableRemember.Settings.Configuration;
 
@@ -9,8 +9,8 @@ public sealed class SettingsConfiguration : ConfigurationBase, ISettingsConfigur
 {
     public SettingsConfiguration() : base("Settings")
     {
-        this.ApplicationLanguage = String.Empty;
         this.ApplicationTheme = Default<ApplicationThemes>();
+        this.DateTimeFormat = Default<DateTimeFormats>();
     }
 
     public String ApplicationLanguage
@@ -23,6 +23,12 @@ public sealed class SettingsConfiguration : ConfigurationBase, ISettingsConfigur
     {
         get;
         set { field = Verify<ApplicationThemes>(value); }
+    }
+
+    public String DateTimeFormat
+    {
+        get;
+        set { field = Verify<DateTimeFormats>(value); }
     }
 
     private static String Default<T>() where T : struct, Enum
