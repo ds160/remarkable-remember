@@ -16,10 +16,10 @@
         <TabItem Header="{Binding LocalStrings.SettingsTabHeaderTablet}">
             <StackPanel Margin="0, 16">
                 <TextBlock Text="{Binding LocalStrings.SettingsTabletIp}"/>
-                <TextBox Text="{Binding TabletIp}" Watermark="{Binding LocalStrings.SettingsTabletIpPlaceholder}" Margin="0, 8, 0, 16"/>
+                <TextBox Text="{Binding TabletIp}" PlaceholderText="{Binding LocalStrings.SettingsTabletIpPlaceholder}" Margin="0, 8, 0, 16"/>
 
                 <TextBlock Text="{Binding LocalStrings.SettingsTabletPassword}"/>
-                <TextBox Text="{Binding TabletPassword}" Watermark="{Binding LocalStrings.SettingsTabletPasswordPlaceholder}" Margin="0, 8, 0, 48"/>
+                <TextBox Text="{Binding TabletPassword}" PlaceholderText="{Binding LocalStrings.SettingsTabletPasswordPlaceholder}" Margin="0, 8, 0, 48"/>
 
                 <TextBlock IsVisible="{Binding HasMyScript}" Text="{Binding LocalStrings.SettingsMyScriptApplicationKey}"/>
                 <TextBox IsVisible="{Binding HasMyScript}" Text="{Binding MyScriptApplicationKey}" Margin="0, 8, 0, 16"/>

@@ -8,37 +8,19 @@ using System.Reflection;
 using System.Threading.Tasks;
 using ReactiveUI;
 using ReMarkableRemember.Common.FileSystem;
-using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Common.Notebook;
+using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.DataService.Models;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Services.TabletService.Models;
+using ReMarkableRemember.Settings;
 
 namespace ReMarkableRemember.ViewModels;
 
 public sealed class ItemViewModel : ViewModelBase
 {
-    [Flags]
-    public enum Hint
-    {
-        None = 0x00,
-        NotFoundInTarget = 0x01,
-        SyncPathChanged = 0x02,
-        Modified = 0x04,
-        New = 0x08,
-        ExistsInTarget = 0x10
-    }
-
-    public enum Image
-    {
-        None,
-        Green,
-        Yellow,
-        Red
-    }
-
     public enum RaiseChangedAdditional
     {
         None,
@@ -48,46 +30,43 @@ public sealed class ItemViewModel : ViewModelBase
 
     private readonly IDataService dataService;
     private readonly IHandWritingRecognitionService handWritingRecognitionService;
+    private readonly ISettingsService settingsService;
     private readonly ITabletService tabletService;
 
-    internal ItemViewModel(TabletItem tabletItem, ItemViewModel? parent, IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ITabletService tabletService)
+    internal ItemViewModel(TabletItem tabletItem, ItemViewModel? parent, IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ISettingsService settingsService, ITabletService tabletService)
     {
         this.dataService = dataService;
         this.handWritingRecognitionService = handWritingRecognitionService;
+        this.settingsService = settingsService;
         this.tabletService = tabletService;
 
-        List<ItemViewModel>? collection = tabletItem.Collection?.Select(childItem => new ItemViewModel(childItem, this, dataService, handWritingRecognitionService, tabletService)).ToList();
+        List<ItemViewModel>? collection = tabletItem.Collection?.Select(childItem => new ItemViewModel(childItem, this, dataService, handWritingRecognitionService, settingsService, tabletService)).ToList();
 
         this.Collection = (collection != null) ? new ObservableCollection<ItemViewModel>(collection) : null;
         this.Parent = parent;
         this.TabletItem = tabletItem;
+
+        this.BackupHint = new ItemHintViewModel.Backup(this, settingsService, tabletService);
+        this.SyncHint = new ItemHintViewModel.Sync(this, settingsService);
+
+        this.CombinedHint = new ItemHintViewModel.Combined(this, settingsService);
     }
 
     public DateTime? BackupDate { get { return this.DataItem?.BackupDate; } }
 
-    public Hint BackupHint
-    {
-        get
-        {
-            if (!Path.Exists(this.tabletService.Configuration.Backup)) { return Hint.None; }
-            if (this.DataItem == null) { return Hint.None; }
-
-            if (this.DataItem.BackupDate == null) { return Hint.New; }
-            if (this.DataItem.BackupDate < this.Modified) { return Hint.Modified; }
-
-            return Hint.None;
-        }
-    }
+    public ItemHintViewModel.Backup BackupHint { get; }
 
     public ObservableCollection<ItemViewModel>? Collection { get; }
 
-    public Hint CombinedHint { get { return GetCombinedHint(this); } }
+    public ItemHintViewModel.Combined CombinedHint { get; }
 
-    private ItemData? DataItem { get; set; }
+    internal ItemData? DataItem { get; private set; }
 
     public String Id { get { return this.TabletItem.Id; } }
 
-    public DateTime Modified { get { return this.TabletItem.Modified; } }
+    internal DateTime Modified { get { return this.TabletItem.Modified; } }
+
+    public String ModifiedDisplayString { get { return this.TabletItem.Modified.ToDisplayString(this.settingsService); } }
 
     public String Name { get { return this.TabletItem.Name; } }
 
@@ -95,23 +74,7 @@ public sealed class ItemViewModel : ViewModelBase
 
     public DateTime? SyncDate { get { return (this.SyncPath != null) ? this.DataItem?.SyncData : null; } }
 
-    public Hint SyncHint
-    {
-        get
-        {
-            if (this.Collection != null) { return Hint.None; }
-            if (this.SyncPath == null) { return Hint.None; }
-            if (this.DataItem == null) { return Hint.None; }
-
-            if (this.DataItem.SyncPath == null && Path.Exists(this.SyncPath)) { return Hint.ExistsInTarget; }
-            if (this.DataItem.SyncPath == null) { return Hint.New; }
-            if (this.DataItem.SyncPath != this.SyncPath) { return Hint.SyncPathChanged; }
-            if (this.DataItem.SyncData < this.Modified) { return Hint.Modified; }
-            if (!Path.Exists(this.SyncPath)) { return Hint.NotFoundInTarget; }
-
-            return Hint.None;
-        }
-    }
+    public ItemHintViewModel.Sync SyncHint { get; }
 
     public String? SyncPath { get; private set; }
 
@@ -119,7 +82,7 @@ public sealed class ItemViewModel : ViewModelBase
 
     internal async Task Backup()
     {
-        if (this.BackupHint is Hint.None or >= Hint.ExistsInTarget) { return; }
+        if (this.BackupHint.Hint is ItemHintViewModel.Hints.None or >= ItemHintViewModel.Hints.ExistsInTarget) { return; }
 
         await this.tabletService.Backup(this.Id).ConfigureAwait(true);
         this.DataItem = await this.dataService.SetItemBackup(this.Id, this.Modified).ConfigureAwait(true);
@@ -154,6 +117,10 @@ public sealed class ItemViewModel : ViewModelBase
             this.RaisePropertyChanged(property.Name);
         }
 
+        this.BackupHint.RaiseChanged();
+        this.CombinedHint.RaiseChanged();
+        this.SyncHint.RaiseChanged();
+
         if (additional == RaiseChangedAdditional.Collection) { this.Collection?.ToList()?.ForEach(item => item.RaiseChanged(additional)); }
         if (additional == RaiseChangedAdditional.Parent) { this.Parent?.RaiseChanged(additional); }
     }
@@ -168,10 +135,10 @@ public sealed class ItemViewModel : ViewModelBase
 
     internal async Task Sync()
     {
-        if (this.SyncHint is Hint.None or >= Hint.ExistsInTarget) { return; }
+        if (this.SyncHint.Hint is ItemHintViewModel.Hints.None or >= ItemHintViewModel.Hints.ExistsInTarget) { return; }
         if (this.SyncPath == null) { return; }
 
-        if (this.DataItem != null && this.DataItem.SyncPath != null && this.SyncHint.HasFlag(Hint.SyncPathChanged))
+        if (this.DataItem != null && this.DataItem.SyncPath != null && this.SyncHint.Hint.HasFlag(ItemHintViewModel.Hints.SyncPathChanged))
         {
             FileSystem.Delete(this.DataItem.SyncPath);
         }
@@ -214,55 +181,14 @@ public sealed class ItemViewModel : ViewModelBase
         return (collectionCompareResult != 0) ? collectionCompareResult : String.CompareOrdinal(itemA.Name, itemB.Name);
     }
 
-    private static Hint GetCombinedHint(ItemViewModel item)
-    {
-        Hint hint = item.BackupHint | item.SyncHint;
-
-        if (item.Collection != null)
-        {
-            foreach (ItemViewModel childItem in item.Collection)
-            {
-                hint |= GetCombinedHint(childItem);
-            }
-        }
-
-        return hint;
-    }
-
-    public static Image GetImage(DateTime? dateTime, Hint hint)
-    {
-        if (hint.HasFlag(Hint.ExistsInTarget)) { return Image.Red; }
-        if (hint.HasFlag(Hint.New)) { return Image.Yellow; }
-        if (hint.HasFlag(Hint.Modified)) { return Image.Yellow; }
-        if (hint.HasFlag(Hint.SyncPathChanged)) { return Image.Yellow; }
-        if (hint.HasFlag(Hint.NotFoundInTarget)) { return Image.Yellow; }
-
-        if (hint == Hint.None) { return (dateTime != null) ? Image.Green : Image.None; }
-
-        throw new NotImplementedException();
-    }
-
-    public static String? GetToolTip(DateTime? dateTime, Hint hint)
-    {
-        if (hint.HasFlag(Hint.ExistsInTarget)) { return Language.Current.ItemHintExistsInTarget; }
-        if (hint.HasFlag(Hint.New)) { return Language.Current.ItemHintNew; }
-        if (hint.HasFlag(Hint.Modified)) { return Language.Current.ItemHintModified; }
-        if (hint.HasFlag(Hint.SyncPathChanged)) { return Language.Current.ItemHintSyncPathChanged; }
-        if (hint.HasFlag(Hint.NotFoundInTarget)) { return Language.Current.ItemHintNotFoundInTarget; }
-
-        if (hint == Hint.None) { return (dateTime != null) ? Language.Current.ItemHintUpToDate : null; }
-
-        throw new NotImplementedException();
-    }
-
-    internal static async Task UpdateItems(IEnumerable<TabletItem> tabletItems, ObservableCollection<ItemViewModel> items, ItemViewModel? parentItem, IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ITabletService tabletService)
+    internal static async Task UpdateItems(IEnumerable<TabletItem> tabletItems, ObservableCollection<ItemViewModel> items, ItemViewModel? parentItem, IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ISettingsService settingsService, ITabletService tabletService)
     {
         foreach (TabletItem tabletItem in tabletItems)
         {
             ItemViewModel? item = items.SingleOrDefault(item => item.TabletItem.Id == tabletItem.Id);
             if (item == null)
             {
-                item = new ItemViewModel(tabletItem, parentItem, dataService, handWritingRecognitionService, tabletService);
+                item = new ItemViewModel(tabletItem, parentItem, dataService, handWritingRecognitionService, settingsService, tabletService);
                 await item.Update().ConfigureAwait(true);
                 items.Add(item);
             }
@@ -272,7 +198,7 @@ public sealed class ItemViewModel : ViewModelBase
 
                 if (tabletItem.Collection != null && item.Collection != null)
                 {
-                    await UpdateItems(tabletItem.Collection, item.Collection, item, dataService, handWritingRecognitionService, tabletService).ConfigureAwait(true);
+                    await UpdateItems(tabletItem.Collection, item.Collection, item, dataService, handWritingRecognitionService, settingsService, tabletService).ConfigureAwait(true);
                 }
 
                 if (parentItem == null)

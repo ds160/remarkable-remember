@@ -40,7 +40,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         this.settingsService = settingsService;
         this.tabletService = tabletService;
 
-        this.ItemsTree = new ItemsTreeViewModel(this.settingsService);
+        this.ItemsTree = new ItemsTreeViewModel();
         this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.handWritingRecognitionService, this.settingsService);
         this.OpenFilePicker = new Interaction<FilePickerOpenOptions, IEnumerable<String>?>();
         this.OpenFolderPicker = new Interaction<String, String?>();
@@ -81,7 +81,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private async Task DownloadFile()
     {
-        ItemViewModel? selectedItem = this.ItemsTree.RowSelection.SelectedItem;
+        ItemViewModel? selectedItem = this.ItemsTree.SelectedItem;
         if (selectedItem != null && selectedItem.Collection == null)
         {
             using Job job = new Job(Jobs.Download, this);
@@ -104,7 +104,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status.CheckJob(Jobs.Download));
         IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None);
-        IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
+        IObservable<Boolean> treeSelection = this.ItemsTree.WhenAnyValue(itemTree => itemTree.SelectedItem).Select(item => item != null && item.Collection == null);
 
         return Observable.CombineLatest(connectionStatus, jobs, treeSelection, (value1, value2, value3) => value1 && value2 && value3);
     }
@@ -148,7 +148,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private async Task HandwritingRecognition()
     {
-        ItemViewModel? selectedItem = this.ItemsTree.RowSelection.SelectedItem;
+        ItemViewModel? selectedItem = this.ItemsTree.SelectedItem;
         if (selectedItem != null && selectedItem.Collection == null)
         {
             using Job job = new Job(Jobs.HandwritingRecognition, this);
@@ -164,7 +164,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     private IObservable<Boolean> HandwritingRecognition_CanExecute()
     {
         IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status.CheckJob(Jobs.HandwritingRecognition));
-        IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null && item.Collection == null);
+        IObservable<Boolean> treeSelection = this.ItemsTree.WhenAnyValue(itemTree => itemTree.SelectedItem).Select(item => item != null && item.Collection == null);
 
         return Observable.CombineLatest(connectionStatus, treeSelection, (value1, value2) => value1 && value2);
     }
@@ -217,7 +217,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private void OpenItem()
     {
-        ItemViewModel? selectedItem = this.ItemsTree.RowSelection.SelectedItem;
+        ItemViewModel? selectedItem = this.ItemsTree.SelectedItem;
         if (selectedItem?.CanOpen() == true)
         {
             selectedItem.Open();
@@ -230,7 +230,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         {
             IDisposable? selectedItemObservable = null;
 
-            return this.ItemsTree.RowSelection.WhenAnyValue(s => s.SelectedItem).Subscribe(selectedItem =>
+            return this.ItemsTree.WhenAnyValue(itemTree => itemTree.SelectedItem).Subscribe(selectedItem =>
             {
                 selectedItemObservable?.Dispose();
 
@@ -297,7 +297,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
     private async Task SyncTargetDirectory(String setString)
     {
-        ItemViewModel? selectedItem = this.ItemsTree.RowSelection.SelectedItem;
+        ItemViewModel? selectedItem = this.ItemsTree.SelectedItem;
         if (selectedItem != null)
         {
             using Job job = new Job(Jobs.SetSyncTargetDirectory, this);
@@ -320,7 +320,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     private IObservable<Boolean> SyncTargetDirectory_CanExecute()
     {
         IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None or Jobs.HandwritingRecognition);
-        IObservable<Boolean> treeSelection = this.ItemsTree.RowSelection.WhenAnyValue(selection => selection.SelectedItem).Select(item => item != null);
+        IObservable<Boolean> treeSelection = this.ItemsTree.WhenAnyValue(itemTree => itemTree.SelectedItem).Select(item => item != null);
 
         return Observable.CombineLatest(jobs, treeSelection, (value1, value2) => value1 && value2);
     }
@@ -351,9 +351,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
                     TabletItems tabletItems = await this.tabletService.GetItems().ConfigureAwait(true);
                     IEnumerable<TabletItem> tabletItemsNotTrashed = tabletItems.Items.Where(item => !item.Trashed).ToArray();
 
-                    await ItemViewModel.UpdateItems(tabletItemsNotTrashed, this.ItemsTree.Items, null, this.dataService, this.handWritingRecognitionService, this.tabletService).ConfigureAwait(true);
-
-                    this.ItemsTree.Sort(new Comparison<ItemViewModel>(ItemViewModel.Compare));
+                    await ItemViewModel.UpdateItems(tabletItemsNotTrashed, this.ItemsTree.Items, null, this.dataService, this.handWritingRecognitionService, this.settingsService, this.tabletService).ConfigureAwait(true);
 
                     String itemsNotReadable = String.Join(Environment.NewLine, tabletItems.NotReadable);
                     if (!String.IsNullOrEmpty(itemsNotReadable) && !String.Equals(itemsNotReadable, this.itemsNotReadable, StringComparison.Ordinal))
@@ -396,7 +394,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         IEnumerable<String>? files = await this.OpenFilePicker.Handle(options);
         foreach (String file in files)
         {
-            ItemViewModel? parentItem = this.ItemsTree.RowSelection.SelectedItem;
+            ItemViewModel? parentItem = this.ItemsTree.SelectedItem;
             String? parentId = UploadFileParentId(parentItem);
             await this.tabletService.UploadFile(file, parentId).ConfigureAwait(true);
         }

@@ -1,64 +1,44 @@
-using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Avalonia.Controls;
-using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.DataGridHierarchical;
 using Avalonia.Controls.Selection;
-using ReMarkableRemember.Common.Localization;
-using ReMarkableRemember.Helper;
-using ReMarkableRemember.Settings;
-using ReMarkableRemember.Templates;
+using ReactiveUI;
 
 namespace ReMarkableRemember.ViewModels;
 
-public sealed class ItemsTreeViewModel : HierarchicalTreeDataGridSource<ItemViewModel>
+public sealed class ItemsTreeViewModel : ViewModelBase
 {
-    public ItemsTreeViewModel(ISettingsService settingsService) : base(new ObservableCollection<ItemViewModel>())
+    public ItemsTreeViewModel()
     {
-        this.Columns.Add(new HierarchicalExpanderColumn<ItemViewModel>(new TextColumn<ItemViewModel, String>(null, item => item.Name), item => item.Collection) { Tag = () => Language.Current.ItemsTreeHeaderName });
-        this.Columns.Add(new TextColumn<ItemViewModel, String>(null, item => item.Modified.ToDisplayString(settingsService)) { Tag = () => Language.Current.ItemsTreeHeaderModified });
-        this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(settingsService, item => null, item => item.CombinedHint)));
-        this.Columns.Add(new TextColumn<ItemViewModel, String>(null, item => item.SyncPath) { Tag = () => Language.Current.ItemsTreeHeaderSyncPath });
-        this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(settingsService, item => item.SyncDate, item => item.SyncHint)) { Tag = () => Language.Current.ItemsTreeHeaderSyncInformation });
-        this.Columns.Add(new TemplateColumn<ItemViewModel>(null, new ItemHintColumnTemplate(settingsService, item => item.BackupDate, item => item.BackupHint)) { Tag = () => Language.Current.ItemsTreeHeaderBackupInformation });
+        HierarchicalOptions<ItemViewModel> hierarchicalOptions = new HierarchicalOptions<ItemViewModel>()
+        {
+            ItemsSelector = item => item.Collection,
+            IsLeafSelector = item => item.Collection is null,
+            VirtualizeChildren = true
+        };
 
-        this.UpdateLocalizedText();
+        this.HierarchicalModel = new HierarchicalModel<ItemViewModel>(hierarchicalOptions);
+        this.Items = new ObservableCollection<ItemViewModel>();
+        this.Selection = new SelectionModel<HierarchicalNode>();
+
+        this.HierarchicalModel.ApplySiblingComparer(Comparer<ItemViewModel>.Create(ItemViewModel.Compare));
+        this.HierarchicalModel.SetRoots(this.Items);
+        this.Selection.SelectionChanged += (_, _) => this.RaisePropertyChanged(nameof(this.SelectedItem));
     }
 
-    public new ObservableCollection<ItemViewModel> Items
-    {
-        get { return (ObservableCollection<ItemViewModel>)base.Items; }
-    }
+    public HierarchicalModel<ItemViewModel> HierarchicalModel { get; }
 
-    public new ITreeDataGridRowSelectionModel<ItemViewModel> RowSelection
-    {
-        get { return base.RowSelection!; }
-    }
+    internal ObservableCollection<ItemViewModel> Items { get; }
+
+    internal ItemViewModel? SelectedItem { get { return this.Selection.SelectedItem?.Item as ItemViewModel; } }
+
+    public SelectionModel<HierarchicalNode> Selection { get; }
 
     internal void UpdateLocalizedText()
     {
-        foreach (IColumn<ItemViewModel> column in this.Columns)
-        {
-            if (column is HierarchicalExpanderColumn<ItemViewModel> hierarchicalExpanderColumn)
-            {
-                UpdateLocalizedHeader(hierarchicalExpanderColumn.Inner);
-            }
-            else
-            {
-                UpdateLocalizedHeader(column);
-            }
-        }
-
         foreach (ItemViewModel item in this.Items)
         {
             item.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Collection);
-        }
-    }
-
-    private static void UpdateLocalizedHeader(IColumn<ItemViewModel> column)
-    {
-        if (column is ColumnBase<ItemViewModel> columnBase && columnBase.Tag is Func<String> action)
-        {
-            columnBase.Header = action.Invoke();
         }
     }
 }
