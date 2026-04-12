@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using Avalonia.Platform;
 using Avalonia.Svg;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
@@ -89,20 +88,21 @@ public abstract class ItemHintViewModel : ViewModelBase
         ExistsInTarget = 0x10
     }
 
-    public enum Images
-    {
-        None,
-        Green,
-        Yellow,
-        Red
-    }
-
-    private static readonly String? assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+    private static readonly SvgImage imageRed;
+    private static readonly SvgImage imageGreen;
+    private static readonly SvgImage imageYellow;
 
     private readonly ItemViewModel item;
     private readonly ISettingsService settingsService;
 
-    internal ItemHintViewModel(ItemViewModel item, ISettingsService settingsService)
+    static ItemHintViewModel()
+    {
+        imageRed = ImageLoader.Svg("Dots/Red.svg");
+        imageGreen = ImageLoader.Svg("Dots/Green.svg");
+        imageYellow = ImageLoader.Svg("Dots/Yellow.svg");
+    }
+
+    protected ItemHintViewModel(ItemViewModel item, ISettingsService settingsService)
     {
         this.item = item;
         this.settingsService = settingsService;
@@ -112,7 +112,7 @@ public abstract class ItemHintViewModel : ViewModelBase
 
     internal Hints Hint { get { return this.GetHint(this.item); } }
 
-    public SvgImage? Image { get { return this.GetSvgImage(); } }
+    public SvgImage? Image { get { return this.GetImage(); } }
 
     public String? ToolTip { get { return this.GetToolTip(); } }
 
@@ -120,25 +120,17 @@ public abstract class ItemHintViewModel : ViewModelBase
 
     protected abstract Hints GetHint(ItemViewModel item);
 
-    private Images GetImage()
+    private SvgImage? GetImage()
     {
-        if (this.Hint.HasFlag(Hints.ExistsInTarget)) { return Images.Red; }
-        if (this.Hint.HasFlag(Hints.New)) { return Images.Yellow; }
-        if (this.Hint.HasFlag(Hints.Modified)) { return Images.Yellow; }
-        if (this.Hint.HasFlag(Hints.SyncPathChanged)) { return Images.Yellow; }
-        if (this.Hint.HasFlag(Hints.NotFoundInTarget)) { return Images.Yellow; }
+        if (this.Hint.HasFlag(Hints.ExistsInTarget)) { return imageRed; }
+        if (this.Hint.HasFlag(Hints.New)) { return imageYellow; }
+        if (this.Hint.HasFlag(Hints.Modified)) { return imageYellow; }
+        if (this.Hint.HasFlag(Hints.SyncPathChanged)) { return imageYellow; }
+        if (this.Hint.HasFlag(Hints.NotFoundInTarget)) { return imageYellow; }
 
-        if (this.Hint == Hints.None) { return (this.DateTime != null) ? Images.Green : Images.None; }
+        if (this.Hint == Hints.None) { return (this.DateTime != null) ? imageGreen : null; }
 
         throw new NotImplementedException();
-    }
-
-    private SvgImage? GetSvgImage()
-    {
-        Images image = this.GetImage();
-        return (image != Images.None)
-            ? new SvgImage() { Source = SvgSource.Load(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/Dots/{image}.svg"))) }
-            : null;
     }
 
     private String? GetToolTip()

@@ -1,24 +1,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 using ReMarkableRemember.Common.Localization;
+using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.ViewModels;
 
 public sealed class TemplateIconViewModel
 {
-    private static readonly String? assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+    private static readonly Dictionary<String, Bitmap> images = new Dictionary<String, Bitmap>();
 
     private TemplateIconViewModel(TabletTemplateIcon icon)
     {
+        if (!images.TryGetValue(icon.Code, out Bitmap? image))
+        {
+            image = ImageLoader.Bitmap($"Templates/{icon.ImageName}.png");
+            images.Add(icon.Code, image);
+        }
         String name = icon.GetName();
 
         this.Code = icon.Code;
-        this.Image = new Bitmap(AssetLoader.Open(new Uri($"avares://{assemblyName}/Assets/Templates/{icon.ImageName}.png")));
+        this.Image = image;
         this.IsLandscape = icon.IsLandscape;
         this.Name = icon.IsLandscape ? $"{name} ({Language.Current.TemplateLandscape})" : $"{name} ({Language.Current.TemplatePortrait})";
         this.SortName = name;
