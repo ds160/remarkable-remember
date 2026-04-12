@@ -22,6 +22,9 @@
     <Window.Resources>
         <FontFamily x:Key="MaterialIconsFont">avares://ReMarkableRemember/Assets/Fonts#Material</FontFamily>
         <StreamGeometry x:Key="Spinner">M480-80q-82 0-155-31.5t-127.5-86Q143-252 111.5-325T80-480q0-83 31.5-155.5t86-127Q252-817 325-848.5T480-880q17 0 28.5 11.5T520-840q0 17-11.5 28.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-17 11.5-28.5T840-520q17 0 28.5 11.5T880-480q0 82-31.5 155t-86 127.5q-54.5 54.5-127 86T480-80Z</StreamGeometry>
+        <DataTemplate x:Key="DataGridHeader">
+            <TextBlock Text="{Binding}" FontSize="14"/>
+        </DataTemplate>
     </Window.Resources>
 
     <Window.Styles>
@@ -105,7 +108,7 @@
                 HierarchicalRowsEnabled="True"
                 Selection="{Binding ItemsTree.Selection}">
                 <DataGrid.Columns>
-                    <DataGridHierarchicalColumn Header="{Binding LocalStrings.ItemsTreeHeaderName}" x:CompileBindings="False">
+                    <DataGridHierarchicalColumn Header="{Binding LocalStrings.ItemsTreeHeaderName}" HeaderTemplate="{StaticResource DataGridHeader}" x:CompileBindings="False">
                         <DataGridHierarchicalColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Margin="0, 2, 4, 0">
@@ -114,16 +117,16 @@
                             </DataTemplate>
                         </DataGridHierarchicalColumn.CellTemplate>
                     </DataGridHierarchicalColumn>
-                    <DataGridTemplateColumn Header="{Binding LocalStrings.ItemsTreeHeaderModified}" x:CompileBindings="False">
+                    <DataGridTemplateColumn Header="{Binding LocalStrings.ItemsTreeHeaderModified}" HeaderTemplate="{StaticResource DataGridHeader}" x:CompileBindings="False">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Margin="4, 8, 4, 0">
+                                <StackPanel Margin="12, 8, 4, 0">
                                     <TextBlock Text="{Binding Item.ModifiedDisplayString}"/>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn CanUserResize="False" Width="16" x:CompileBindings="False">
+                    <DataGridTemplateColumn HeaderTemplate="{StaticResource DataGridHeader}" CanUserResize="False" Width="16" x:CompileBindings="False">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" Margin="4, 0, 4, 0">
@@ -132,19 +135,19 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="{Binding LocalStrings.ItemsTreeHeaderSyncPath}" x:CompileBindings="False">
+                    <DataGridTemplateColumn Header="{Binding LocalStrings.ItemsTreeHeaderSyncPath}" HeaderTemplate="{StaticResource DataGridHeader}" x:CompileBindings="False">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Margin="4, 8, 4, 0">
+                                <StackPanel Margin="12, 8, 4, 0">
                                     <TextBlock Text="{Binding Item.SyncPath}"/>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="{Binding LocalStrings.ItemsTreeHeaderSyncInformation}" x:CompileBindings="False">
+                    <DataGridTemplateColumn Header="{Binding LocalStrings.ItemsTreeHeaderSyncInformation}" HeaderTemplate="{StaticResource DataGridHeader}" x:CompileBindings="False">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Margin="4, 0, 4, 0">
+                                <StackPanel Orientation="Horizontal" Margin="12, 0, 4, 0">
                                     <Image ToolTip.Tip="{Binding Item.SyncHint.ToolTip}" Source="{Binding Item.SyncHint.Image}" Height="12" Width="12"/>
                                     <StackPanel Margin="8, 8, 0, 0">
                                         <TextBlock Text="{Binding Item.SyncHint.DateTime}"/>
@@ -153,10 +156,10 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="{Binding LocalStrings.ItemsTreeHeaderBackupInformation}" IsVisible="{Binding HasBackupDirectory}" x:CompileBindings="False">
+                    <DataGridTemplateColumn Header="{Binding LocalStrings.ItemsTreeHeaderBackupInformation}" HeaderTemplate="{StaticResource DataGridHeader}" IsVisible="{Binding HasBackupDirectory}" x:CompileBindings="False">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Margin="4, 0, 4, 0">
+                                <StackPanel Orientation="Horizontal" Margin="12, 0, 4, 0">
                                     <Image ToolTip.Tip="{Binding Item.BackupHint.ToolTip}" Source="{Binding Item.BackupHint.Image}" Height="12" Width="12"/>
                                     <StackPanel Margin="8, 8, 0, 0">
                                         <TextBlock Text="{Binding Item.BackupHint.DateTime}"/>
