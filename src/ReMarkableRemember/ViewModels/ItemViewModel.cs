@@ -48,7 +48,7 @@ public sealed class ItemViewModel : ViewModelBase
 
         this.BackupHint = new ItemHintViewModel.Backup(this, settingsService, tabletService);
         this.SyncHint = new ItemHintViewModel.Sync(this, settingsService);
-
+        // Last to combine backup and sync
         this.CombinedHint = new ItemHintViewModel.Combined(this, settingsService);
     }
 
@@ -112,14 +112,15 @@ public sealed class ItemViewModel : ViewModelBase
 
     internal void RaiseChanged(RaiseChangedAdditional additional)
     {
+        this.BackupHint.RaiseChanged();
+        this.SyncHint.RaiseChanged();
+        // Last to combine backup and sync
+        this.CombinedHint.RaiseChanged();
+
         foreach (PropertyInfo property in this.GetType().GetProperties())
         {
             this.RaisePropertyChanged(property.Name);
         }
-
-        this.BackupHint.RaiseChanged();
-        this.CombinedHint.RaiseChanged();
-        this.SyncHint.RaiseChanged();
 
         if (additional == RaiseChangedAdditional.Collection) { this.Collection?.ToList()?.ForEach(item => item.RaiseChanged(additional)); }
         if (additional == RaiseChangedAdditional.Parent) { this.Parent?.RaiseChanged(additional); }
@@ -151,7 +152,7 @@ public sealed class ItemViewModel : ViewModelBase
 
     private async Task Update()
     {
-        this.DataItem = await this.dataService.GetItem(this.Id);
+        this.DataItem = await this.dataService.GetItem(this.Id).ConfigureAwait(true);
 
         String? targetDirectory = null;
         if (this.DataItem != null && this.DataItem.SyncTargetDirectory != null)

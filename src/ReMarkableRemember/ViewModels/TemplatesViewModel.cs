@@ -26,7 +26,7 @@ public sealed class TemplatesViewModel : DialogWindowModel
             this.templates.Add(new TemplateViewModel(template, this.templates, dataService, tabletService));
         }
 
-        this.templates.CollectionChanged += (s, e) => this.CheckTemplates(e.Action is NotifyCollectionChangedAction.Remove);
+        this.templates.CollectionChanged += (_, e) => this.CheckTemplates(e.Action is NotifyCollectionChangedAction.Remove);
     }
 
     public Boolean RestartRequired { get; private set; }

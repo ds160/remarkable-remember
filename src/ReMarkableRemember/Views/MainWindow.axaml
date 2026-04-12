@@ -102,8 +102,6 @@
         <Grid RowDefinitions="*, Auto">
             <DataGrid
                 AutoGenerateColumns="False"
-                CanUserResizeColumns="True"
-                CanUserSortColumns="False"
                 HierarchicalModel="{Binding ItemsTree.HierarchicalModel}"
                 HierarchicalRowsEnabled="True"
                 Selection="{Binding ItemsTree.Selection}">
@@ -122,11 +120,11 @@
                             <DataTemplate>
                                 <StackPanel Margin="12, 8, 4, 0">
                                     <TextBlock Text="{Binding Item.ModifiedDisplayString}"/>
-                                </StackPanel>
+                                    </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn HeaderTemplate="{StaticResource DataGridHeader}" CanUserResize="False" Width="16" x:CompileBindings="False">
+                    <DataGridTemplateColumn HeaderTemplate="{StaticResource DataGridHeader}" Width="16" x:CompileBindings="False">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" Margin="4, 0, 4, 0">

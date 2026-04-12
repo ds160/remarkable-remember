@@ -122,26 +122,30 @@ public abstract class ItemHintViewModel : ViewModelBase
 
     private SvgImage? GetImage()
     {
-        if (this.Hint.HasFlag(Hints.ExistsInTarget)) { return imageRed; }
-        if (this.Hint.HasFlag(Hints.New)) { return imageYellow; }
-        if (this.Hint.HasFlag(Hints.Modified)) { return imageYellow; }
-        if (this.Hint.HasFlag(Hints.SyncPathChanged)) { return imageYellow; }
-        if (this.Hint.HasFlag(Hints.NotFoundInTarget)) { return imageYellow; }
+        Hints hint = this.Hint;
 
-        if (this.Hint == Hints.None) { return (this.DateTime != null) ? imageGreen : null; }
+        if (hint.HasFlag(Hints.ExistsInTarget)) { return imageRed; }
+        if (hint.HasFlag(Hints.New)) { return imageYellow; }
+        if (hint.HasFlag(Hints.Modified)) { return imageYellow; }
+        if (hint.HasFlag(Hints.SyncPathChanged)) { return imageYellow; }
+        if (hint.HasFlag(Hints.NotFoundInTarget)) { return imageYellow; }
+
+        if (hint == Hints.None) { return (this.DateTime != null) ? imageGreen : null; }
 
         throw new NotImplementedException();
     }
 
     private String? GetToolTip()
     {
-        if (this.Hint.HasFlag(Hints.ExistsInTarget)) { return Language.Current.ItemHintExistsInTarget; }
-        if (this.Hint.HasFlag(Hints.New)) { return Language.Current.ItemHintNew; }
-        if (this.Hint.HasFlag(Hints.Modified)) { return Language.Current.ItemHintModified; }
-        if (this.Hint.HasFlag(Hints.SyncPathChanged)) { return Language.Current.ItemHintSyncPathChanged; }
-        if (this.Hint.HasFlag(Hints.NotFoundInTarget)) { return Language.Current.ItemHintNotFoundInTarget; }
+        Hints hint = this.Hint;
 
-        if (this.Hint == Hints.None) { return (this.DateTime != null) ? Language.Current.ItemHintUpToDate : null; }
+        if (hint.HasFlag(Hints.ExistsInTarget)) { return Language.Current.ItemHintExistsInTarget; }
+        if (hint.HasFlag(Hints.New)) { return Language.Current.ItemHintNew; }
+        if (hint.HasFlag(Hints.Modified)) { return Language.Current.ItemHintModified; }
+        if (hint.HasFlag(Hints.SyncPathChanged)) { return Language.Current.ItemHintSyncPathChanged; }
+        if (hint.HasFlag(Hints.NotFoundInTarget)) { return Language.Current.ItemHintNotFoundInTarget; }
+
+        if (hint == Hints.None) { return (this.DateTime != null) ? Language.Current.ItemHintUpToDate : null; }
 
         throw new NotImplementedException();
     }
