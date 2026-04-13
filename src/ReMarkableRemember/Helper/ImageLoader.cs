@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Svg;
@@ -10,15 +12,26 @@ namespace ReMarkableRemember.Helper;
 public static class ImageLoader
 {
     private static readonly String? assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+    private static readonly Dictionary<String, IImage> images = new Dictionary<String, IImage>();
 
-    public static Bitmap Bitmap(String path)
+    public static IImage Bitmap(String path)
     {
-        return new Bitmap(LoadAsset(path));
+        if (!images.TryGetValue(path, out IImage? image))
+        {
+            image = new Bitmap(LoadAsset(path));
+            images.Add(path, image);
+        }
+        return image;
     }
 
-    public static SvgImage Svg(String path)
+    public static IImage Svg(String path)
     {
-        return new SvgImage() { Source = SvgSource.Load(LoadAsset(path)) };
+        if (!images.TryGetValue(path, out IImage? image))
+        {
+            image = new SvgImage() { Source = SvgSource.Load(LoadAsset(path)) };
+            images.Add(path, image);
+        }
+        return image;
     }
 
     private static Stream LoadAsset(String path)

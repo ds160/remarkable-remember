@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Reflection;
-using Avalonia.Svg;
+using Avalonia.Media;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Helper;
@@ -88,19 +88,12 @@ public abstract class ItemHintViewModel : ViewModelBase
         ExistsInTarget = 0x10
     }
 
-    private static readonly SvgImage imageRed;
-    private static readonly SvgImage imageGreen;
-    private static readonly SvgImage imageYellow;
+    private const String IMAGE_GREEN = "Dots/Green.svg";
+    private const String IMAGE_RED = "Dots/Red.svg";
+    private const String IMAGE_YELLOW = "Dots/Yellow.svg";
 
     private readonly ItemViewModel item;
     private readonly ISettingsService settingsService;
-
-    static ItemHintViewModel()
-    {
-        imageRed = ImageLoader.Svg("Dots/Red.svg");
-        imageGreen = ImageLoader.Svg("Dots/Green.svg");
-        imageYellow = ImageLoader.Svg("Dots/Yellow.svg");
-    }
 
     protected ItemHintViewModel(ItemViewModel item, ISettingsService settingsService)
     {
@@ -112,7 +105,7 @@ public abstract class ItemHintViewModel : ViewModelBase
 
     internal Hints Hint { get { return this.GetHint(this.item); } }
 
-    public SvgImage? Image { get { return this.GetImage(); } }
+    public IImage? Image { get { return this.GetImage() is String image ? ImageLoader.Svg(image) : null; } }
 
     public String? ToolTip { get { return this.GetToolTip(); } }
 
@@ -120,17 +113,17 @@ public abstract class ItemHintViewModel : ViewModelBase
 
     protected abstract Hints GetHint(ItemViewModel item);
 
-    private SvgImage? GetImage()
+    private String? GetImage()
     {
         Hints hint = this.Hint;
 
-        if (hint.HasFlag(Hints.ExistsInTarget)) { return imageRed; }
-        if (hint.HasFlag(Hints.New)) { return imageYellow; }
-        if (hint.HasFlag(Hints.Modified)) { return imageYellow; }
-        if (hint.HasFlag(Hints.SyncPathChanged)) { return imageYellow; }
-        if (hint.HasFlag(Hints.NotFoundInTarget)) { return imageYellow; }
+        if (hint.HasFlag(Hints.ExistsInTarget)) { return IMAGE_RED; }
+        if (hint.HasFlag(Hints.New)) { return IMAGE_YELLOW; }
+        if (hint.HasFlag(Hints.Modified)) { return IMAGE_YELLOW; }
+        if (hint.HasFlag(Hints.SyncPathChanged)) { return IMAGE_YELLOW; }
+        if (hint.HasFlag(Hints.NotFoundInTarget)) { return IMAGE_YELLOW; }
 
-        if (hint == Hints.None) { return (this.DateTime != null) ? imageGreen : null; }
+        if (hint == Hints.None) { return (this.DateTime != null) ? IMAGE_GREEN : null; }
 
         throw new NotImplementedException();
     }

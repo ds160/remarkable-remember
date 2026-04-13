@@ -1,5 +1,5 @@
 using System;
-using Avalonia.Svg;
+using Avalonia.Media;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Helper;
 
@@ -7,19 +7,13 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class MessageViewModel : DialogWindowModel
 {
-    private static readonly SvgImage imageError;
-    private static readonly SvgImage imageQuestion;
+    private const String IMAGE_ERROR = "Error.svg";
+    private const String IMAGE_QUESTION = "Question.svg";
 
-    static MessageViewModel()
-    {
-        imageError = ImageLoader.Svg("Error.svg");
-        imageQuestion = ImageLoader.Svg("Question.svg");
-    }
-
-    private MessageViewModel(String title, String message, SvgImage image, String textClose, String? textCancel = null)
+    private MessageViewModel(String title, String message, String image, String textClose, String? textCancel = null)
         : base(title, textClose, textCancel)
     {
-        this.Image = image;
+        this.Image = ImageLoader.Svg(image);
         this.Message = message;
     }
 
@@ -30,15 +24,15 @@ public sealed class MessageViewModel : DialogWindowModel
 
     internal static MessageViewModel Error(String message)
     {
-        return new MessageViewModel(Language.Current.ErrorTitle, message, imageError, Language.Current.ButtonOK);
+        return new MessageViewModel(Language.Current.ErrorTitle, message, IMAGE_ERROR, Language.Current.ButtonOK);
     }
 
     internal static MessageViewModel Question(String title, String message)
     {
-        return new MessageViewModel(title, message, imageQuestion, Language.Current.ButtonYes, Language.Current.ButtonNo);
+        return new MessageViewModel(title, message, IMAGE_QUESTION, Language.Current.ButtonYes, Language.Current.ButtonNo);
     }
 
-    public SvgImage Image { get; }
+    public IImage Image { get; }
 
     public String Message { get; }
 }

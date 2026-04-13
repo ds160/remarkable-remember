@@ -17,7 +17,7 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class TemplateViewModel : ViewModelBase
 {
-    private static readonly Dictionary<String, Bitmap> icons = TemplateIconViewModel.GetIcons().ToDictionary(icon => icon.Code, icon => icon.Image);
+    private static readonly Dictionary<String, IImage> icons = TemplateIconViewModel.GetIcons().ToDictionary(icon => icon.Code, icon => icon.Image);
 
     private readonly TabletTemplate template;
     private readonly ObservableCollection<TemplateViewModel> templates;
@@ -43,7 +43,7 @@ public sealed class TemplateViewModel : ViewModelBase
 
     public String Category { get { return this.template.Category; } }
 
-    public Bitmap Icon { get; }
+    public IImage Icon { get; }
 
     public IImage? Image { get; }
 
