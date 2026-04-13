@@ -33,12 +33,12 @@ public abstract class ItemHintViewModel : ViewModelBase
 
     public sealed class Combined(ItemViewModel item, ISettingsService settingsService) : ItemHintViewModel(item, settingsService)
     {
-        protected override DateTime? GetDateTime(ItemViewModel item)
+        protected sealed override DateTime? GetDateTime(ItemViewModel item)
         {
             return null;
         }
 
-        protected override Hints GetHint(ItemViewModel item)
+        protected sealed override Hints GetHint(ItemViewModel item)
         {
             Hints hint = item.BackupHint.Hint | item.SyncHint.Hint;
 
@@ -56,12 +56,12 @@ public abstract class ItemHintViewModel : ViewModelBase
 
     public sealed class Sync(ItemViewModel item, ISettingsService settingsService) : ItemHintViewModel(item, settingsService)
     {
-        protected override DateTime? GetDateTime(ItemViewModel item)
+        protected sealed override DateTime? GetDateTime(ItemViewModel item)
         {
             return item.SyncDate;
         }
 
-        protected override Hints GetHint(ItemViewModel item)
+        protected sealed override Hints GetHint(ItemViewModel item)
         {
             if (item.Collection != null) { return Hints.None; }
             if (item.SyncPath == null) { return Hints.None; }
@@ -105,7 +105,7 @@ public abstract class ItemHintViewModel : ViewModelBase
 
     internal Hints Hint { get { return this.GetHint(this.item); } }
 
-    public IImage? Image { get { return this.GetImage() is String image ? ImageLoader.Svg(image) : null; } }
+    public IImage? Image { get { return this.GetImagePath() is String image ? ImageLoader.Svg(image) : null; } }
 
     public String? ToolTip { get { return this.GetToolTip(); } }
 
@@ -113,7 +113,7 @@ public abstract class ItemHintViewModel : ViewModelBase
 
     protected abstract Hints GetHint(ItemViewModel item);
 
-    private String? GetImage()
+    private String? GetImagePath()
     {
         Hints hint = this.Hint;
 

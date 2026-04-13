@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -42,7 +41,7 @@ public sealed class ItemViewModel : ViewModelBase
 
         List<ItemViewModel>? collection = tabletItem.Collection?.Select(childItem => new ItemViewModel(childItem, this, dataService, handWritingRecognitionService, settingsService, tabletService)).ToList();
 
-        this.Collection = (collection != null) ? new ObservableCollection<ItemViewModel>(collection) : null;
+        this.Collection = (collection != null) ? new OptimizedList<ItemViewModel>(collection) : null;
         this.Parent = parent;
         this.TabletItem = tabletItem;
 
@@ -56,7 +55,7 @@ public sealed class ItemViewModel : ViewModelBase
 
     public ItemHintViewModel.Backup BackupHint { get; }
 
-    public ObservableCollection<ItemViewModel>? Collection { get; }
+    public OptimizedList<ItemViewModel>? Collection { get; }
 
     public ItemHintViewModel.Combined CombinedHint { get; }
 
@@ -173,17 +172,9 @@ public sealed class ItemViewModel : ViewModelBase
         }
     }
 
-    internal static Int32 Compare(ItemViewModel itemA, ItemViewModel itemB)
+    internal static async Task UpdateItems(IEnumerable<TabletItem> tabletItems, OptimizedList<ItemViewModel> items, ItemViewModel? parentItem, IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ISettingsService settingsService, ITabletService tabletService)
     {
-        Int32 collectionA = (itemA.Collection == null) ? 1 : 0;
-        Int32 collectionB = (itemB.Collection == null) ? 1 : 0;
-        Int32 collectionCompareResult = collectionA - collectionB;
-
-        return (collectionCompareResult != 0) ? collectionCompareResult : String.CompareOrdinal(itemA.Name, itemB.Name);
-    }
-
-    internal static async Task UpdateItems(IEnumerable<TabletItem> tabletItems, ObservableCollection<ItemViewModel> items, ItemViewModel? parentItem, IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ISettingsService settingsService, ITabletService tabletService)
-    {
+        List<ItemViewModel> itemsToAdd = new List<ItemViewModel>();
         foreach (TabletItem tabletItem in tabletItems)
         {
             ItemViewModel? item = items.SingleOrDefault(item => item.TabletItem.Id == tabletItem.Id);
@@ -191,7 +182,7 @@ public sealed class ItemViewModel : ViewModelBase
             {
                 item = new ItemViewModel(tabletItem, parentItem, dataService, handWritingRecognitionService, settingsService, tabletService);
                 await item.Update().ConfigureAwait(true);
-                items.Add(item);
+                itemsToAdd.Add(item);
             }
             else
             {
@@ -208,6 +199,7 @@ public sealed class ItemViewModel : ViewModelBase
                 }
             }
         }
+        items.AddRange(itemsToAdd);
 
         List<ItemViewModel> itemsToRemove = items.Where(item => !tabletItems.Any(sourceItem => item.TabletItem.Id == sourceItem.Id)).ToList();
         itemsToRemove.ForEach(itemToRemove => items.Remove(itemToRemove));

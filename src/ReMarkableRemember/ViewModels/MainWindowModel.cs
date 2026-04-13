@@ -51,7 +51,6 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         this.ConnectionStatus = new ConnectionStatusViewModel();
         this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionService.Configuration.Language, StringComparison.Ordinal));
         this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
-        this.HasItems = false;
         this.Jobs = Jobs.None;
 
         this.CommandAbout = ReactiveCommand.CreateFromTask(this.About);
@@ -140,7 +139,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         IObservable<Boolean> backupDirectory = this.WhenAnyValue(vm => vm.HasBackupDirectory).Select(hasBackupDirectory => job != Jobs.Backup || hasBackupDirectory);
         IObservable<Boolean> connectionStatus = this.WhenAnyValue(vm => vm.ConnectionStatus).Select(status => status.CheckJob((job == Jobs.Sync) ? Jobs.Sync : Jobs.Backup));
-        IObservable<Boolean> items = this.WhenAnyValue(vm => vm.HasItems);
+        IObservable<Boolean> items = this.ItemsTree.Items.WhenAnyValue(vm => vm.Count).Select(count => count > 0);
         IObservable<Boolean> jobs = this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None or Jobs.HandwritingRecognition);
 
         return Observable.CombineLatest(backupDirectory, connectionStatus, items, jobs, (value1, value2, value3, value4) => value1 && value2 && value3 && value4);
@@ -346,7 +345,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
             {
                 if (this.Jobs is Jobs.None or Jobs.HandwritingRecognition)
                 {
-                    using Job? job = this.HasItems ? null : new Job(Jobs.GetItems, this);
+                    using Job? job = this.ItemsTree.Items.Count > 0 ? null : new Job(Jobs.GetItems, this);
 
                     TabletItems tabletItems = await this.tabletService.GetItems().ConfigureAwait(true);
                     IEnumerable<TabletItem> tabletItemsNotTrashed = tabletItems.Items.Where(item => !item.Trashed).ToArray();
@@ -379,10 +378,6 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
             this.ItemsTree.Items.Clear();
             return false;
-        }
-        finally
-        {
-            this.HasItems = this.ItemsTree.Items.Any();
         }
     }
 
@@ -474,8 +469,6 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     public ItemsTreeViewModel ItemsTree { get; }
 
     private Boolean HasBackupDirectory { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
-
-    public Boolean HasItems { get; private set { this.RaiseAndSetIfChanged(ref field, value); } }
 
     private Jobs Jobs { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
 
