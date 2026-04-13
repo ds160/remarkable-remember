@@ -16,9 +16,9 @@ public sealed class OptimizedList<T> : IList<T>, INotifyPropertyChanged, INotify
         this.list = new List<T>();
     }
 
-    public OptimizedList(List<T> list) : this()
+    public OptimizedList(IList<T> items) : this()
     {
-        this.AddRange(list);
+        this.AddRange(items);
     }
 
     public event NotifyCollectionChangedEventHandler? CollectionChanged;
@@ -45,7 +45,7 @@ public sealed class OptimizedList<T> : IList<T>, INotifyPropertyChanged, INotify
         this.Insert(this.Count, item);
     }
 
-    public void AddRange(List<T> items)
+    public void AddRange(IList<T> items)
     {
         if (items.Count == 0) { return; }
 
@@ -102,6 +102,14 @@ public sealed class OptimizedList<T> : IList<T>, INotifyPropertyChanged, INotify
         T item = this.list[index];
         this.list.RemoveAt(index);
         this.OnChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index));
+    }
+
+    public void RemoveRange(IList<T> items)
+    {
+        foreach (T item in items)
+        {
+            this.Remove(item);
+        }
     }
 
     IEnumerator IEnumerable.GetEnumerator()

@@ -202,6 +202,6 @@ public sealed class ItemViewModel : ViewModelBase
         items.AddRange(itemsToAdd);
 
         List<ItemViewModel> itemsToRemove = items.Where(item => !tabletItems.Any(sourceItem => item.TabletItem.Id == sourceItem.Id)).ToList();
-        itemsToRemove.ForEach(itemToRemove => items.Remove(itemToRemove));
+        items.RemoveRange(itemsToRemove);
     }
 }
