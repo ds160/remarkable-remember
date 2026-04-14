@@ -9,7 +9,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Svg;
 using ReactiveUI;
-using ReMarkableRemember.Helper;
+using ReMarkableRemember.DependencyInjection;
 using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.ViewModels;
@@ -21,9 +21,9 @@ public sealed class TemplateViewModel : ViewModelBase
     private readonly TabletTemplate template;
     private readonly ObservableCollection<TemplateViewModel> templates;
 
-    private readonly ServiceProvider services;
+    private readonly IServices services;
 
-    internal TemplateViewModel(TabletTemplate template, ObservableCollection<TemplateViewModel> templates, ServiceProvider services)
+    internal TemplateViewModel(TabletTemplate template, ObservableCollection<TemplateViewModel> templates, IServices services)
     {
         this.template = template;
         this.templates = templates;

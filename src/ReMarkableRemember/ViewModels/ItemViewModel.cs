@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ReactiveUI;
 using ReMarkableRemember.Common.FileSystem;
 using ReMarkableRemember.Common.Notebook;
+using ReMarkableRemember.DependencyInjection;
 using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.DataService.Models;
 using ReMarkableRemember.Services.TabletService.Models;
@@ -23,9 +24,9 @@ public sealed class ItemViewModel : ViewModelBase
         Parent
     }
 
-    private readonly ServiceProvider services;
+    private readonly IServices services;
 
-    internal ItemViewModel(TabletItem tabletItem, ItemViewModel? parent, ServiceProvider services)
+    internal ItemViewModel(TabletItem tabletItem, ItemViewModel? parent, IServices services)
     {
         this.services = services;
 
@@ -162,7 +163,7 @@ public sealed class ItemViewModel : ViewModelBase
         }
     }
 
-    internal static async Task UpdateItems(IEnumerable<TabletItem> tabletItems, OptimizedList<ItemViewModel> items, ItemViewModel? parentItem, ServiceProvider services)
+    internal static async Task UpdateItems(IEnumerable<TabletItem> tabletItems, OptimizedList<ItemViewModel> items, ItemViewModel? parentItem, IServices services)
     {
         List<ItemViewModel> itemsToAdd = new List<ItemViewModel>();
         foreach (TabletItem tabletItem in tabletItems)

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using ReMarkableRemember.Helper;
+using ReMarkableRemember.DependencyInjection;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -19,7 +19,7 @@ public sealed class HandWritingRecognitionLanguageViewModel
 
     public String DisplayName { get; }
 
-    internal static IEnumerable<HandWritingRecognitionLanguageViewModel> GetLanguages(ServiceProvider services)
+    internal static IEnumerable<HandWritingRecognitionLanguageViewModel> GetLanguages(IServices services)
     {
         List<HandWritingRecognitionLanguageViewModel> languages = new List<HandWritingRecognitionLanguageViewModel>();
 

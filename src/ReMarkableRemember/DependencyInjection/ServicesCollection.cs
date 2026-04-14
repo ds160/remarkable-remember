@@ -3,11 +3,11 @@ using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Settings;
 
-namespace ReMarkableRemember.Helper;
+namespace ReMarkableRemember.DependencyInjection;
 
-public sealed class ServiceProvider
+internal sealed class ServicesCollection : IServices
 {
-    public ServiceProvider(IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ISettingsService settingsService, ITabletService tabletService)
+    public ServicesCollection(IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ISettingsService settingsService, ITabletService tabletService)
     {
         this.Data = dataService;
         this.HandWritingRecognition = handWritingRecognitionService;

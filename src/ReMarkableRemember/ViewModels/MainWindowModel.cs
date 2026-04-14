@@ -12,6 +12,7 @@ using Avalonia.Platform.Storage;
 using DynamicData.Binding;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
+using ReMarkableRemember.DependencyInjection;
 using ReMarkableRemember.Enumerations;
 using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.DataService.Models;
@@ -22,11 +23,11 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class MainWindowModel : ViewModelBase, IAppModel
 {
-    private readonly ServiceProvider services;
+    private readonly IServices services;
 
     private String? itemsNotReadable;
 
-    public MainWindowModel(ServiceProvider services)
+    public MainWindowModel(IServices services)
     {
         this.services = services;
 

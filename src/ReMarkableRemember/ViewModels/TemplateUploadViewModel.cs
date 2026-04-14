@@ -7,6 +7,7 @@ using System.Windows.Input;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
+using ReMarkableRemember.DependencyInjection;
 using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.DataService.Models;
 using ReMarkableRemember.Services.TabletService.Models;
@@ -15,9 +16,9 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class TemplateUploadViewModel : DialogWindowModel
 {
-    private readonly ServiceProvider services;
+    private readonly IServices services;
 
-    public TemplateUploadViewModel(ServiceProvider services)
+    public TemplateUploadViewModel(IServices services)
         : base(Language.Current.TemplateTitle, Language.Current.ButtonUpload, Language.Current.ButtonCancel)
     {
         this.services = services;

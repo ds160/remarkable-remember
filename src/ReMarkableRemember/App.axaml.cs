@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
+using ReMarkableRemember.DependencyInjection;
 using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
@@ -41,7 +42,7 @@ public partial class App : Application
             .AddSingleton<IHandWritingRecognitionService, HandWritingRecognitionServiceMyScript>()
             .AddSingleton<ISettingsService, SettingsService>()
             .AddSingleton<ITabletService, TabletService>()
-            .AddSingleton<Helper.ServiceProvider>()
+            .AddSingleton<IServices, ServicesCollection>()
             .AddSingleton<MainWindowModel>()
             .BuildServiceProvider();
 

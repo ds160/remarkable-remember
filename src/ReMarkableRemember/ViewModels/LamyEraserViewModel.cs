@@ -1,15 +1,15 @@
 using System;
 using System.Threading.Tasks;
 using ReMarkableRemember.Common.Localization;
-using ReMarkableRemember.Helper;
+using ReMarkableRemember.DependencyInjection;
 
 namespace ReMarkableRemember.ViewModels;
 
 public sealed partial class LamyEraserViewModel : DialogWindowModel
 {
-    private readonly ServiceProvider services;
+    private readonly IServices services;
 
-    internal LamyEraserViewModel(ServiceProvider services)
+    internal LamyEraserViewModel(IServices services)
         : base(Language.Current.LamyEraserTitle, Language.Current.ButtonInstall, Language.Current.ButtonCancel)
     {
         this.services = services;

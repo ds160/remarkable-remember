@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
-using ReMarkableRemember.Helper;
+using ReMarkableRemember.DependencyInjection;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
 using ReMarkableRemember.Services.TabletService.Configuration;
 using ReMarkableRemember.Settings.Configuration;
@@ -22,7 +22,7 @@ public sealed partial class SettingsViewModel : DialogWindowModel
     private readonly ISettingsConfiguration settingsService;
     private readonly ITabletConfiguration tabletConfiguration;
 
-    internal SettingsViewModel(ServiceProvider services)
+    internal SettingsViewModel(IServices services)
         : base(Language.Current.SettingsTitle, Language.Current.ButtonSave, Language.Current.ButtonCancel)
     {
         this.ApplicationLanguages = ApplicationLanguageViewModel.GetLanguages(Language.Current.SettingsLanguageDefault);

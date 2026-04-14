@@ -4,13 +4,14 @@ using System.Reflection;
 using Avalonia.Media;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
+using ReMarkableRemember.DependencyInjection;
 using ReMarkableRemember.Helper;
 
 namespace ReMarkableRemember.ViewModels;
 
 public abstract class ItemHintViewModel : ViewModelBase
 {
-    public sealed class Backup(ItemViewModel item, ServiceProvider services) : ItemHintViewModel(item, services)
+    public sealed class Backup(ItemViewModel item, IServices services) : ItemHintViewModel(item, services)
     {
         protected sealed override DateTime? GetDateTime()
         {
@@ -29,7 +30,7 @@ public abstract class ItemHintViewModel : ViewModelBase
         }
     }
 
-    public sealed class Combined(ItemViewModel item, ServiceProvider services) : ItemHintViewModel(item, services)
+    public sealed class Combined(ItemViewModel item, IServices services) : ItemHintViewModel(item, services)
     {
         protected sealed override DateTime? GetDateTime()
         {
@@ -52,7 +53,7 @@ public abstract class ItemHintViewModel : ViewModelBase
         }
     }
 
-    public sealed class Sync(ItemViewModel item, ServiceProvider services) : ItemHintViewModel(item, services)
+    public sealed class Sync(ItemViewModel item, IServices services) : ItemHintViewModel(item, services)
     {
         protected sealed override DateTime? GetDateTime()
         {
@@ -91,9 +92,9 @@ public abstract class ItemHintViewModel : ViewModelBase
     private const String IMAGE_YELLOW = "Dots/Yellow.svg";
 
     private readonly ItemViewModel item;
-    private readonly ServiceProvider services;
+    private readonly IServices services;
 
-    protected ItemHintViewModel(ItemViewModel item, ServiceProvider services)
+    protected ItemHintViewModel(ItemViewModel item, IServices services)
     {
         this.item = item;
         this.services = services;
