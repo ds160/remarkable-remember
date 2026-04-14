@@ -9,8 +9,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Svg;
 using ReactiveUI;
-using ReMarkableRemember.Services.DataService;
-using ReMarkableRemember.Services.TabletService;
+using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.ViewModels;
@@ -22,16 +21,14 @@ public sealed class TemplateViewModel : ViewModelBase
     private readonly TabletTemplate template;
     private readonly ObservableCollection<TemplateViewModel> templates;
 
-    private readonly IDataService dataService;
-    private readonly ITabletService tabletService;
+    private readonly ServiceProvider services;
 
-    internal TemplateViewModel(TabletTemplate template, ObservableCollection<TemplateViewModel> templates, IDataService dataService, ITabletService tabletService)
+    internal TemplateViewModel(TabletTemplate template, ObservableCollection<TemplateViewModel> templates, ServiceProvider services)
     {
         this.template = template;
         this.templates = templates;
 
-        this.dataService = dataService;
-        this.tabletService = tabletService;
+        this.services = services;
 
         this.Icon = icons[template.IconCode];
         this.Image = (IImage?)LoadPng(template.BytesPng) ?? LoadSvg(template.BytesSvg);
@@ -51,8 +48,8 @@ public sealed class TemplateViewModel : ViewModelBase
 
     private async Task Delete()
     {
-        await this.tabletService.DeleteTemplate(this.template).ConfigureAwait(false);
-        await this.dataService.DeleteTemplate(this.template.Category, this.template.Name).ConfigureAwait(false);
+        await this.services.Tablet.DeleteTemplate(this.template).ConfigureAwait(false);
+        await this.services.Data.DeleteTemplate(this.template.Category, this.template.Name).ConfigureAwait(false);
 
         this.templates.Remove(this);
     }
@@ -69,6 +66,6 @@ public sealed class TemplateViewModel : ViewModelBase
 
     public async Task Restore()
     {
-        await this.tabletService.UploadTemplate(this.template).ConfigureAwait(false);
+        await this.services.Tablet.UploadTemplate(this.template).ConfigureAwait(false);
     }
 }

@@ -5,48 +5,46 @@ using Avalonia.Media;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Helper;
-using ReMarkableRemember.Services.TabletService;
-using ReMarkableRemember.Settings;
 
 namespace ReMarkableRemember.ViewModels;
 
 public abstract class ItemHintViewModel : ViewModelBase
 {
-    public sealed class Backup(ItemViewModel item, ISettingsService settingsService, ITabletService tabletService) : ItemHintViewModel(item, settingsService)
+    public sealed class Backup(ItemViewModel item, ServiceProvider services) : ItemHintViewModel(item, services)
     {
-        protected sealed override DateTime? GetDateTime(ItemViewModel item)
+        protected sealed override DateTime? GetDateTime()
         {
-            return item.BackupDate;
+            return this.item.BackupDate;
         }
 
-        protected sealed override Hints GetHint(ItemViewModel item)
+        protected sealed override Hints GetHint()
         {
-            if (!Path.Exists(tabletService.Configuration.Backup)) { return Hints.None; }
-            if (item.DataItem == null) { return Hints.None; }
+            if (!Path.Exists(this.services.Tablet.Configuration.Backup)) { return Hints.None; }
+            if (this.item.DataItem == null) { return Hints.None; }
 
-            if (item.DataItem.BackupDate == null) { return Hints.New; }
-            if (item.DataItem.BackupDate < item.Modified) { return Hints.Modified; }
+            if (this.item.DataItem.BackupDate == null) { return Hints.New; }
+            if (this.item.DataItem.BackupDate < this.item.Modified) { return Hints.Modified; }
 
             return Hints.None;
         }
     }
 
-    public sealed class Combined(ItemViewModel item, ISettingsService settingsService) : ItemHintViewModel(item, settingsService)
+    public sealed class Combined(ItemViewModel item, ServiceProvider services) : ItemHintViewModel(item, services)
     {
-        protected sealed override DateTime? GetDateTime(ItemViewModel item)
+        protected sealed override DateTime? GetDateTime()
         {
             return null;
         }
 
-        protected sealed override Hints GetHint(ItemViewModel item)
+        protected sealed override Hints GetHint()
         {
-            Hints hint = item.BackupHint.Hint | item.SyncHint.Hint;
+            Hints hint = this.item.BackupHint.Hint | this.item.SyncHint.Hint;
 
-            if (item.Collection != null)
+            if (this.item.Collection != null)
             {
-                foreach (ItemViewModel childItem in item.Collection)
+                foreach (ItemViewModel childItem in this.item.Collection)
                 {
-                    hint |= this.GetHint(childItem);
+                    hint |= childItem.CombinedHint.Hint;
                 }
             }
 
@@ -54,24 +52,24 @@ public abstract class ItemHintViewModel : ViewModelBase
         }
     }
 
-    public sealed class Sync(ItemViewModel item, ISettingsService settingsService) : ItemHintViewModel(item, settingsService)
+    public sealed class Sync(ItemViewModel item, ServiceProvider services) : ItemHintViewModel(item, services)
     {
-        protected sealed override DateTime? GetDateTime(ItemViewModel item)
+        protected sealed override DateTime? GetDateTime()
         {
-            return item.SyncDate;
+            return this.item.SyncDate;
         }
 
-        protected sealed override Hints GetHint(ItemViewModel item)
+        protected sealed override Hints GetHint()
         {
-            if (item.Collection != null) { return Hints.None; }
-            if (item.SyncPath == null) { return Hints.None; }
-            if (item.DataItem == null) { return Hints.None; }
+            if (this.item.Collection != null) { return Hints.None; }
+            if (this.item.SyncPath == null) { return Hints.None; }
+            if (this.item.DataItem == null) { return Hints.None; }
 
-            if (item.DataItem.SyncPath == null && Path.Exists(item.SyncPath)) { return Hints.ExistsInTarget; }
-            if (item.DataItem.SyncPath == null) { return Hints.New; }
-            if (item.DataItem.SyncPath != item.SyncPath) { return Hints.SyncPathChanged; }
-            if (item.DataItem.SyncData < item.Modified) { return Hints.Modified; }
-            if (!Path.Exists(item.SyncPath)) { return Hints.NotFoundInTarget; }
+            if (this.item.DataItem.SyncPath == null && Path.Exists(this.item.SyncPath)) { return Hints.ExistsInTarget; }
+            if (this.item.DataItem.SyncPath == null) { return Hints.New; }
+            if (this.item.DataItem.SyncPath != this.item.SyncPath) { return Hints.SyncPathChanged; }
+            if (this.item.DataItem.SyncData < this.item.Modified) { return Hints.Modified; }
+            if (!Path.Exists(this.item.SyncPath)) { return Hints.NotFoundInTarget; }
 
             return Hints.None;
         }
@@ -93,25 +91,25 @@ public abstract class ItemHintViewModel : ViewModelBase
     private const String IMAGE_YELLOW = "Dots/Yellow.svg";
 
     private readonly ItemViewModel item;
-    private readonly ISettingsService settingsService;
+    private readonly ServiceProvider services;
 
-    protected ItemHintViewModel(ItemViewModel item, ISettingsService settingsService)
+    protected ItemHintViewModel(ItemViewModel item, ServiceProvider services)
     {
         this.item = item;
-        this.settingsService = settingsService;
+        this.services = services;
     }
 
-    public String? DateTime { get { return this.GetDateTime(this.item)?.ToDisplayString(this.settingsService); } }
+    public String? DateTime { get { return this.GetDateTime()?.ToDisplayString(this.services.Settings); } }
 
-    internal Hints Hint { get { return this.GetHint(this.item); } }
+    internal Hints Hint { get { return this.GetHint(); } }
 
     public IImage? Image { get { return this.GetImagePath() is String image ? ImageLoader.Svg(image) : null; } }
 
     public String? ToolTip { get { return this.GetToolTip(); } }
 
-    protected abstract DateTime? GetDateTime(ItemViewModel item);
+    protected abstract DateTime? GetDateTime();
 
-    protected abstract Hints GetHint(ItemViewModel item);
+    protected abstract Hints GetHint();
 
     private String? GetImagePath()
     {

@@ -14,43 +14,33 @@ using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Enumerations;
 using ReMarkableRemember.Helper;
-using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.DataService.Models;
-using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
-using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Services.TabletService.Models;
-using ReMarkableRemember.Settings;
 
 namespace ReMarkableRemember.ViewModels;
 
 public sealed class MainWindowModel : ViewModelBase, IAppModel
 {
-    private readonly IDataService dataService;
-    private readonly IHandWritingRecognitionService handWritingRecognitionService;
-    private readonly ISettingsService settingsService;
-    private readonly ITabletService tabletService;
+    private readonly ServiceProvider services;
 
     private String? itemsNotReadable;
 
-    public MainWindowModel(IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ISettingsService settingsService, ITabletService tabletService)
+    public MainWindowModel(ServiceProvider services)
     {
-        this.dataService = dataService;
-        this.handWritingRecognitionService = handWritingRecognitionService;
-        this.settingsService = settingsService;
-        this.tabletService = tabletService;
+        this.services = services;
 
         this.ItemsTree = new ItemsTreeViewModel();
-        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.handWritingRecognitionService, this.settingsService);
+        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.services);
         this.OpenFilePicker = new Interaction<FilePickerOpenOptions, IEnumerable<String>?>();
         this.OpenFolderPicker = new Interaction<String, String?>();
         this.OpenSaveFilePicker = new Interaction<FilePickerSaveOptions, String?>();
         this.ShowDialog = new Interaction<DialogWindowModel, Boolean>();
 
-        this.ApplicationTheme = this.settingsService.Configuration.ApplicationTheme;
+        this.ApplicationTheme = this.services.Settings.Configuration.ApplicationTheme;
         this.ConnectionStatus = new ConnectionStatusViewModel();
-        this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionService.Configuration.Language, StringComparison.Ordinal));
-        this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
+        this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.services.HandWritingRecognition.Configuration.Language, StringComparison.Ordinal));
+        this.HasBackupDirectory = Path.Exists(this.services.Tablet.Configuration.Backup);
         this.Jobs = Jobs.None;
 
         this.CommandAbout = ReactiveCommand.CreateFromTask(this.About);
@@ -94,7 +84,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
             String? targetPath = await this.OpenSaveFilePicker.Handle(options);
             if (targetPath != null)
             {
-                await this.tabletService.Download(selectedItem.Id, targetPath);
+                await this.services.Tablet.Download(selectedItem.Id, targetPath);
             }
         }
     }
@@ -172,7 +162,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Jobs.InstallLamyEraser, this);
 
-        await this.ShowDialog.Handle(new LamyEraserViewModel(this.tabletService));
+        await this.ShowDialog.Handle(new LamyEraserViewModel(this.services));
     }
 
     private IObservable<Boolean> InstallLamyEraser_CanExecute()
@@ -187,9 +177,9 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Jobs.ManageTemplates, this);
 
-        IEnumerable<TemplateData> dataTemplates = await this.dataService.GetTemplates().ConfigureAwait(true);
+        IEnumerable<TemplateData> dataTemplates = await this.services.Data.GetTemplates().ConfigureAwait(true);
         IEnumerable<TabletTemplate> tabletTemplates = dataTemplates.Select(template => new TabletTemplate(template.Name, template.Category, template.IconCode, template.BytesPng, template.BytesSvg)).ToArray();
-        TemplatesViewModel templates = new TemplatesViewModel(tabletTemplates, this.dataService, this.tabletService);
+        TemplatesViewModel templates = new TemplatesViewModel(tabletTemplates, this.services);
         if (templates.Templates.Any())
         {
             await this.ShowDialog.Handle(templates);
@@ -258,13 +248,13 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
         if (await this.ShowDialog.Handle(message))
         {
-            await this.tabletService.Restart().ConfigureAwait(true);
+            await this.services.Tablet.Restart().ConfigureAwait(true);
         }
     }
 
     private async void SaveHandWritingRecognitionLanguage(HandWritingRecognitionLanguageViewModel language)
     {
-        IHandWritingRecognitionConfiguration configuration = this.handWritingRecognitionService.Configuration;
+        IHandWritingRecognitionConfiguration configuration = this.services.HandWritingRecognition.Configuration;
         configuration.Language = language.Code;
         await configuration.Save().ConfigureAwait(true);
     }
@@ -273,19 +263,19 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Jobs.Settings, this);
 
-        if (await this.ShowDialog.Handle(new SettingsViewModel(this.handWritingRecognitionService, this.settingsService, this.tabletService)))
+        if (await this.ShowDialog.Handle(new SettingsViewModel(this.services)))
         {
             // Update localized strings
             this.ConnectionStatus.UpdateLocalizedText();
-            this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.handWritingRecognitionService, this.settingsService);
+            this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.services);
             this.ItemsTree.UpdateLocalizedText();
             this.RaisePropertyChanged(nameof(this.JobsText));
             this.RaisePropertyChanged(nameof(this.LocalStrings));
 
             // Update properties
-            this.ApplicationTheme = this.settingsService.Configuration.ApplicationTheme;
-            this.HasBackupDirectory = Path.Exists(this.tabletService.Configuration.Backup);
-            this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.handWritingRecognitionService.Configuration.Language, StringComparison.Ordinal));
+            this.ApplicationTheme = this.services.Settings.Configuration.ApplicationTheme;
+            this.HasBackupDirectory = Path.Exists(this.services.Tablet.Configuration.Backup);
+            this.HandWritingRecognitionLanguage = this.HandWritingRecognitionLanguages.Single(language => String.Equals(language.Code, this.services.HandWritingRecognition.Configuration.Language, StringComparison.Ordinal));
         }
     }
 
@@ -328,7 +318,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         while (true)
         {
-            TabletConnectionStatus tabletConnectionStatus = await this.tabletService.GetConnectionStatus().ConfigureAwait(true);
+            TabletConnectionStatus tabletConnectionStatus = await this.services.Tablet.GetConnectionStatus().ConfigureAwait(true);
             this.ConnectionStatus = new ConnectionStatusViewModel(tabletConnectionStatus);
 
             Boolean updated = await this.UpdateItems().ConfigureAwait(true);
@@ -347,10 +337,10 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
                 {
                     using Job? job = this.ItemsTree.Items.Count > 0 ? null : new Job(Jobs.GetItems, this);
 
-                    TabletItems tabletItems = await this.tabletService.GetItems().ConfigureAwait(true);
+                    TabletItems tabletItems = await this.services.Tablet.GetItems().ConfigureAwait(true);
                     IEnumerable<TabletItem> tabletItemsNotTrashed = tabletItems.Items.Where(item => !item.Trashed).ToArray();
 
-                    await ItemViewModel.UpdateItems(tabletItemsNotTrashed, this.ItemsTree.Items, null, this.dataService, this.handWritingRecognitionService, this.settingsService, this.tabletService).ConfigureAwait(true);
+                    await ItemViewModel.UpdateItems(tabletItemsNotTrashed, this.ItemsTree.Items, null, this.services).ConfigureAwait(true);
 
                     String itemsNotReadable = String.Join(Environment.NewLine, tabletItems.NotReadable);
                     if (!String.IsNullOrEmpty(itemsNotReadable) && !String.Equals(itemsNotReadable, this.itemsNotReadable, StringComparison.Ordinal))
@@ -391,7 +381,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         {
             ItemViewModel? parentItem = this.ItemsTree.SelectedItem;
             String? parentId = UploadFileParentId(parentItem);
-            await this.tabletService.UploadFile(file, parentId).ConfigureAwait(true);
+            await this.services.Tablet.UploadFile(file, parentId).ConfigureAwait(true);
         }
     }
 
@@ -422,7 +412,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Jobs.UploadTemplate, this);
 
-        if (await this.ShowDialog.Handle(new TemplateUploadViewModel(this.dataService, this.tabletService)))
+        if (await this.ShowDialog.Handle(new TemplateUploadViewModel(this.services)))
         {
             await this.Restart(job).ConfigureAwait(true);
         }
@@ -514,8 +504,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
         public void Done()
         {
-            IDisposable disposable = this;
-            disposable.Dispose();
+            (this as IDisposable).Dispose();
         }
 
         public Boolean IsJob(Jobs job)

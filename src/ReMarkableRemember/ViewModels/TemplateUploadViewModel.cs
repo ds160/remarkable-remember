@@ -8,23 +8,19 @@ using Avalonia.Platform.Storage;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Helper;
-using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.DataService.Models;
-using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.ViewModels;
 
 public sealed class TemplateUploadViewModel : DialogWindowModel
 {
-    private readonly IDataService dataService;
-    private readonly ITabletService tabletService;
+    private readonly ServiceProvider services;
 
-    public TemplateUploadViewModel(IDataService dataService, ITabletService tabletService)
+    public TemplateUploadViewModel(ServiceProvider services)
         : base(Language.Current.TemplateTitle, Language.Current.ButtonUpload, Language.Current.ButtonCancel)
     {
-        this.dataService = dataService;
-        this.tabletService = tabletService;
+        this.services = services;
 
         this.Icons = TemplateIconViewModel.GetIcons();
 
@@ -65,10 +61,10 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
     protected override async Task<Boolean> OnClose()
     {
         TabletTemplate tabletTemplate = new TabletTemplate(this.Name, this.Category, this.Icon.Code, this.SourceFilePath);
-        await this.tabletService.UploadTemplate(tabletTemplate).ConfigureAwait(true);
+        await this.services.Tablet.UploadTemplate(tabletTemplate).ConfigureAwait(true);
 
         TemplateData dataTemplate = new TemplateData(tabletTemplate.Category, tabletTemplate.Name, tabletTemplate.IconCode, tabletTemplate.BytesPng, tabletTemplate.BytesSvg);
-        await this.dataService.SetTemplate(dataTemplate).ConfigureAwait(true);
+        await this.services.Data.SetTemplate(dataTemplate).ConfigureAwait(true);
 
         return await base.OnClose().ConfigureAwait(true);
     }

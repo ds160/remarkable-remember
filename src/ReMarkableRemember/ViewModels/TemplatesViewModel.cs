@@ -6,8 +6,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using ReMarkableRemember.Common.Localization;
-using ReMarkableRemember.Services.DataService;
-using ReMarkableRemember.Services.TabletService;
+using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.ViewModels;
@@ -16,14 +15,14 @@ public sealed class TemplatesViewModel : DialogWindowModel
 {
     private readonly ObservableCollection<TemplateViewModel> templates;
 
-    public TemplatesViewModel(IEnumerable<TabletTemplate> templates, IDataService dataService, ITabletService tabletService)
+    public TemplatesViewModel(IEnumerable<TabletTemplate> templates, ServiceProvider services)
         : base(Language.Current.TemplatesTitle, Language.Current.ButtonRestore, Language.Current.ButtonClose)
     {
         this.templates = new ObservableCollection<TemplateViewModel>();
 
         foreach (TabletTemplate template in templates.OrderBy(template => template.Name))
         {
-            this.templates.Add(new TemplateViewModel(template, this.templates, dataService, tabletService));
+            this.templates.Add(new TemplateViewModel(template, this.templates, services));
         }
 
         this.templates.CollectionChanged += (_, e) => this.CheckTemplates(e.Action is NotifyCollectionChangedAction.Remove);

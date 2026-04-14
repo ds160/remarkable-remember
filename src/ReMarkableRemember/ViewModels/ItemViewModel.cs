@@ -9,12 +9,8 @@ using ReactiveUI;
 using ReMarkableRemember.Common.FileSystem;
 using ReMarkableRemember.Common.Notebook;
 using ReMarkableRemember.Helper;
-using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.DataService.Models;
-using ReMarkableRemember.Services.HandWritingRecognitionService;
-using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Services.TabletService.Models;
-using ReMarkableRemember.Settings;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -27,28 +23,22 @@ public sealed class ItemViewModel : ViewModelBase
         Parent
     }
 
-    private readonly IDataService dataService;
-    private readonly IHandWritingRecognitionService handWritingRecognitionService;
-    private readonly ISettingsService settingsService;
-    private readonly ITabletService tabletService;
+    private readonly ServiceProvider services;
 
-    internal ItemViewModel(TabletItem tabletItem, ItemViewModel? parent, IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ISettingsService settingsService, ITabletService tabletService)
+    internal ItemViewModel(TabletItem tabletItem, ItemViewModel? parent, ServiceProvider services)
     {
-        this.dataService = dataService;
-        this.handWritingRecognitionService = handWritingRecognitionService;
-        this.settingsService = settingsService;
-        this.tabletService = tabletService;
+        this.services = services;
 
-        List<ItemViewModel>? collection = tabletItem.Collection?.Select(childItem => new ItemViewModel(childItem, this, dataService, handWritingRecognitionService, settingsService, tabletService)).ToList();
+        List<ItemViewModel>? collection = tabletItem.Collection?.Select(childItem => new ItemViewModel(childItem, this, services)).ToList();
 
         this.Collection = (collection != null) ? new OptimizedList<ItemViewModel>(collection) : null;
         this.Parent = parent;
         this.TabletItem = tabletItem;
 
-        this.BackupHint = new ItemHintViewModel.Backup(this, settingsService, tabletService);
-        this.SyncHint = new ItemHintViewModel.Sync(this, settingsService);
+        this.BackupHint = new ItemHintViewModel.Backup(this, services);
+        this.SyncHint = new ItemHintViewModel.Sync(this, services);
         // Last to combine backup and sync
-        this.CombinedHint = new ItemHintViewModel.Combined(this, settingsService);
+        this.CombinedHint = new ItemHintViewModel.Combined(this, services);
     }
 
     public DateTime? BackupDate { get { return this.DataItem?.BackupDate; } }
@@ -65,7 +55,7 @@ public sealed class ItemViewModel : ViewModelBase
 
     internal DateTime Modified { get { return this.TabletItem.Modified; } }
 
-    public String ModifiedDisplayString { get { return this.TabletItem.Modified.ToDisplayString(this.settingsService); } }
+    public String ModifiedDisplayString { get { return this.TabletItem.Modified.ToDisplayString(this.services.Settings); } }
 
     public String Name { get { return this.TabletItem.Name; } }
 
@@ -83,8 +73,8 @@ public sealed class ItemViewModel : ViewModelBase
     {
         if (this.BackupHint.Hint is ItemHintViewModel.Hints.None or >= ItemHintViewModel.Hints.ExistsInTarget) { return; }
 
-        await this.tabletService.Backup(this.Id).ConfigureAwait(true);
-        this.DataItem = await this.dataService.SetItemBackup(this.Id, this.Modified).ConfigureAwait(true);
+        await this.services.Tablet.Backup(this.Id).ConfigureAwait(true);
+        this.DataItem = await this.services.Data.SetItemBackup(this.Id, this.Modified).ConfigureAwait(true);
 
         this.RaiseChanged(RaiseChangedAdditional.Parent);
     }
@@ -96,8 +86,8 @@ public sealed class ItemViewModel : ViewModelBase
 
     internal async Task<String> HandWritingRecognition()
     {
-        Notebook notebook = await this.tabletService.GetNotebook(this.Id).ConfigureAwait(true);
-        IEnumerable<String> pages = await this.handWritingRecognitionService.Recognize(notebook).ConfigureAwait(true);
+        Notebook notebook = await this.services.Tablet.GetNotebook(this.Id).ConfigureAwait(true);
+        IEnumerable<String> pages = await this.services.HandWritingRecognition.Recognize(notebook).ConfigureAwait(true);
         return String.Join(Environment.NewLine, pages);
     }
 
@@ -127,7 +117,7 @@ public sealed class ItemViewModel : ViewModelBase
 
     internal async Task SetSyncTargetDirectory(String? targetDirectory)
     {
-        this.DataItem = await this.dataService.SetItemSyncTargetDirectory(this.Id, targetDirectory).ConfigureAwait(true);
+        this.DataItem = await this.services.Data.SetItemSyncTargetDirectory(this.Id, targetDirectory).ConfigureAwait(true);
 
         await this.Update().ConfigureAwait(true);
         this.RaiseChanged(RaiseChangedAdditional.Parent);
@@ -143,15 +133,15 @@ public sealed class ItemViewModel : ViewModelBase
             FileSystem.Delete(this.DataItem.SyncPath);
         }
 
-        await this.tabletService.Download(this.Id, this.SyncPath).ConfigureAwait(true);
-        this.DataItem = await this.dataService.SetItemSync(this.Id, this.Modified, this.SyncPath).ConfigureAwait(true);
+        await this.services.Tablet.Download(this.Id, this.SyncPath).ConfigureAwait(true);
+        this.DataItem = await this.services.Data.SetItemSync(this.Id, this.Modified, this.SyncPath).ConfigureAwait(true);
 
         this.RaiseChanged(RaiseChangedAdditional.Parent);
     }
 
     private async Task Update()
     {
-        this.DataItem = await this.dataService.GetItem(this.Id).ConfigureAwait(true);
+        this.DataItem = await this.services.Data.GetItem(this.Id).ConfigureAwait(true);
 
         String? targetDirectory = null;
         if (this.DataItem != null && this.DataItem.SyncTargetDirectory != null)
@@ -172,7 +162,7 @@ public sealed class ItemViewModel : ViewModelBase
         }
     }
 
-    internal static async Task UpdateItems(IEnumerable<TabletItem> tabletItems, OptimizedList<ItemViewModel> items, ItemViewModel? parentItem, IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ISettingsService settingsService, ITabletService tabletService)
+    internal static async Task UpdateItems(IEnumerable<TabletItem> tabletItems, OptimizedList<ItemViewModel> items, ItemViewModel? parentItem, ServiceProvider services)
     {
         List<ItemViewModel> itemsToAdd = new List<ItemViewModel>();
         foreach (TabletItem tabletItem in tabletItems)
@@ -180,7 +170,7 @@ public sealed class ItemViewModel : ViewModelBase
             ItemViewModel? item = items.SingleOrDefault(item => item.TabletItem.Id == tabletItem.Id);
             if (item == null)
             {
-                item = new ItemViewModel(tabletItem, parentItem, dataService, handWritingRecognitionService, settingsService, tabletService);
+                item = new ItemViewModel(tabletItem, parentItem, services);
                 await item.Update().ConfigureAwait(true);
                 itemsToAdd.Add(item);
             }
@@ -190,7 +180,7 @@ public sealed class ItemViewModel : ViewModelBase
 
                 if (tabletItem.Collection != null && item.Collection != null)
                 {
-                    await UpdateItems(tabletItem.Collection, item.Collection, item, dataService, handWritingRecognitionService, settingsService, tabletService).ConfigureAwait(true);
+                    await UpdateItems(tabletItem.Collection, item.Collection, item, services).ConfigureAwait(true);
                 }
 
                 if (parentItem == null)

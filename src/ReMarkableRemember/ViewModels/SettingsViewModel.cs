@@ -7,11 +7,9 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
-using ReMarkableRemember.Services.HandWritingRecognitionService;
+using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
-using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Services.TabletService.Configuration;
-using ReMarkableRemember.Settings;
 using ReMarkableRemember.Settings.Configuration;
 using ReMarkableRemember.Settings.Enumerations;
 
@@ -24,18 +22,18 @@ public sealed partial class SettingsViewModel : DialogWindowModel
     private readonly ISettingsConfiguration settingsService;
     private readonly ITabletConfiguration tabletConfiguration;
 
-    internal SettingsViewModel(IHandWritingRecognitionService handWritingRecognitionService, ISettingsService settingsService, ITabletService tabletService)
+    internal SettingsViewModel(ServiceProvider services)
         : base(Language.Current.SettingsTitle, Language.Current.ButtonSave, Language.Current.ButtonCancel)
     {
         this.ApplicationLanguages = ApplicationLanguageViewModel.GetLanguages(Language.Current.SettingsLanguageDefault);
-        this.ApplicationThemes = EnumValues<ApplicationThemes>(EnumValuesApplicationThemes, settingsService.Configuration.ApplicationTheme, out EnumViewModel applicationTheme);
-        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(handWritingRecognitionService, settingsService);
-        this.DateTimeFormats = EnumValues<DateTimeFormats>(EnumValuesDateTimeFormats, settingsService.Configuration.DateTimeFormat, out EnumViewModel dateTimeFormat);
+        this.ApplicationThemes = EnumValues<ApplicationThemes>(EnumValuesApplicationThemes, services.Settings.Configuration.ApplicationTheme, out EnumViewModel applicationTheme);
+        this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(services);
+        this.DateTimeFormats = EnumValues<DateTimeFormats>(EnumValuesDateTimeFormats, services.Settings.Configuration.DateTimeFormat, out EnumViewModel dateTimeFormat);
 
-        this.handWritingRecognitionConfiguration = handWritingRecognitionService.Configuration;
-        this.myScriptConfiguration = handWritingRecognitionService.Configuration as HandWritingRecognitionConfigurationMyScript;
-        this.settingsService = settingsService.Configuration;
-        this.tabletConfiguration = tabletService.Configuration;
+        this.handWritingRecognitionConfiguration = services.HandWritingRecognition.Configuration;
+        this.myScriptConfiguration = services.HandWritingRecognition.Configuration as HandWritingRecognitionConfigurationMyScript;
+        this.settingsService = services.Settings.Configuration;
+        this.tabletConfiguration = services.Tablet.Configuration;
 
         this.ApplicationLanguage = this.ApplicationLanguages.Single(language => String.Equals(language.Code, this.settingsService.ApplicationLanguage, StringComparison.Ordinal));
         this.ApplicationTheme = applicationTheme;

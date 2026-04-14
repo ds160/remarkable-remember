@@ -23,7 +23,7 @@ internal static class FilePickerFileTypesExtensions
     {
         get
         {
-            return new(Language.Current.FilePickerPng)
+            return new FilePickerFileType(Language.Current.FilePickerPng)
             {
                 Patterns = new[] { "*.png" },
                 AppleUniformTypeIdentifiers = new[] { "public.png" },
@@ -37,7 +37,7 @@ internal static class FilePickerFileTypesExtensions
     {
         get
         {
-            return new(Language.Current.FilePickerSvg)
+            return new FilePickerFileType(Language.Current.FilePickerSvg)
             {
                 Patterns = new[] { "*.svg" },
                 AppleUniformTypeIdentifiers = new[] { "public.svg-image" },
@@ -50,7 +50,7 @@ internal static class FilePickerFileTypesExtensions
     {
         get
         {
-            return new(Language.Current.FilePickerPdf)
+            return new FilePickerFileType(Language.Current.FilePickerPdf)
             {
                 Patterns = new[] { "*.pdf" },
                 AppleUniformTypeIdentifiers = new[] { "com.adobe.pdf" },

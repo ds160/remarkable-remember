@@ -41,6 +41,7 @@ public partial class App : Application
             .AddSingleton<IHandWritingRecognitionService, HandWritingRecognitionServiceMyScript>()
             .AddSingleton<ISettingsService, SettingsService>()
             .AddSingleton<ITabletService, TabletService>()
+            .AddSingleton<Helper.ServiceProvider>()
             .AddSingleton<MainWindowModel>()
             .BuildServiceProvider();
 
