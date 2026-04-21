@@ -334,42 +334,36 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
         {
             if (this.ConnectionStatus.CheckJob(Jobs.GetItems))
             {
-                if (this.Jobs is Jobs.None or Jobs.HandwritingRecognition)
+                Boolean update = this.Jobs is Jobs.None or Jobs.HandwritingRecognition;
+                if (update)
                 {
                     using Job? job = this.ItemsTree.Items.Count > 0 ? null : new Job(Jobs.GetItems, this);
 
                     TabletItems tabletItems = await this.services.Tablet.GetItems().ConfigureAwait(true);
                     IEnumerable<TabletItem> tabletItemsNotTrashed = tabletItems.Items.Where(item => !item.Trashed).ToArray();
-
                     await ItemViewModel.UpdateItems(tabletItemsNotTrashed, this.ItemsTree.Items, null, this.services).ConfigureAwait(true);
-
-                    String itemsNotReadable = String.Join(Environment.NewLine, tabletItems.NotReadable);
-                    if (!String.IsNullOrEmpty(itemsNotReadable) && !String.Equals(itemsNotReadable, this.itemsNotReadable, StringComparison.Ordinal))
-                    {
-                        await this.ShowDialog.Handle(MessageViewModel.Error($"{Language.Current.TabletItemsNotReadable}{Environment.NewLine}{itemsNotReadable}"));
-                    }
-                    this.itemsNotReadable = itemsNotReadable;
-
-                    return true;
+                    await this.UpdateItemsNotReadable(tabletItems.NotReadable).ConfigureAwait(true);
                 }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                this.ItemsTree.Items.Clear();
-                return false;
+                return update;
             }
         }
         catch (Exception exception)
         {
-            Log.Exception(exception);
-
-            this.ItemsTree.Items.Clear();
-            return false;
+            await this.ShowDialog.Handle(MessageViewModel.Error(exception));
         }
+
+        this.ItemsTree.Items.Clear();
+        return false;
+    }
+
+    private async Task UpdateItemsNotReadable(IEnumerable<String> notReadable)
+    {
+        String itemsNotReadable = String.Join(Environment.NewLine, notReadable);
+        if (!String.IsNullOrEmpty(itemsNotReadable) && !String.Equals(itemsNotReadable, this.itemsNotReadable, StringComparison.Ordinal))
+        {
+            await this.ShowDialog.Handle(MessageViewModel.Error($"{Language.Current.TabletItemsNotReadable}{Environment.NewLine}{itemsNotReadable}"));
+        }
+        this.itemsNotReadable = itemsNotReadable;
     }
 
     private async Task UploadFile()

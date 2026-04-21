@@ -1,15 +1,8 @@
 using System;
-using System.Linq;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Microsoft.Extensions.DependencyInjection;
 using ReMarkableRemember.DependencyInjection;
-using ReMarkableRemember.Services.ConfigurationService;
-using ReMarkableRemember.Services.DataService;
-using ReMarkableRemember.Services.HandWritingRecognitionService;
-using ReMarkableRemember.Services.TabletService;
-using ReMarkableRemember.Settings;
 using ReMarkableRemember.ViewModels;
 using ReMarkableRemember.Views;
 
@@ -26,26 +19,12 @@ public partial class App : Application
     {
         if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopApp)
         {
-            Object dataContext = CreateDataContext(desktopApp.Args);
+            IServices services = DependencyInjection.Services.Create(desktopApp.Args);
+            Object dataContext = new MainWindowModel(services);
             desktopApp.MainWindow = new MainWindow() { DataContext = dataContext };
             this.DataContext = dataContext;
         }
 
         base.OnFrameworkInitializationCompleted();
-    }
-
-    private static MainWindowModel CreateDataContext(String[]? args)
-    {
-        IServiceProvider serviceProvider = new ServiceCollection()
-            .AddSingleton<IConfigurationService, ConfigurationServiceDataService>()
-            .AddSingleton<IDataService>(DataServiceSqlite.Create(args?.FirstOrDefault()))
-            .AddSingleton<IHandWritingRecognitionService, HandWritingRecognitionServiceMyScript>()
-            .AddSingleton<ISettingsService, SettingsService>()
-            .AddSingleton<ITabletService, TabletService>()
-            .AddSingleton<IServices, ServicesCollection>()
-            .AddSingleton<MainWindowModel>()
-            .BuildServiceProvider();
-
-        return serviceProvider.GetRequiredService<MainWindowModel>();
     }
 }
