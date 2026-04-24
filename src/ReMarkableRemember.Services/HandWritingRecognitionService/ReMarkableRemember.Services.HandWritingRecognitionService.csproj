@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
     <ProjectReference Include="..\..\ReMarkableRemember.Common\Localization\ReMarkableRemember.Common.Localization.csproj" />
     <ProjectReference Include="..\..\ReMarkableRemember.Common\Notebook\ReMarkableRemember.Common.Notebook.csproj" />
     <ProjectReference Include="..\ConfigurationService\ReMarkableRemember.Services.ConfigurationService.csproj" />
