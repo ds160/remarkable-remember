@@ -372,16 +372,17 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
 
         FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = true, FileTypeFilter = new[] { FilePickerFileTypesExtensions.Pdf, FilePickerFileTypesExtensions.Epub } };
         IEnumerable<String>? files = await this.OpenFilePicker.Handle(options);
+        String? parentId = this.UploadFileParentId();
         foreach (String file in files)
         {
-            ItemViewModel? parentItem = this.ItemsTree.SelectedItem;
-            String? parentId = UploadFileParentId(parentItem);
             await this.services.Tablet.UploadFile(file, parentId).ConfigureAwait(true);
         }
     }
 
-    private static String? UploadFileParentId(ItemViewModel? parentItem)
+    private String? UploadFileParentId()
     {
+        ItemViewModel? parentItem = this.ItemsTree.SelectedItem;
+
         while (parentItem != null)
         {
             if (parentItem.Collection != null)
