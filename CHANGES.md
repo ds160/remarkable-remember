@@ -1,5 +1,4 @@
 Release with following new features and fixes:
-- Prepare localization
-- Use ProDataGrid for tree view
-- Update to Avalonia 12.0.1
-- Update to .NET EF Core 10.0.6
+- Update to .NET EF Core and DI 10.0.7
+- Update to ReactiveUI.Avalonia 12.0.1
+- Update to Svg.Controls.Avalonia 12.0.0.5
