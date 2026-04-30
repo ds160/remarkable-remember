@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 
-namespace ReMarkableRemember.Services.HandWritingRecognitionService;
+namespace ReMarkableRemember.Services.HandWritingRecognitionService.MyScript;
 
-public partial class HandWritingRecognitionServiceMyScript
+internal static class Languages
 {
-    private static readonly List<String> languages = new List<String>()
+    public static List<String> Supported { get; } = new List<String>()
     {
         "ar",
         "af_ZA",

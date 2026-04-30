@@ -1,4 +1,4 @@
-namespace ReMarkableRemember.Common.Notebook;
+namespace ReMarkableRemember.Common.Notebook.Enumerations;
 
 public enum PenType
 {

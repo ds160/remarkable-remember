@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ReMarkableRemember.Common.Localization;
+using ReMarkableRemember.Common.Notebook.Enumerations;
 using ReMarkableRemember.Common.Notebook.Exceptions;
 
 namespace ReMarkableRemember.Common.Notebook;

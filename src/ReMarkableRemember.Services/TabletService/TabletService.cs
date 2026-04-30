@@ -32,7 +32,6 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
     private const String PATH_TEMPLATES = "/usr/share/remarkable/templates/";
     private const String PATH_TEMPLATES_FILE = "templates.json";
     private const String PATH_VERSION_INFORMATION_FILE = "/proc/version";
-    private const String SOFTWARE_VERSION_REGEX = "IMG_VERSION=\"(\\d+\\.\\d+\\.\\d+.\\d+)\"";
     private const Int32 SSH_TIMEOUT = 2;
     private const String SSH_USER = "root";
     private const Int32 USB_TIMEOUT = 1;
@@ -570,7 +569,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
         );
     }
 
-    [GeneratedRegex(SOFTWARE_VERSION_REGEX)]
+    [GeneratedRegex("IMG_VERSION=\"(\\d+\\.\\d+\\.\\d+.\\d+)\"")]
     private static partial Regex SoftwareVersionRegex();
 
     private static void UpdateItems(TabletItem parentItem, IEnumerable<TabletItem> allItems)

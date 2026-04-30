@@ -15,10 +15,11 @@ using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.ConfigurationService.Service;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Exceptions;
+using ReMarkableRemember.Services.HandWritingRecognitionService.MyScript;
 
 namespace ReMarkableRemember.Services.HandWritingRecognitionService;
 
-public sealed partial class HandWritingRecognitionServiceMyScript : ServiceBase<HandWritingRecognitionConfigurationMyScript>, IHandWritingRecognitionService
+public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWritingRecognitionConfigurationMyScript>, IHandWritingRecognitionService
 {
     private const Int32 MAX_TASKS = 4;
 
@@ -34,13 +35,13 @@ public sealed partial class HandWritingRecognitionServiceMyScript : ServiceBase<
 
     IEnumerable<String> IHandWritingRecognitionService.SupportedLanguages
     {
-        get { return languages; }
+        get { return Languages.Supported; }
     }
 
     public async Task<IEnumerable<String>> Recognize(Notebook notebook)
     {
         String language = this.Configuration.Language;
-        if (!languages.Contains(language)) { throw new HandWritingRecognitionException(Language.Current.MyScriptLanguageNotSupported(language)); }
+        if (!Languages.Supported.Contains(language)) { throw new HandWritingRecognitionException(Language.Current.MyScriptLanguageNotSupported(language)); }
 
         using SemaphoreSlim throttler = new SemaphoreSlim(MAX_TASKS);
 
@@ -53,7 +54,7 @@ public sealed partial class HandWritingRecognitionServiceMyScript : ServiceBase<
 
         try
         {
-            String jsonRequest = BuildJsonRequest(page, language);
+            String jsonRequest = JsonRequest.Build(page, language);
             String hmac = this.CalculateHmac(jsonRequest);
 
             using HttpClient client = new HttpClient();

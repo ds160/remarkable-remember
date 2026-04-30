@@ -5,7 +5,7 @@ using ReMarkableRemember.DependencyInjection;
 
 namespace ReMarkableRemember.ViewModels;
 
-public sealed partial class LamyEraserViewModel : DialogWindowModel
+public sealed class LamyEraserViewModel : DialogWindowModel
 {
     private readonly IServices services;
 

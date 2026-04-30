@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ReMarkableRemember.Common.Notebook.Enumerations;
 
 namespace ReMarkableRemember.Common.Notebook;
 
