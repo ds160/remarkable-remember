@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +16,7 @@ using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.ConfigurationService.Service;
 using ReMarkableRemember.Services.TabletService.Configuration;
 using ReMarkableRemember.Services.TabletService.Exceptions;
+using ReMarkableRemember.Services.TabletService.Files;
 using ReMarkableRemember.Services.TabletService.Models;
 using Renci.SshNet;
 using Renci.SshNet.Common;
@@ -42,8 +40,6 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
     private const String VERSION_INFORMATION_RM2 = "-rm11x";
     private const String VERSION_INFORMATION_RMPP = "imx8mm-ferrari";
     private const String VERSION_INFORMATION_RMPP_MOVE = "imx93-chiappa";
-
-    private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true };
 
     private readonly HttpClient gitHubClient;
     private readonly SemaphoreSlim sshSemaphore;
@@ -106,7 +102,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
             String templatesFilePath = $"{PATH_TEMPLATES}{PATH_TEMPLATES_FILE}";
             String templatesFileText = await Task.Run(() => client.ReadAllText(templatesFilePath)).ConfigureAwait(false);
-            TemplatesFile templatesFile = JsonSerializer.Deserialize<TemplatesFile>(templatesFileText, jsonSerializerOptions);
+            TemplatesFile templatesFile = JsonFile.Deserialize<TemplatesFile>(templatesFileText);
 
             Int32 index = templatesFile.Templates.FindIndex((item) => String.Equals(item.Filename, tabletTemplate.FileName, StringComparison.Ordinal));
             if (index > -1)
@@ -116,7 +112,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
             await FileDelete(client, $"{PATH_TEMPLATES}{tabletTemplate.FileName}.png").ConfigureAwait(false);
             await FileDelete(client, $"{PATH_TEMPLATES}{tabletTemplate.FileName}.svg").ConfigureAwait(false);
-            await FileWrite(client, templatesFilePath, JsonSerializer.Serialize(templatesFile, jsonSerializerOptions)).ConfigureAwait(false);
+            await FileWrite(client, templatesFilePath, JsonFile.Serialize(templatesFile)).ConfigureAwait(false);
         }
         finally
         {
@@ -209,7 +205,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
                     try
                     {
                         String metaDataFileText = await Task.Run(() => client.ReadAllText(file.FullName)).ConfigureAwait(false);
-                        MetaDataFile metaDataFile = JsonSerializer.Deserialize<MetaDataFile>(metaDataFileText, jsonSerializerOptions);
+                        MetaDataFile metaDataFile = JsonFile.Deserialize<MetaDataFile>(metaDataFileText);
                         if (metaDataFile.Deleted != true)
                         {
                             String id = Path.GetFileNameWithoutExtension(file.Name);
@@ -243,7 +239,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
             using SftpClient client = tablet.SftpClient;
 
             String contentFileText = await Task.Run(() => client.ReadAllText($"{PATH_NOTEBOOKS}{id}.content")).ConfigureAwait(false);
-            ContentFile contentFile = JsonSerializer.Deserialize<ContentFile>(contentFileText, jsonSerializerOptions);
+            ContentFile contentFile = JsonFile.Deserialize<ContentFile>(contentFileText);
 
             if (contentFile.FileType != "notebook") { throw new TabletException(Language.Current.TabletFileTypeInvalid(contentFile.FileType)); }
             if (contentFile.FormatVersion is not (1 or 2)) { throw new TabletException(Language.Current.TabletFileFormatVersionInvalid(contentFile.FormatVersion)); }
@@ -349,7 +345,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
             String templatesFilePath = $"{PATH_TEMPLATES}{PATH_TEMPLATES_FILE}";
             String templatesFileText = await Task.Run(() => client.ReadAllText(templatesFilePath)).ConfigureAwait(false);
-            TemplatesFile templatesFile = JsonSerializer.Deserialize<TemplatesFile>(templatesFileText, jsonSerializerOptions);
+            TemplatesFile templatesFile = JsonFile.Deserialize<TemplatesFile>(templatesFileText);
 
             Int32 index = templatesFile.Templates.FindIndex((item) => String.Equals(item.Filename, tabletTemplate.FileName, StringComparison.Ordinal));
             if (index > -1)
@@ -363,7 +359,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
             await FileWrite(client, $"{PATH_TEMPLATES}{tabletTemplate.FileName}.png", tabletTemplate.BytesPng, false).ConfigureAwait(false);
             await FileWrite(client, $"{PATH_TEMPLATES}{tabletTemplate.FileName}.svg", tabletTemplate.BytesSvg, false).ConfigureAwait(false);
-            await FileWrite(client, templatesFilePath, JsonSerializer.Serialize(templatesFile, jsonSerializerOptions)).ConfigureAwait(false);
+            await FileWrite(client, templatesFilePath, JsonFile.Serialize(templatesFile)).ConfigureAwait(false);
         }
         finally
         {
@@ -599,59 +595,5 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
             ".EPUB" => "application/epub+zip",
             _ => throw new TabletException(Language.Current.TabletFileTypeNotSupported(file.Extension)),
         };
-    }
-
-    private struct ContentFile
-    {
-        public PagesContainer? CPages { get; set; }
-        public String FileType { get; set; }
-        public Int32 FormatVersion { get; set; }
-        public IEnumerable<String>? Pages { get; set; }
-
-        public struct PagesContainer
-        {
-            public Collection<Page> Pages { get; set; }
-
-            public struct Page
-            {
-                public Object? Deleted { get; set; }
-                public String Id { get; set; }
-            }
-        }
-    }
-
-    private struct MetaDataFile
-    {
-        public Boolean? Deleted { get; set; }
-        public String LastModified { get; set; }
-        public String Parent { get; set; }
-        public String Type { get; set; }
-        public String VisibleName { get; set; }
-    }
-
-    private struct TemplatesFile
-    {
-        public List<Template> Templates { get; set; }
-
-        public struct Template
-        {
-            public IEnumerable<String> Categories { get; set; }
-            public String Filename { get; set; }
-            public String IconCode { get; set; }
-            public Boolean? Landscape { get; set; }
-            public String Name { get; set; }
-
-            public static Template Convert(TabletTemplate template)
-            {
-                return new Template()
-                {
-                    Categories = new List<String>() { template.Category },
-                    Filename = template.FileName,
-                    IconCode = template.IconCode,
-                    Landscape = template.Landscape,
-                    Name = template.Name
-                };
-            }
-        }
     }
 }

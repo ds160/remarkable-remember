@@ -119,7 +119,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Margin="12, 8, 4, 0">
-                                    <TextBlock Text="{Binding Item.ModifiedDisplayString}"/>
+                                    <TextBlock Text="{Binding Item.ModifiedHint.DateTime}"/>
                                     </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -128,7 +128,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" Margin="4, 0, 4, 0">
-                                    <Image ToolTip.Tip="{Binding Item.CombinedHint.ToolTip}" Source="{Binding Item.CombinedHint.Image}" Height="12" Width="12"/>
+                                    <Image ToolTip.Tip="{Binding Item.ModifiedHint.ToolTip}" Source="{Binding Item.ModifiedHint.Image}" Height="12" Width="12"/>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>

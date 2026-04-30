@@ -7,8 +7,6 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using ReMarkableRemember.Common.Localization;
@@ -20,80 +18,9 @@ using ReMarkableRemember.Services.HandWritingRecognitionService.Exceptions;
 
 namespace ReMarkableRemember.Services.HandWritingRecognitionService;
 
-public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWritingRecognitionConfigurationMyScript>, IHandWritingRecognitionService
+public sealed partial class HandWritingRecognitionServiceMyScript : ServiceBase<HandWritingRecognitionConfigurationMyScript>, IHandWritingRecognitionService
 {
     private const Int32 MAX_TASKS = 4;
-
-    private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-    private static readonly List<String> supportedLanguages = new List<String>()
-    {
-        "ar",
-        "af_ZA",
-        "sq_AL",
-        "hy_AM",
-        "az_AZ",
-        "eu_ES",
-        "be_BY",
-        "bs_BA",
-        "bg_BG",
-        "ca_ES",
-        "zh_CN",
-        "zh_HK",
-        "zh_TW",
-        "hr_HR",
-        "cs_CZ",
-        "da_DK",
-        "nl_BE",
-        "nl_NL",
-        "en_CA",
-        "en_PH",
-        "en_ZA",
-        "en_GB",
-        "en_US",
-        "et_EE",
-        "fa_IR",
-        "fil_PH",
-        "fi_FI",
-        "fr_CA",
-        "fr_FR",
-        "ga_IE",
-        "gl_ES",
-        "ka_GE",
-        "de_AT",
-        "de_DE",
-        "el_GR",
-        "he_IL",
-        "hi_IN",
-        "hu_HU",
-        "is_IS",
-        "id_ID",
-        "it_IT",
-        "ja_JP",
-        "kk_KZ",
-        "ko_KR",
-        "lv_LV",
-        "lt_LT",
-        "mk_MK",
-        "ms_MY",
-        "mn_MN",
-        "pl_PL",
-        "pt_BR",
-        "pt_PT",
-        "ro_RO",
-        "ru_RU",
-        "sk_SK",
-        "sl_SI",
-        "es_CO",
-        "es_MX",
-        "es_ES",
-        "sv_SE",
-        "tt_RU",
-        "th_TH",
-        "tr_TR",
-        "uk_UA",
-        "ur_PK",
-        "vi_VN",
-    };
 
     public HandWritingRecognitionServiceMyScript(IConfigurationService configurationService)
         : base(configurationService)
@@ -107,13 +34,13 @@ public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWrit
 
     IEnumerable<String> IHandWritingRecognitionService.SupportedLanguages
     {
-        get { return supportedLanguages; }
+        get { return languages; }
     }
 
     public async Task<IEnumerable<String>> Recognize(Notebook notebook)
     {
         String language = this.Configuration.Language;
-        if (!supportedLanguages.Contains(language)) { throw new HandWritingRecognitionException(Language.Current.MyScriptLanguageNotSupported(language)); }
+        if (!languages.Contains(language)) { throw new HandWritingRecognitionException(Language.Current.MyScriptLanguageNotSupported(language)); }
 
         using SemaphoreSlim throttler = new SemaphoreSlim(MAX_TASKS);
 
@@ -126,15 +53,15 @@ public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWrit
 
         try
         {
-            String requestBody = BuildRequestBody(page, language);
-            String hmac = this.CalculateHmac(requestBody);
+            String jsonRequest = BuildJsonRequest(page, language);
+            String hmac = this.CalculateHmac(jsonRequest);
 
             using HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("applicationKey", this.Configuration.ApplicationKey);
             client.DefaultRequestHeaders.Add("hmac", hmac);
             client.DefaultRequestHeaders.Add("accept", $"{MediaTypeNames.Text.Plain}, {MediaTypeNames.Application.Json}");
 
-            using StringContent requestContent = new StringContent(requestBody, Encoding.UTF8, MediaTypeNames.Application.Json);
+            using StringContent requestContent = new StringContent(jsonRequest, Encoding.UTF8, MediaTypeNames.Application.Json);
             HttpResponseMessage response = await client.PostAsync(new Uri("https://cloud.myscript.com/api/v4.0/iink/batch"), requestContent).ConfigureAwait(false);
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -157,71 +84,10 @@ public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWrit
         }
     }
 
-    private static String BuildRequestBody(Page page, String language)
-    {
-        List<BatchInput.Stroke> strokes = new List<BatchInput.Stroke>();
-        foreach (Line line in page.Lines)
-        {
-            if (line.Type is
-                not PenType.EraseArea and
-                not PenType.Eraser and
-                not PenType.Highlighter1 and
-                not PenType.Highlighter2)
-            {
-                List<Double> x = new List<Double>();
-                List<Double> y = new List<Double>();
-                foreach (Point point in line.Points)
-                {
-                    x.Add(point.X);
-                    y.Add(point.Y);
-                }
-                strokes.Add(new BatchInput.Stroke(x, y));
-            }
-        }
-
-        BatchInput batchInput = new BatchInput(language, page.Resolution, strokes);
-        return JsonSerializer.Serialize(batchInput, jsonSerializerOptions);
-    }
-
-    private String CalculateHmac(String requestBody)
+    private String CalculateHmac(String jsonRequest)
     {
         using HMACSHA512 hmac = new HMACSHA512(Encoding.UTF8.GetBytes(this.Configuration.ApplicationKey + this.Configuration.HmacKey));
-        Byte[] hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(requestBody));
+        Byte[] hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(jsonRequest));
         return String.Join(String.Empty, hashBytes.Select(hashByte => hashByte.ToString("x2", CultureInfo.InvariantCulture)));
-    }
-
-    private sealed class BatchInput
-    {
-        public BatchInput(String language, Int32 resolution, List<Stroke> strokes)
-        {
-            this.Configuration = new { Lang = language };
-            this.ContentType = "Text";
-            this.XDPI = resolution;
-            this.YDPI = resolution;
-
-            this.StrokeGroups = new List<Object>() { new { Strokes = strokes } };
-        }
-
-        public Object Configuration { get; }
-        public String ContentType { get; }
-        public IEnumerable<Object> StrokeGroups { get; }
-        [JsonPropertyName("xDPI")]
-        public Int32 XDPI { get; }
-        [JsonPropertyName("yDPI")]
-        public Int32 YDPI { get; }
-
-        internal sealed class Stroke
-        {
-            public Stroke(List<Double> x, List<Double> y)
-            {
-                this.PointerType = "PEN";
-                this.X = x;
-                this.Y = y;
-            }
-
-            public String PointerType { get; }
-            public IEnumerable<Double> X { get; }
-            public IEnumerable<Double> Y { get; }
-        }
     }
 }

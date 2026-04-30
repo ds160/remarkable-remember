@@ -18,10 +18,11 @@ using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.DataService.Models;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
 using ReMarkableRemember.Services.TabletService.Models;
+using ReMarkableRemember.ViewModels.Interfaces;
 
 namespace ReMarkableRemember.ViewModels;
 
-public sealed class MainWindowModel : ViewModelBase, IAppModel
+public sealed partial class MainWindowModel : ViewModelBase, IAppModel
 {
     private readonly IServices services;
 
@@ -269,7 +270,7 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
             // Update localized strings
             this.ConnectionStatus.UpdateLocalizedText();
             this.HandWritingRecognitionLanguages = HandWritingRecognitionLanguageViewModel.GetLanguages(this.services);
-            this.ItemsTree.UpdateLocalizedText();
+            foreach (ItemViewModel item in this.ItemsTree.Items) { item.UpdateLocalizedText(); }
             this.RaisePropertyChanged(nameof(this.JobsText));
             this.RaisePropertyChanged(nameof(this.LocalStrings));
 
@@ -473,39 +474,4 @@ public sealed class MainWindowModel : ViewModelBase, IAppModel
     public Interaction<DialogWindowModel, Boolean> ShowDialog { get; }
 
     public static String Title { get { return $"reMarkable Remember - {Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)}"; } }
-
-    private sealed class Job : IDisposable
-    {
-        private Boolean done;
-        private readonly Jobs job;
-        private readonly MainWindowModel owner;
-
-        public Job(Jobs job, MainWindowModel owner)
-        {
-            this.done = false;
-            this.job = job;
-            this.owner = owner;
-
-            this.owner.Jobs |= this.job;
-        }
-
-        void IDisposable.Dispose()
-        {
-            if (!this.done)
-            {
-                this.done = true;
-                this.owner.Jobs ^= this.job;
-            }
-        }
-
-        public void Done()
-        {
-            (this as IDisposable).Dispose();
-        }
-
-        public Boolean IsJob(Jobs job)
-        {
-            return this.job.HasFlag(job);
-        }
-    }
 }

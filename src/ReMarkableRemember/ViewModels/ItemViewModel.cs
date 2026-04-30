@@ -15,9 +15,9 @@ using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.ViewModels;
 
-public sealed class ItemViewModel : ViewModelBase
+public sealed partial class ItemViewModel : ViewModelBase
 {
-    public enum RaiseChangedAdditional
+    private enum RaiseChangedAdditional
     {
         None,
         Collection,
@@ -39,30 +39,28 @@ public sealed class ItemViewModel : ViewModelBase
         this.BackupHint = new ItemHintViewModel.Backup(this, services);
         this.SyncHint = new ItemHintViewModel.Sync(this, services);
         // Last to combine backup and sync
-        this.CombinedHint = new ItemHintViewModel.Combined(this, services);
+        this.ModifiedHint = new ItemHintViewModel.Modified(this, services);
     }
 
-    public DateTime? BackupDate { get { return this.DataItem?.BackupDate; } }
+    private DateTime? BackupDate { get { return this.DataItem?.BackupDate; } }
 
     public ItemHintViewModel.Backup BackupHint { get; }
 
     public OptimizedList<ItemViewModel>? Collection { get; }
 
-    public ItemHintViewModel.Combined CombinedHint { get; }
-
-    internal ItemData? DataItem { get; private set; }
+    private ItemData? DataItem { get; set; }
 
     public String Id { get { return this.TabletItem.Id; } }
 
-    internal DateTime Modified { get { return this.TabletItem.Modified; } }
+    private DateTime Modified { get { return this.TabletItem.Modified; } }
 
-    public String ModifiedDisplayString { get { return this.TabletItem.Modified.ToDisplayString(this.services.Settings); } }
+    public ItemHintViewModel.Modified ModifiedHint { get; }
 
     public String Name { get { return this.TabletItem.Name; } }
 
     public ItemViewModel? Parent { get; }
 
-    public DateTime? SyncDate { get { return (this.SyncPath != null) ? this.DataItem?.SyncData : null; } }
+    private DateTime? SyncDate { get { return (this.SyncPath != null) ? this.DataItem?.SyncData : null; } }
 
     public ItemHintViewModel.Sync SyncHint { get; }
 
@@ -100,12 +98,12 @@ public sealed class ItemViewModel : ViewModelBase
         }
     }
 
-    internal void RaiseChanged(RaiseChangedAdditional additional)
+    private void RaiseChanged(RaiseChangedAdditional additional)
     {
         this.BackupHint.RaiseChanged();
         this.SyncHint.RaiseChanged();
         // Last to combine backup and sync
-        this.CombinedHint.RaiseChanged();
+        this.ModifiedHint.RaiseChanged();
 
         foreach (PropertyInfo property in this.GetType().GetProperties())
         {
@@ -161,6 +159,11 @@ public sealed class ItemViewModel : ViewModelBase
         {
             await Task.WhenAll(this.Collection.Select(childItem => childItem.Update())).ConfigureAwait(true);
         }
+    }
+
+    internal void UpdateLocalizedText()
+    {
+        this.RaiseChanged(RaiseChangedAdditional.Collection);
     }
 
     internal static async Task UpdateItems(IEnumerable<TabletItem> tabletItems, OptimizedList<ItemViewModel> items, ItemViewModel? parentItem, IServices services)

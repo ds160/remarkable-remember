@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Windows.Input;
 
-namespace ReMarkableRemember.ViewModels;
+namespace ReMarkableRemember.ViewModels.Interfaces;
 
 public interface IAppModel : ILocalizedViewModel, INotifyPropertyChanged
 {

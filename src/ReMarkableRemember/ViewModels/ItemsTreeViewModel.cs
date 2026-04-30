@@ -42,12 +42,4 @@ public sealed class ItemsTreeViewModel : ViewModelBase
 
         return (collectionCompareResult != 0) ? collectionCompareResult : String.CompareOrdinal(x.Name, y.Name);
     }
-
-    internal void UpdateLocalizedText()
-    {
-        foreach (ItemViewModel item in this.Items)
-        {
-            item.RaiseChanged(ItemViewModel.RaiseChangedAdditional.Collection);
-        }
-    }
 }
