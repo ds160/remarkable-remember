@@ -34,7 +34,7 @@ public partial class MainWindowModel
             (this as IDisposable).Dispose();
         }
 
-        public Boolean IsJob(Jobs job)
+        public Boolean Is(Jobs job)
         {
             return this.job.HasFlag(job);
         }

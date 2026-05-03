@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Reflection;
 using Avalonia.Media;
 using ReactiveUI;
@@ -36,7 +37,7 @@ public partial class ItemViewModel
             this.services = services;
         }
 
-        public String? DateTime { get { return this.GetDateTime()?.ToDisplayString(this.services.Settings); } }
+        public String? DateTime { get { return this.GetDateTime()?.ToLocalTime().ToString(this.services.Settings.GetDateTimeFormat(), CultureInfo.InvariantCulture); } }
 
         internal Hints Hint { get { return this.GetHint(); } }
 

@@ -237,7 +237,7 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
         job.Done();
 
         String reason = String.Empty;
-        if (job.IsJob(Jobs.ManageTemplates) || job.IsJob(Jobs.UploadTemplate))
+        if (job.Is(Jobs.ManageTemplates) || job.Is(Jobs.UploadTemplate))
         {
             reason = $"{Language.Current.TabletRestartReasonTemplate} ";
         }
