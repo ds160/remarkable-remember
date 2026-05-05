@@ -11,7 +11,7 @@ namespace ReMarkableRemember.Templates;
 
 public sealed class ViewLocator : IDataTemplate
 {
-    private static readonly Dictionary<Type, Func<Control>> mapping = new Dictionary<Type, Func<Control>>();
+    private static readonly Dictionary<Type, Type> mapping = new Dictionary<Type, Type>();
 
     static ViewLocator()
     {
@@ -20,19 +20,19 @@ public sealed class ViewLocator : IDataTemplate
             IEnumerable<Type> interfaceTypes = type.GetInterfaces().Where(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IViewFor<>));
             foreach (Type interfaceType in interfaceTypes)
             {
-                mapping.Add(interfaceType.GetGenericArguments().Single(), () => (Control)Activator.CreateInstance(type)!);
+                mapping.Add(interfaceType.GetGenericArguments().Single(), type);
             }
         }
     }
 
-    public Control? Build(Object? param)
+    public Control? Build(Object? viewModel)
     {
-        ArgumentNullException.ThrowIfNull(param);
+        ArgumentNullException.ThrowIfNull(viewModel);
 
-        Func<Control> createControl = mapping[param.GetType()];
-        Control control = createControl();
-        control.DataContext = param;
-        return control;
+        Type viewType = mapping[viewModel.GetType()];
+        Control view = Activator.CreateInstance(viewType) as Control ?? throw new NotSupportedException();
+        view.DataContext = viewModel;
+        return view;
     }
 
     public Boolean Match(Object? data)

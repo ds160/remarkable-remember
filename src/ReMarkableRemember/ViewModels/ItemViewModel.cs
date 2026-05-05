@@ -86,8 +86,7 @@ public sealed partial class ItemViewModel : ViewModelBase
     internal async Task<String> HandWritingRecognition()
     {
         Notebook notebook = await this.services.Tablet.GetNotebook(this.Id).ConfigureAwait(true);
-        IEnumerable<String> pages = await this.services.HandWritingRecognition.Recognize(notebook).ConfigureAwait(true);
-        return String.Join(Environment.NewLine, pages);
+        return await this.services.HandWritingRecognition.Recognize(notebook).ConfigureAwait(true);
     }
 
     internal void Open()

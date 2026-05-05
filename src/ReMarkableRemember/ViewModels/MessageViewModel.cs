@@ -7,8 +7,8 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class MessageViewModel : DialogWindowModel
 {
-    private const String IMAGE_ERROR = "Error.svg";
-    private const String IMAGE_QUESTION = "Question.svg";
+    private const String IMAGE_ERROR = "Messages/Error.svg";
+    private const String IMAGE_QUESTION = "Messages/Question.svg";
 
     private MessageViewModel(String title, String message, String image, String textClose, String? textCancel = null)
         : base(title, textClose, textCancel)

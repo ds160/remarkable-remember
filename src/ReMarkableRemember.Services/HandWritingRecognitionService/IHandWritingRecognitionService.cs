@@ -12,5 +12,5 @@ public interface IHandWritingRecognitionService
 
     IEnumerable<String> SupportedLanguages { get; }
 
-    Task<IEnumerable<String>> Recognize(Notebook notebook);
+    Task<String> Recognize(Notebook notebook);
 }

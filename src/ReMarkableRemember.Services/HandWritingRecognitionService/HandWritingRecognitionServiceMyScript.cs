@@ -38,14 +38,15 @@ public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWrit
         get { return Languages.Supported; }
     }
 
-    public async Task<IEnumerable<String>> Recognize(Notebook notebook)
+    public async Task<String> Recognize(Notebook notebook)
     {
         String language = this.Configuration.Language;
         if (!Languages.Supported.Contains(language)) { throw new HandWritingRecognitionException(Language.Current.MyScriptLanguageNotSupported(language)); }
 
         using SemaphoreSlim throttler = new SemaphoreSlim(MAX_TASKS);
 
-        return await Task.WhenAll(notebook.Pages.Select(page => this.Recognize(page, language, throttler))).ConfigureAwait(false);
+        String[] pages = await Task.WhenAll(notebook.Pages.Select(page => this.Recognize(page, language, throttler))).ConfigureAwait(false);
+        return String.Join(Environment.NewLine, pages);
     }
 
     private async Task<String> Recognize(Page page, String language, SemaphoreSlim throttler)
