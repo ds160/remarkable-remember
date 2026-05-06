@@ -58,8 +58,9 @@ internal sealed class SshCommunication : CommunicationBase
         }
     }
 
-    public async Task FileDelete(String path, CancellationToken cancellationToken = default)
+    public async Task FileDelete(String path)
     {
+        CancellationToken cancellationToken = default;
         Boolean exists = await this.sftpClient.ExistsAsync(path, cancellationToken).ConfigureAwait(false);
         if (exists)
         {

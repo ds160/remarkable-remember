@@ -6,12 +6,14 @@ using ReMarkableRemember.Services.TabletService.Configuration;
 
 namespace ReMarkableRemember.Services.TabletService.Communication;
 
-internal sealed class CommunicationManager : ICommunicationManager
+internal sealed class CommunicationManager : IDisposable
 {
-    internal const String IP = "10.11.99.1";
+    private const String IP = "10.11.99.1";
     private const Int32 USB_TIMEOUT = 1;
 
     private readonly ITabletConfiguration configuration;
+    private readonly HttpClient gitHubHttpClient;
+    private readonly SemaphoreSlim gitHubSemaphore;
     private readonly SemaphoreSlim sshSemaphore;
     private readonly HttpClient usbHttpClient;
     private readonly HttpClient usbHttpClientConnection;
@@ -20,23 +22,29 @@ internal sealed class CommunicationManager : ICommunicationManager
     public CommunicationManager(ITabletConfiguration configuration)
     {
         this.configuration = configuration;
+        this.gitHubHttpClient = new HttpClient() { BaseAddress = new Uri("https://raw.githubusercontent.com") };
+        this.gitHubSemaphore = new SemaphoreSlim(1, 1);
         this.sshSemaphore = new SemaphoreSlim(1, 1);
-        this.usbHttpClient = new HttpClient();
-        this.usbHttpClientConnection = new HttpClient() { Timeout = TimeSpan.FromSeconds(USB_TIMEOUT) };
+        this.usbHttpClient = new HttpClient() { BaseAddress = new Uri($"http://{IP}") };
+        this.usbHttpClientConnection = new HttpClient() { BaseAddress = new Uri($"http://{IP}"), Timeout = TimeSpan.FromSeconds(USB_TIMEOUT) };
         this.usbSemaphore = new SemaphoreSlim(1, 1);
     }
 
     public void Dispose()
     {
+        this.gitHubHttpClient.Dispose();
+        this.gitHubSemaphore.Dispose();
         this.sshSemaphore.Dispose();
         this.usbHttpClient.Dispose();
         this.usbHttpClientConnection.Dispose();
         this.usbSemaphore.Dispose();
     }
 
-    public Task<GitHubCommunication> GitHub()
+    public async Task<GitHubCommunication> GitHub()
     {
-        return Task.FromResult(new GitHubCommunication());
+        await this.gitHubSemaphore.WaitAsync().ConfigureAwait(false);
+
+        return new GitHubCommunication(this.gitHubHttpClient, this.gitHubSemaphore);
     }
 
     public async Task<SshCommunication> Ssh()

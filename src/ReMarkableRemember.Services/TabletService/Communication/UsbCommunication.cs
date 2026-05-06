@@ -26,7 +26,7 @@ internal sealed class UsbCommunication : CommunicationBase
     {
         try
         {
-            await this.httpClientConnection.GetStringAsync(new Uri($"http://{CommunicationManager.IP}/documents/")).ConfigureAwait(false);
+            await this.httpClientConnection.GetStringAsync("/documents/").ConfigureAwait(false);
         }
         catch (Exception exception)
         {
@@ -38,7 +38,7 @@ internal sealed class UsbCommunication : CommunicationBase
     {
         try
         {
-            return await this.httpClient.GetStreamAsync(new Uri($"http://{CommunicationManager.IP}/download/{id}/placeholder")).ConfigureAwait(false);
+            return await this.httpClient.GetStreamAsync($"/download/{id}/placeholder").ConfigureAwait(false);
         }
         catch (Exception exception)
         {
@@ -50,9 +50,9 @@ internal sealed class UsbCommunication : CommunicationBase
     {
         try
         {
-            await this.httpClient.GetStringAsync(new Uri($"http://{CommunicationManager.IP}/documents/{parentId}")).ConfigureAwait(false);
+            await this.httpClient.GetStringAsync($"/documents/{parentId}").ConfigureAwait(false);
 
-            HttpResponseMessage response = await this.httpClient.PostAsync(new Uri($"http://{CommunicationManager.IP}/upload"), content).ConfigureAwait(false);
+            HttpResponseMessage response = await this.httpClient.PostAsync("/upload", content).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
         }
         catch (Exception exception)

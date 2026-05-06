@@ -1,30 +1,27 @@
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ReMarkableRemember.Services.TabletService.Communication;
 
-internal sealed class GitHubCommunication : IDisposable
+internal sealed class GitHubCommunication : CommunicationBase
 {
     private readonly HttpClient httpClient;
 
-    public GitHubCommunication()
+    public GitHubCommunication(HttpClient httpClient, SemaphoreSlim semaphore)
+        : base(semaphore)
     {
-        this.httpClient = new HttpClient();
+        this.httpClient = httpClient;
     }
 
-    public void Dispose()
+    public async Task<Byte[]> GetLamyEraserBinary()
     {
-        this.httpClient.Dispose();
+        return await this.httpClient.GetByteArrayAsync("/isaacwisdom/RemarkableLamyEraser/v1/RemarkableLamyEraser/RemarkableLamyEraser").ConfigureAwait(false);
     }
 
-    public async Task<Byte[]> GetBytes(Uri requestUri)
+    public async Task<String> GetLamyEraserService()
     {
-        return await this.httpClient.GetByteArrayAsync(requestUri).ConfigureAwait(false);
-    }
-
-    public async Task<String> GetText(Uri requestUri)
-    {
-        return await this.httpClient.GetStringAsync(requestUri).ConfigureAwait(false);
+        return await this.httpClient.GetStringAsync("/isaacwisdom/RemarkableLamyEraser/v1/RemarkableLamyEraser/LamyEraser.service").ConfigureAwait(false);
     }
 }

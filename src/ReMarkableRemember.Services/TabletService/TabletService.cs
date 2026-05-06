@@ -189,11 +189,11 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
         await ssh.Execute("systemctl disable --now LamyEraser.service", false).ConfigureAwait(false);
 
-        String serviceText = await gitHub.GetText(new Uri("https://raw.githubusercontent.com/isaacwisdom/RemarkableLamyEraser/v1/RemarkableLamyEraser/LamyEraser.service")).ConfigureAwait(false);
+        String serviceText = await gitHub.GetLamyEraserService().ConfigureAwait(false);
         serviceText = InstallLamyEraserOptions(serviceText, press, undo, leftHanded);
         await ssh.FileWrite("/lib/systemd/system/LamyEraser.service", serviceText).ConfigureAwait(false);
 
-        Byte[] serviceBytes = await gitHub.GetBytes(new Uri("https://raw.githubusercontent.com/isaacwisdom/RemarkableLamyEraser/v1/RemarkableLamyEraser/RemarkableLamyEraser")).ConfigureAwait(false);
+        Byte[] serviceBytes = await gitHub.GetLamyEraserBinary().ConfigureAwait(false);
         await ssh.FileWrite("/usr/sbin/RemarkableLamyEraser", serviceBytes).ConfigureAwait(false);
 
         await ssh.Execute("chmod +x /usr/sbin/RemarkableLamyEraser").ConfigureAwait(false);
