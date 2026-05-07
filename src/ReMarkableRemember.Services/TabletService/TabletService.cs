@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ReMarkableRemember.Common.FileSystem;
@@ -12,12 +9,12 @@ using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Common.Notebook;
 using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.ConfigurationService.Service;
-using ReMarkableRemember.Services.TabletService.Communication;
+using ReMarkableRemember.Services.TabletService.Communication.Interfaces;
 using ReMarkableRemember.Services.TabletService.Configuration;
 using ReMarkableRemember.Services.TabletService.Exceptions;
 using ReMarkableRemember.Services.TabletService.Files;
+using ReMarkableRemember.Services.TabletService.Files.Interfaces;
 using ReMarkableRemember.Services.TabletService.Models;
-using Renci.SshNet.Sftp;
 
 namespace ReMarkableRemember.Services.TabletService;
 
@@ -34,12 +31,16 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
     private const String VERSION_INFORMATION_RMPP = "imx8mm-ferrari";
     private const String VERSION_INFORMATION_RMPP_MOVE = "imx93-chiappa";
 
-    private readonly CommunicationManager communicationManager;
+    private readonly ITabletCommunication communication;
+    private readonly ITabletFileSerializer fileSerializer;
 
-    public TabletService(IConfigurationService configurationService)
+    public TabletService(ITabletCommunication communication, ITabletFileSerializer fileSerializer, IConfigurationService configurationService)
         : base(configurationService)
     {
-        this.communicationManager = new CommunicationManager(this.Configuration);
+        communication.Configuration(this.Configuration);
+
+        this.communication = communication;
+        this.fileSerializer = fileSerializer;
     }
 
     ITabletConfiguration ITabletService.Configuration
@@ -49,7 +50,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
     public async Task Backup(String id)
     {
-        using SshCommunication ssh = await this.communicationManager.Ssh().ConfigureAwait(false);
+        using ISshCommunication ssh = await this.communication.Ssh().ConfigureAwait(false);
 
         String targetDirectory = this.Configuration.Backup;
         if (!Path.Exists(targetDirectory)) { return; }
@@ -71,11 +72,11 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
     public async Task DeleteTemplate(TabletTemplate tabletTemplate)
     {
-        using SshCommunication ssh = await this.communicationManager.Ssh().ConfigureAwait(false);
+        using ISshCommunication ssh = await this.communication.Ssh().ConfigureAwait(false);
 
         String templatesFilePath = $"{PATH_TEMPLATES}{PATH_TEMPLATES_FILE}";
         String templatesFileText = await ssh.FileReadText(templatesFilePath).ConfigureAwait(false);
-        TemplatesFile templatesFile = JsonFile.Deserialize<TemplatesFile>(templatesFileText);
+        TemplatesFile templatesFile = this.fileSerializer.Deserialize<TemplatesFile>(templatesFileText);
 
         Int32 index = templatesFile.Templates.FindIndex((item) => String.Equals(item.Filename, tabletTemplate.FileName, StringComparison.Ordinal));
         if (index > -1)
@@ -85,12 +86,12 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
         await ssh.FileDelete($"{PATH_TEMPLATES}{tabletTemplate.FileName}.png").ConfigureAwait(false);
         await ssh.FileDelete($"{PATH_TEMPLATES}{tabletTemplate.FileName}.svg").ConfigureAwait(false);
-        await ssh.FileWrite(templatesFilePath, JsonFile.Serialize(templatesFile)).ConfigureAwait(false);
+        await ssh.FileWrite(templatesFilePath, this.fileSerializer.Serialize(templatesFile)).ConfigureAwait(false);
     }
 
     public async Task Download(String id, String targetPath)
     {
-        using UsbCommunication usb = await this.communicationManager.Usb().ConfigureAwait(false);
+        using IUsbCommunication usb = await this.communication.Usb().ConfigureAwait(false);
 
         using Stream sourceStream = await usb.Download(id).ConfigureAwait(false);
         using Stream targetStream = FileSystem.Create(targetPath);
@@ -103,7 +104,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
         try
         {
-            using SshCommunication ssh = await this.communicationManager.Ssh().ConfigureAwait(false);
+            using ISshCommunication ssh = await this.communication.Ssh().ConfigureAwait(false);
             information = await GetInformation(ssh).ConfigureAwait(false);
         }
         catch (TabletException exception)
@@ -113,7 +114,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
         try
         {
-            using UsbCommunication usb = await this.communicationManager.Usb().ConfigureAwait(false);
+            using IUsbCommunication usb = await this.communication.Usb().ConfigureAwait(false);
             await usb.CheckConnection().ConfigureAwait(false);
         }
         catch (TabletException exception)
@@ -126,19 +127,19 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
     public async Task<TabletItems> GetItems()
     {
-        using SshCommunication ssh = await this.communicationManager.Ssh().ConfigureAwait(false);
+        using ISshCommunication ssh = await this.communication.Ssh().ConfigureAwait(false);
 
         List<TabletItem> allItems = new List<TabletItem>();
         Dictionary<String, Exception> notReadable = new Dictionary<String, Exception>();
-        IAsyncEnumerable<ISftpFile> files = ssh.ListDirectory(PATH_NOTEBOOKS);
-        await foreach (ISftpFile file in files.ConfigureAwait(false))
+        IEnumerable<ITabletFile> files = await ssh.FileList(PATH_NOTEBOOKS).ConfigureAwait(false);
+        foreach (ITabletFile file in files)
         {
             if (file.IsRegularFile && file.Name.EndsWith(".metadata", StringComparison.Ordinal))
             {
                 try
                 {
                     String metaDataFileText = await ssh.FileReadText(file.FullName).ConfigureAwait(false);
-                    MetaDataFile metaDataFile = JsonFile.Deserialize<MetaDataFile>(metaDataFileText);
+                    MetaDataFile metaDataFile = this.fileSerializer.Deserialize<MetaDataFile>(metaDataFileText);
                     if (metaDataFile.Deleted != true)
                     {
                         String id = Path.GetFileNameWithoutExtension(file.Name);
@@ -159,10 +160,10 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
     public async Task<Notebook> GetNotebook(String id)
     {
-        using SshCommunication ssh = await this.communicationManager.Ssh().ConfigureAwait(false);
+        using ISshCommunication ssh = await this.communication.Ssh().ConfigureAwait(false);
 
         String contentFileText = await ssh.FileReadText($"{PATH_NOTEBOOKS}{id}.content").ConfigureAwait(false);
-        ContentFile contentFile = JsonFile.Deserialize<ContentFile>(contentFileText);
+        ContentFile contentFile = this.fileSerializer.Deserialize<ContentFile>(contentFileText);
 
         if (contentFile.FileType != "notebook") { throw new TabletException(Language.Current.TabletFileTypeInvalid(contentFile.FileType)); }
         if (contentFile.FormatVersion is not (1 or 2)) { throw new TabletException(Language.Current.TabletFileFormatVersionInvalid(contentFile.FormatVersion)); }
@@ -181,8 +182,8 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
     public async Task InstallLamyEraser(Boolean press, Boolean undo, Boolean leftHanded)
     {
-        using GitHubCommunication gitHub = await this.communicationManager.GitHub().ConfigureAwait(false);
-        using SshCommunication ssh = await this.communicationManager.Ssh().ConfigureAwait(false);
+        using IGitHubCommunication gitHub = await this.communication.GitHub().ConfigureAwait(false);
+        using ISshCommunication ssh = await this.communication.Ssh().ConfigureAwait(false);
 
         TabletInformation information = await GetInformation(ssh).ConfigureAwait(false);
         if (!information.LamyEraserSupport) { throw new TabletException(TabletError.NotSupported, Language.Current.TabletLamyEraserNotSupported(information.Type.GetDisplayText())); }
@@ -203,35 +204,25 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
     public async Task Restart()
     {
-        using SshCommunication ssh = await this.communicationManager.Ssh().ConfigureAwait(false);
+        using ISshCommunication ssh = await this.communication.Ssh().ConfigureAwait(false);
+
         await ssh.Execute("systemctl restart xochitl").ConfigureAwait(false);
     }
 
     public async Task UploadFile(String path, String? parentId)
     {
-        using UsbCommunication usb = await this.communicationManager.Usb().ConfigureAwait(false);
+        using IUsbCommunication usb = await this.communication.Usb().ConfigureAwait(false);
 
-        FileInfo file = new FileInfo(path);
-        String fileName = Encoding.GetEncoding("ISO-8859-1").GetString(Encoding.UTF8.GetBytes(file.Name));
-        String mediaType = UploadFileCheck(file);
-
-        using StreamContent fileContent = new StreamContent(File.OpenRead(path));
-        fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
-        fileContent.Headers.ContentDisposition.Parameters.Add(new NameValueHeaderValue("name", "\"file\""));
-        fileContent.Headers.ContentDisposition.Parameters.Add(new NameValueHeaderValue("filename", $"\"{fileName}\""));
-        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(mediaType);
-
-        using MultipartFormDataContent multipartContent = new MultipartFormDataContent() { { fileContent } };
-        await usb.Upload(parentId, multipartContent);
+        await usb.Upload(new FileInfo(path), parentId);
     }
 
     public async Task UploadTemplate(TabletTemplate tabletTemplate)
     {
-        using SshCommunication ssh = await this.communicationManager.Ssh().ConfigureAwait(false);
+        using ISshCommunication ssh = await this.communication.Ssh().ConfigureAwait(false);
 
         String templatesFilePath = $"{PATH_TEMPLATES}{PATH_TEMPLATES_FILE}";
         String templatesFileText = await ssh.FileReadText(templatesFilePath).ConfigureAwait(false);
-        TemplatesFile templatesFile = JsonFile.Deserialize<TemplatesFile>(templatesFileText);
+        TemplatesFile templatesFile = this.fileSerializer.Deserialize<TemplatesFile>(templatesFileText);
 
         Int32 index = templatesFile.Templates.FindIndex((item) => String.Equals(item.Filename, tabletTemplate.FileName, StringComparison.Ordinal));
         if (index > -1)
@@ -245,13 +236,13 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
         await ssh.FileWrite($"{PATH_TEMPLATES}{tabletTemplate.FileName}.png", tabletTemplate.BytesPng, false).ConfigureAwait(false);
         await ssh.FileWrite($"{PATH_TEMPLATES}{tabletTemplate.FileName}.svg", tabletTemplate.BytesSvg, false).ConfigureAwait(false);
-        await ssh.FileWrite(templatesFilePath, JsonFile.Serialize(templatesFile)).ConfigureAwait(false);
+        await ssh.FileWrite(templatesFilePath, this.fileSerializer.Serialize(templatesFile)).ConfigureAwait(false);
     }
 
-    private static async Task BackupFiles(SshCommunication ssh, String sourceDirectory, String targetDirectory, Func<ISftpFile, Boolean> filter)
+    private static async Task BackupFiles(ISshCommunication ssh, String sourceDirectory, String targetDirectory, Func<ITabletFile, Boolean> filter)
     {
-        IAsyncEnumerable<ISftpFile> files = ssh.ListDirectory(sourceDirectory);
-        await foreach (ISftpFile file in files.ConfigureAwait(false))
+        IEnumerable<ITabletFile> files = await ssh.FileList(sourceDirectory).ConfigureAwait(false);
+        foreach (ITabletFile file in files)
         {
             if (!filter(file)) { continue; }
 
@@ -269,7 +260,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
         }
     }
 
-    private static async Task<TabletInformation> GetInformation(SshCommunication ssh)
+    private static async Task<TabletInformation> GetInformation(ISshCommunication ssh)
     {
         TabletType type = await GetTabletType(ssh).ConfigureAwait(false);
         Version softwareVersion = await GetSoftwareVersion(ssh).ConfigureAwait(false);
@@ -277,7 +268,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
         return new TabletInformation(type, softwareVersion);
     }
 
-    private static async Task<Version> GetSoftwareVersion(SshCommunication ssh)
+    private static async Task<Version> GetSoftwareVersion(ISshCommunication ssh)
     {
         String osReleaseInformation = await ssh.FileReadText(PATH_OS_RELEASE).ConfigureAwait(false);
         Match match = GetSoftwareVersionRegex().Match(osReleaseInformation);
@@ -294,7 +285,7 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
     [GeneratedRegex("IMG_VERSION=\"(\\d+\\.\\d+\\.\\d+.\\d+)\"")]
     private static partial Regex GetSoftwareVersionRegex();
 
-    private static async Task<TabletType> GetTabletType(SshCommunication ssh)
+    private static async Task<TabletType> GetTabletType(ISshCommunication ssh)
     {
         String versionInformation = await ssh.FileReadText(PATH_VERSION_INFORMATION_FILE).ConfigureAwait(false);
 
@@ -331,20 +322,8 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
         }
     }
 
-    private static String UploadFileCheck(FileInfo file)
-    {
-        if (file.Length >= 100 * 1024 * 1024) { throw new TabletException(Language.Current.TabletFileTooLarge); }
-
-        return file.Extension.ToUpperInvariant() switch
-        {
-            ".PDF" => "application/pdf",
-            ".EPUB" => "application/epub+zip",
-            _ => throw new TabletException(Language.Current.TabletFileTypeNotSupported(file.Extension)),
-        };
-    }
-
     void IDisposable.Dispose()
     {
-        this.communicationManager.Dispose();
+        this.communication.Dispose();
     }
 }

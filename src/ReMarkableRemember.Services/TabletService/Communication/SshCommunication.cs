@@ -6,7 +6,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using ReMarkableRemember.Common.FileSystem;
 using ReMarkableRemember.Common.Localization;
+using ReMarkableRemember.Services.TabletService.Communication.Interfaces;
 using ReMarkableRemember.Services.TabletService.Exceptions;
+using ReMarkableRemember.Services.TabletService.Files;
+using ReMarkableRemember.Services.TabletService.Files.Interfaces;
 using ReMarkableRemember.Services.TabletService.Models;
 using Renci.SshNet;
 using Renci.SshNet.Common;
@@ -14,7 +17,7 @@ using Renci.SshNet.Sftp;
 
 namespace ReMarkableRemember.Services.TabletService.Communication;
 
-internal sealed class SshCommunication : CommunicationBase
+internal sealed class SshCommunication : CommunicationBase, ISshCommunication
 {
     private const Int32 SSH_TIMEOUT = 2;
     private const String SSH_USER = "root";
@@ -74,6 +77,19 @@ internal sealed class SshCommunication : CommunicationBase
         await this.sftpClient.DownloadFileAsync(path, fileStream).ConfigureAwait(false);
     }
 
+    public async Task<IEnumerable<ITabletFile>> FileList(String directoryPath)
+    {
+        List<ITabletFile> result = new List<ITabletFile>();
+
+        IEnumerable<ISftpFile> files = await Task.Run(() => this.sftpClient.ListDirectory(directoryPath)).ConfigureAwait(false);
+        foreach (ISftpFile file in files)
+        {
+            result.Add(new TabletFile(file));
+        }
+
+        return result;
+    }
+
     public async Task<Byte[]> FileReadBytes(String path)
     {
         return await Task.Run(() => this.sftpClient.ReadAllBytes(path)).ConfigureAwait(false);
@@ -102,11 +118,6 @@ internal sealed class SshCommunication : CommunicationBase
         {
             throw new NotImplementedException();
         }
-    }
-
-    public IAsyncEnumerable<ISftpFile> ListDirectory(String path)
-    {
-        return this.sftpClient.ListDirectoryAsync(path, CancellationToken.None);
     }
 
     private static async Task Connect<T>(T client) where T : BaseClient

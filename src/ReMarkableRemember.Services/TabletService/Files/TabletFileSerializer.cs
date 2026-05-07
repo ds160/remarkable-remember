@@ -1,10 +1,11 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ReMarkableRemember.Services.TabletService.Files.Interfaces;
 
 namespace ReMarkableRemember.Services.TabletService.Files;
 
-internal static class JsonFile
+public sealed class TabletFileSerializer : ITabletFileSerializer
 {
     private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions()
     {
@@ -13,12 +14,12 @@ internal static class JsonFile
         WriteIndented = true
     };
 
-    public static T Deserialize<T>(String fileText) where T : struct
+    public T Deserialize<T>(String fileText) where T : struct
     {
         return JsonSerializer.Deserialize<T>(fileText, jsonSerializerOptions);
     }
 
-    public static String Serialize<T>(T value)
+    public String Serialize<T>(T value) where T : struct
     {
         return JsonSerializer.Serialize(value, jsonSerializerOptions);
     }

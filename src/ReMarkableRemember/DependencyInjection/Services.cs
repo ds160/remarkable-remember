@@ -5,6 +5,10 @@ using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.TabletService;
+using ReMarkableRemember.Services.TabletService.Communication;
+using ReMarkableRemember.Services.TabletService.Communication.Interfaces;
+using ReMarkableRemember.Services.TabletService.Files;
+using ReMarkableRemember.Services.TabletService.Files.Interfaces;
 using ReMarkableRemember.Settings;
 
 namespace ReMarkableRemember.DependencyInjection;
@@ -33,9 +37,11 @@ internal sealed class Services : IServices
             .AddSingleton<IConfigurationService, ConfigurationServiceDataService>()
             .AddSingleton<IDataService>(DataServiceSqlite.Create(args?.FirstOrDefault()))
             .AddSingleton<IHandWritingRecognitionService, HandWritingRecognitionServiceMyScript>()
-            .AddSingleton<ISettingsService, SettingsService>()
-            .AddSingleton<ITabletService, TabletService>()
             .AddSingleton<IServices, Services>()
+            .AddSingleton<ISettingsService, SettingsService>()
+            .AddSingleton<ITabletCommunication, TabletCommunication>()
+            .AddSingleton<ITabletFileSerializer, TabletFileSerializer>()
+            .AddSingleton<ITabletService, TabletService>()
             .BuildServiceProvider();
 
         return serviceProvider.GetRequiredService<IServices>();

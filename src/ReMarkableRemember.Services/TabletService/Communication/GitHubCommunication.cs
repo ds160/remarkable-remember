@@ -2,10 +2,11 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using ReMarkableRemember.Services.TabletService.Communication.Interfaces;
 
 namespace ReMarkableRemember.Services.TabletService.Communication;
 
-internal sealed class GitHubCommunication : CommunicationBase
+internal sealed class GitHubCommunication : CommunicationBase, IGitHubCommunication
 {
     private readonly HttpClient httpClient;
 
