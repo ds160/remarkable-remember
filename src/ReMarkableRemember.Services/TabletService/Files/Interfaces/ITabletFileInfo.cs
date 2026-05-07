@@ -2,7 +2,7 @@ using System;
 
 namespace ReMarkableRemember.Services.TabletService.Files.Interfaces;
 
-public interface ITabletFile
+public interface ITabletFileInfo
 {
     String FullName { get; }
     Boolean IsDirectory { get; }

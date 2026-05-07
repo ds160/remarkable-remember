@@ -15,7 +15,7 @@ public interface ISshCommunication : IDisposable
 
     Task FileDownload(String path, String targetPath);
 
-    Task<IEnumerable<ITabletFile>> FileList(String directoryPath);
+    Task<IEnumerable<ITabletFileInfo>> FileList(String directoryPath);
 
     Task<Byte[]> FileReadBytes(String path);
 

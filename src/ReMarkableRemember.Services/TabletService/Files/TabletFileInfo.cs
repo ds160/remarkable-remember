@@ -4,9 +4,9 @@ using Renci.SshNet.Sftp;
 
 namespace ReMarkableRemember.Services.TabletService.Files;
 
-internal sealed class TabletFile : ITabletFile
+internal sealed class TabletFileInfo : ITabletFileInfo
 {
-    public TabletFile(ISftpFile file)
+    public TabletFileInfo(ISftpFile file)
     {
         this.FullName = file.FullName;
         this.IsDirectory = file.IsDirectory;

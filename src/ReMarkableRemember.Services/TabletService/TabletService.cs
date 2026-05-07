@@ -131,8 +131,8 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
 
         List<TabletItem> allItems = new List<TabletItem>();
         Dictionary<String, Exception> notReadable = new Dictionary<String, Exception>();
-        IEnumerable<ITabletFile> files = await ssh.FileList(PATH_NOTEBOOKS).ConfigureAwait(false);
-        foreach (ITabletFile file in files)
+        IEnumerable<ITabletFileInfo> files = await ssh.FileList(PATH_NOTEBOOKS).ConfigureAwait(false);
+        foreach (ITabletFileInfo file in files)
         {
             if (file.IsRegularFile && file.Name.EndsWith(".metadata", StringComparison.Ordinal))
             {
@@ -239,10 +239,10 @@ public sealed partial class TabletService : ServiceBase<TabletConfiguration>, IT
         await ssh.FileWrite(templatesFilePath, this.fileSerializer.Serialize(templatesFile)).ConfigureAwait(false);
     }
 
-    private static async Task BackupFiles(ISshCommunication ssh, String sourceDirectory, String targetDirectory, Func<ITabletFile, Boolean> filter)
+    private static async Task BackupFiles(ISshCommunication ssh, String sourceDirectory, String targetDirectory, Func<ITabletFileInfo, Boolean> filter)
     {
-        IEnumerable<ITabletFile> files = await ssh.FileList(sourceDirectory).ConfigureAwait(false);
-        foreach (ITabletFile file in files)
+        IEnumerable<ITabletFileInfo> files = await ssh.FileList(sourceDirectory).ConfigureAwait(false);
+        foreach (ITabletFileInfo file in files)
         {
             if (!filter(file)) { continue; }
 

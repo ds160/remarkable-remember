@@ -77,14 +77,14 @@ internal sealed class SshCommunication : CommunicationBase, ISshCommunication
         await this.sftpClient.DownloadFileAsync(path, fileStream).ConfigureAwait(false);
     }
 
-    public async Task<IEnumerable<ITabletFile>> FileList(String directoryPath)
+    public async Task<IEnumerable<ITabletFileInfo>> FileList(String directoryPath)
     {
-        List<ITabletFile> result = new List<ITabletFile>();
+        List<ITabletFileInfo> result = new List<ITabletFileInfo>();
 
         IEnumerable<ISftpFile> files = await Task.Run(() => this.sftpClient.ListDirectory(directoryPath)).ConfigureAwait(false);
         foreach (ISftpFile file in files)
         {
-            result.Add(new TabletFile(file));
+            result.Add(new TabletFileInfo(file));
         }
 
         return result;
