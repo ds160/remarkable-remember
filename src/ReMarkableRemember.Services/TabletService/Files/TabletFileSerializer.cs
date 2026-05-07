@@ -14,12 +14,12 @@ public sealed class TabletFileSerializer : ITabletFileSerializer
         WriteIndented = true
     };
 
-    public T Deserialize<T>(String fileText) where T : struct
+    public T Deserialize<T>(String fileText) where T : struct, ITabletFile
     {
         return JsonSerializer.Deserialize<T>(fileText, jsonSerializerOptions);
     }
 
-    public String Serialize<T>(T value) where T : struct
+    public String Serialize<T>(T value) where T : struct, ITabletFile
     {
         return JsonSerializer.Serialize(value, jsonSerializerOptions);
     }

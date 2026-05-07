@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using ReMarkableRemember.Services.TabletService.Files.Interfaces;
 
 namespace ReMarkableRemember.Services.TabletService.Files;
 
-internal struct ContentFile
+internal struct ContentFile : ITabletFile
 {
     public PagesContainer? CPages { get; set; }
     public String FileType { get; set; }

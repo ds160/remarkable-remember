@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using ReMarkableRemember.Services.TabletService.Files.Interfaces;
 using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.Services.TabletService.Files;
 
-internal struct TemplatesFile
+internal struct TemplatesFile : ITabletFile
 {
     public List<Template> Templates { get; set; }
 
