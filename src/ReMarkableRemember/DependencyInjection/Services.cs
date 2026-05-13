@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
+using ReMarkableRemember.Services.HandWritingRecognitionService.MyScript;
+using ReMarkableRemember.Services.HandWritingRecognitionService.MyScript.Interfaces;
 using ReMarkableRemember.Services.TabletService;
 using ReMarkableRemember.Services.TabletService.Communication;
 using ReMarkableRemember.Services.TabletService.Communication.Interfaces;
@@ -37,6 +39,7 @@ internal sealed class Services : IServices
             .AddSingleton<IConfigurationService, ConfigurationServiceDataService>()
             .AddSingleton<IDataService>(DataServiceSqlite.Create(args?.FirstOrDefault()))
             .AddSingleton<IHandWritingRecognitionService, HandWritingRecognitionServiceMyScript>()
+            .AddSingleton<IMyScriptCommunication, MyScriptCommunication>()
             .AddSingleton<IServices, Services>()
             .AddSingleton<ISettingsService, SettingsService>()
             .AddSingleton<ITabletCommunication, TabletCommunication>()

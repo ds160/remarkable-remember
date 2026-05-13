@@ -2,20 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Common.Notebook;
+using ReMarkableRemember.Common.Notebook.Enumerations;
 using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.ConfigurationService.Service;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Exceptions;
 using ReMarkableRemember.Services.HandWritingRecognitionService.MyScript;
+using ReMarkableRemember.Services.HandWritingRecognitionService.MyScript.Interfaces;
 
 namespace ReMarkableRemember.Services.HandWritingRecognitionService;
 
@@ -23,9 +23,19 @@ public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWrit
 {
     private const Int32 MAX_TASKS = 4;
 
-    public HandWritingRecognitionServiceMyScript(IConfigurationService configurationService)
+    private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
+    private readonly IMyScriptCommunication communication;
+
+    public HandWritingRecognitionServiceMyScript(IMyScriptCommunication communication, IConfigurationService configurationService)
         : base(configurationService)
     {
+        communication.Configuration(this.Configuration);
+
+        this.communication = communication;
     }
 
     IHandWritingRecognitionConfiguration IHandWritingRecognitionService.Configuration
@@ -35,13 +45,13 @@ public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWrit
 
     IEnumerable<String> IHandWritingRecognitionService.SupportedLanguages
     {
-        get { return Languages.Supported; }
+        get { return MyScriptLanguages.Supported; }
     }
 
     public async Task<String> Recognize(Notebook notebook)
     {
         String language = this.Configuration.Language;
-        if (!Languages.Supported.Contains(language)) { throw new HandWritingRecognitionException(Language.Current.MyScriptLanguageNotSupported(language)); }
+        if (!MyScriptLanguages.Supported.Contains(language)) { throw new HandWritingRecognitionException(Language.Current.MyScriptLanguageNotSupported(language)); }
 
         using SemaphoreSlim throttler = new SemaphoreSlim(MAX_TASKS);
 
@@ -55,35 +65,60 @@ public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWrit
 
         try
         {
-            String jsonRequest = JsonRequest.Build(page, language);
+            String jsonRequest = BuildJsonRequest(page, language);
             String hmac = this.CalculateHmac(jsonRequest);
+            using IMyScriptResponse response = await this.communication.Recognize(hmac, jsonRequest).ConfigureAwait(false);
 
-            using HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("applicationKey", this.Configuration.ApplicationKey);
-            client.DefaultRequestHeaders.Add("hmac", hmac);
-            client.DefaultRequestHeaders.Add("accept", $"{MediaTypeNames.Text.Plain}, {MediaTypeNames.Application.Json}");
-
-            using StringContent requestContent = new StringContent(jsonRequest, Encoding.UTF8, MediaTypeNames.Application.Json);
-            HttpResponseMessage response = await client.PostAsync(new Uri("https://cloud.myscript.com/api/v4.0/iink/batch"), requestContent).ConfigureAwait(false);
-
-            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            if (response.Unauthorized)
             {
                 throw new HandWritingRecognitionException(Language.Current.MyScriptAuthorizationError);
             }
 
-            if (response.StatusCode == HttpStatusCode.RequestEntityTooLarge)
+            if (response.RequestTooLarge)
             {
                 throw new HandWritingRecognitionException(Language.Current.MyScriptPageAnalyzeError(page.Index + 1));
             }
 
-            response.EnsureSuccessStatusCode();
-
-            return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            return await response.Read().ConfigureAwait(false);
         }
         finally
         {
             throttler.Release();
         }
+    }
+
+    private static String BuildJsonRequest(Page page, String language)
+    {
+        List<Object> strokes = new List<Object>();
+        foreach (Line line in page.Lines)
+        {
+            if (line.Type is
+                not PenType.EraseArea and
+                not PenType.Eraser and
+                not PenType.Highlighter1 and
+                not PenType.Highlighter2)
+            {
+                List<Double> x = new List<Double>();
+                List<Double> y = new List<Double>();
+                foreach (Point point in line.Points)
+                {
+                    x.Add(point.X);
+                    y.Add(point.Y);
+                }
+                strokes.Add(new { PointerType = "PEN", X = x, Y = y });
+            }
+        }
+
+        Object jsonRequest = new
+        {
+            Configuration = new { Lang = language },
+            ContentType = "Text",
+            StrokeGroups = new List<Object>() { new { Strokes = strokes } },
+            xDPI = page.Resolution,
+            yDPI = page.Resolution
+        };
+
+        return JsonSerializer.Serialize(jsonRequest, jsonSerializerOptions);
     }
 
     private String CalculateHmac(String jsonRequest)

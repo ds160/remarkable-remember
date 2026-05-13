@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ReMarkableRemember.Services.HandWritingRecognitionService.MyScript;
 
-internal static class Languages
+internal static class MyScriptLanguages
 {
     public static List<String> Supported { get; } = new List<String>()
     {
