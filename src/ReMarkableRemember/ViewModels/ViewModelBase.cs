@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
+using ReMarkableRemember.Common.Localization.Interfaces;
 using ReMarkableRemember.ViewModels.Interfaces;
 
 namespace ReMarkableRemember.ViewModels;

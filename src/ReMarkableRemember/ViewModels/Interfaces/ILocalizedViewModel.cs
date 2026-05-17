@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using ReMarkableRemember.Common.Localization;
+using ReMarkableRemember.Common.Localization.Interfaces;
 
 namespace ReMarkableRemember.ViewModels.Interfaces;
 

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ReMarkableRemember.Common.Localization;
+namespace ReMarkableRemember.Common.Localization.Interfaces;
 
 public interface ILanguageProvider
 {

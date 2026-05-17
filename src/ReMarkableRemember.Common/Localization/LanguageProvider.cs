@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ReMarkableRemember.Common.Localization.Interfaces;
 using ReMarkableRemember.Common.Localization.LocalStrings;
 
 namespace ReMarkableRemember.Common.Localization;

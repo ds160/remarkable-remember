@@ -1,6 +1,6 @@
 using System;
 
-namespace ReMarkableRemember.Common.Localization;
+namespace ReMarkableRemember.Common.Localization.Interfaces;
 
 public interface ILocalStrings
 {

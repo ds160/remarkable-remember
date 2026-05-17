@@ -1,4 +1,5 @@
 using System;
+using ReMarkableRemember.Common.Localization.Interfaces;
 
 namespace ReMarkableRemember.Common.Localization;
 
