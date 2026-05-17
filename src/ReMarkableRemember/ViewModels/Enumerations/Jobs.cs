@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using ReMarkableRemember.Common.Localization;
 
-namespace ReMarkableRemember.Enumerations;
+namespace ReMarkableRemember.ViewModels.Enumerations;
 
 [Flags]
 public enum Jobs

@@ -13,11 +13,11 @@ using DynamicData.Binding;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.DependencyInjection;
-using ReMarkableRemember.Enumerations;
 using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.DataService.Models;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
 using ReMarkableRemember.Services.TabletService.Models;
+using ReMarkableRemember.ViewModels.Enumerations;
 using ReMarkableRemember.ViewModels.Interfaces;
 
 namespace ReMarkableRemember.ViewModels;

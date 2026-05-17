@@ -1,5 +1,5 @@
 using System;
-using ReMarkableRemember.Enumerations;
+using ReMarkableRemember.ViewModels.Enumerations;
 
 namespace ReMarkableRemember.ViewModels;
 
