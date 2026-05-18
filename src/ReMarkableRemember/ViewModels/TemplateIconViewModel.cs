@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
 using ReMarkableRemember.Common.Localization;
-using ReMarkableRemember.Helper;
+using ReMarkableRemember.DependencyInjection;
 using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.ViewModels;
 
 public sealed class TemplateIconViewModel
 {
-    private TemplateIconViewModel(TabletTemplateIcon icon)
+    private TemplateIconViewModel(TabletTemplateIcon icon, IServices services)
     {
         String name = icon.GetName();
 
         this.Code = icon.Code;
-        this.Image = ImageLoader.Bitmap($"Templates/{icon.ImageName}.png");
+        this.Image = services.ImageLoader.Bitmap($"Templates/{icon.ImageName}.png");
         this.IsLandscape = icon.IsLandscape;
         this.Name = icon.IsLandscape ? $"{name} ({Language.Current.TemplateLandscape})" : $"{name} ({Language.Current.TemplatePortrait})";
         this.SortName = name;
@@ -31,10 +31,10 @@ public sealed class TemplateIconViewModel
 
     private String SortName { get; }
 
-    internal static IEnumerable<TemplateIconViewModel> GetIcons()
+    internal static IEnumerable<TemplateIconViewModel> GetIcons(IServices services)
     {
         return TabletTemplateIcon.Icons
-            .Select(icon => new TemplateIconViewModel(icon))
+            .Select(icon => new TemplateIconViewModel(icon, services))
             .OrderBy(icon => icon.IsLandscape ? 1 : 0)
             .ThenBy(icon => icon.SortName)
             .ToArray();

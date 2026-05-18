@@ -16,7 +16,7 @@ namespace ReMarkableRemember.ViewModels;
 
 public sealed class TemplateViewModel : ViewModelBase
 {
-    private static readonly Dictionary<String, IImage> icons = TemplateIconViewModel.GetIcons().ToDictionary(icon => icon.Code, icon => icon.Image);
+    private static Dictionary<String, IImage>? icons;
 
     private readonly TabletTemplate template;
     private readonly ObservableCollection<TemplateViewModel> templates;
@@ -25,6 +25,8 @@ public sealed class TemplateViewModel : ViewModelBase
 
     internal TemplateViewModel(TabletTemplate template, ObservableCollection<TemplateViewModel> templates, IServices services)
     {
+        icons ??= TemplateIconViewModel.GetIcons(services).ToDictionary(icon => icon.Code, icon => icon.Image);
+
         this.template = template;
         this.templates = templates;
 

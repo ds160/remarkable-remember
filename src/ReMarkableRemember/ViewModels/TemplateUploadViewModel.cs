@@ -23,7 +23,7 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
     {
         this.services = services;
 
-        this.Icons = TemplateIconViewModel.GetIcons();
+        this.Icons = TemplateIconViewModel.GetIcons(services);
 
         this.Category = String.Empty;
         this.Icon = this.Icons.First();

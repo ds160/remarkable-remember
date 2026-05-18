@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using ReMarkableRemember.Images;
 using ReMarkableRemember.Services.ConfigurationService;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
@@ -14,6 +15,7 @@ internal sealed class Services : IServices
     {
         this.Data = serviceProvider.GetRequiredService<IDataService>();
         this.HandWritingRecognition = serviceProvider.GetRequiredService<IHandWritingRecognitionService>();
+        this.ImageLoader = serviceProvider.GetRequiredService<IImageLoader>();
         this.Settings = serviceProvider.GetRequiredService<ISettingsService>();
         this.Tablet = serviceProvider.GetRequiredService<ITabletService>();
     }
@@ -22,6 +24,8 @@ internal sealed class Services : IServices
 
     public IHandWritingRecognitionService HandWritingRecognition { get; }
 
+    public IImageLoader ImageLoader { get; }
+
     public ISettingsService Settings { get; }
 
     public ITabletService Tablet { get; }
@@ -29,11 +33,12 @@ internal sealed class Services : IServices
     public static IServices Create(String[]? args)
     {
         IServiceProvider serviceProvider = new ServiceCollection()
+            .UseAssetLoaderForImages()
             .UseConfigurationServiceForSettingsService()
             .UseDataServiceForConfigurationService()
             .UseMyScriptForHandWritingRecognitionService()
             .UseSqliteForDataService(args)
-            .UseTabletService()
+            .UseSshForTabletService()
             .BuildServiceProvider();
 
         return new Services(serviceProvider);

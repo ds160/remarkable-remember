@@ -8,7 +8,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using ReactiveUI.Avalonia;
 using ReMarkableRemember.Common.FileSystem;
 using ReMarkableRemember.ViewModels;
-using ReMarkableRemember.Views;
 
 namespace ReMarkableRemember;
 
@@ -33,17 +32,16 @@ public sealed class Program
         }
     }
 
-    private static async void ExceptionHandler(Exception exception)
+    private static void ExceptionHandler(Exception exception)
     {
         String date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff", CultureInfo.InvariantCulture);
         String logFilePath = FileSystem.CreateApplicationDataFilePath("logs.txt");
         File.AppendAllText(logFilePath, $"{date}|ERROR|{exception}{Environment.NewLine}");
 
-        IClassicDesktopStyleApplicationLifetime? desktopApp = Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
-        if (desktopApp?.MainWindow?.IsVisible == true)
+        Window? mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        if (mainWindow?.IsVisible == true && mainWindow?.DataContext is MainWindowModel mainWindowModel)
         {
-            DialogWindow dialog = new DialogWindow() { DataContext = MessageViewModel.Error(exception) };
-            await dialog.ShowDialog(desktopApp.MainWindow).ConfigureAwait(true);
+            mainWindowModel.ShowException(exception);
         }
     }
 }

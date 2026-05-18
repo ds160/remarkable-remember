@@ -1,3 +1,4 @@
+using ReMarkableRemember.Images;
 using ReMarkableRemember.Services.DataService;
 using ReMarkableRemember.Services.HandWritingRecognitionService;
 using ReMarkableRemember.Services.TabletService;
@@ -10,6 +11,8 @@ public interface IServices
     IDataService Data { get; }
 
     IHandWritingRecognitionService HandWritingRecognition { get; }
+
+    IImageLoader ImageLoader { get; }
 
     ISettingsService Settings { get; }
 

@@ -5,7 +5,6 @@ using Avalonia.Media;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.DependencyInjection;
-using ReMarkableRemember.Helper;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -41,7 +40,7 @@ public partial class ItemViewModel
 
         internal Hints Hint { get { return this.GetHint(); } }
 
-        public IImage? Image { get { return this.GetImagePath() is String image ? ImageLoader.Svg(image) : null; } }
+        public IImage? Image { get { return this.GetImagePath() is String image ? this.services.ImageLoader.Svg(image) : null; } }
 
         public String? ToolTip { get { return this.GetToolTip(); } }
 

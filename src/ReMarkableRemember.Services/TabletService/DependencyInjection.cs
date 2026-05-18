@@ -8,7 +8,7 @@ namespace ReMarkableRemember.Services.TabletService;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection UseTabletService(this IServiceCollection services)
+    public static IServiceCollection UseSshForTabletService(this IServiceCollection services)
     {
         return services
             .AddSingleton<ITabletCommunication, TabletCommunication>()

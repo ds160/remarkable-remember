@@ -7,14 +7,14 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Svg;
 
-namespace ReMarkableRemember.Helper;
+namespace ReMarkableRemember.Images;
 
-public static class ImageLoader
+internal sealed class ImageLoader : IImageLoader
 {
     private static readonly String? assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
     private static readonly Dictionary<String, IImage> images = new Dictionary<String, IImage>();
 
-    public static IImage Bitmap(String path)
+    public IImage Bitmap(String path)
     {
         if (!images.TryGetValue(path, out IImage? image))
         {
@@ -24,7 +24,7 @@ public static class ImageLoader
         return image;
     }
 
-    public static IImage Svg(String path)
+    public IImage Svg(String path)
     {
         if (!images.TryGetValue(path, out IImage? image))
         {

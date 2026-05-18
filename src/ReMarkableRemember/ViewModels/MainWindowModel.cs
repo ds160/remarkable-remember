@@ -246,7 +246,8 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
             $"{reason}{Language.Current.TabletRestartTakeEffect}",
             Language.Current.TabletRestartSaveWork,
             String.Empty,
-            Language.Current.TabletRestartQuestion));
+            Language.Current.TabletRestartQuestion),
+            this.services);
 
         if (await this.ShowDialog.Handle(message))
         {
@@ -284,6 +285,11 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
     private IObservable<Boolean> Settings_CanExecute()
     {
         return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None or Jobs.HandwritingRecognition);
+    }
+
+    internal async void ShowException(Exception exception)
+    {
+        await this.ShowDialog.Handle(MessageViewModel.Error(exception, this.services));
     }
 
     private async Task SyncTargetDirectory(String setString)
@@ -350,7 +356,7 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
         }
         catch (Exception exception)
         {
-            await this.ShowDialog.Handle(MessageViewModel.Error(exception));
+            this.ShowException(exception);
         }
 
         this.ItemsTree.Items.Clear();
@@ -362,7 +368,7 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
         String itemsNotReadable = String.Join(Environment.NewLine, notReadable);
         if (!String.IsNullOrEmpty(itemsNotReadable) && !String.Equals(itemsNotReadable, this.itemsNotReadable, StringComparison.Ordinal))
         {
-            await this.ShowDialog.Handle(MessageViewModel.Error($"{Language.Current.TabletItemsNotReadable}{Environment.NewLine}{itemsNotReadable}"));
+            await this.ShowDialog.Handle(MessageViewModel.Error($"{Language.Current.TabletItemsNotReadable}{Environment.NewLine}{itemsNotReadable}", this.services));
         }
         this.itemsNotReadable = itemsNotReadable;
     }
