@@ -7,7 +7,7 @@ using Avalonia.Controls.Templates;
 using ReactiveUI;
 using ReMarkableRemember.ViewModels;
 
-namespace ReMarkableRemember.Templates;
+namespace ReMarkableRemember.Views;
 
 public sealed class ViewLocator : IDataTemplate
 {
