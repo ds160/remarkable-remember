@@ -1,11 +1,12 @@
 using System;
 using ReMarkableRemember.ViewModels.Enumerations;
+using ReMarkableRemember.ViewModels.Interfaces;
 
 namespace ReMarkableRemember.ViewModels;
 
 public partial class MainWindowModel
 {
-    private sealed class Job : IDisposable
+    private sealed class Job : IJob
     {
         private Boolean done;
         private readonly Jobs job;

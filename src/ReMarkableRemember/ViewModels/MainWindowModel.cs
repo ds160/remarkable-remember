@@ -28,11 +28,7 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
 
     private String? itemsNotReadable;
 
-    public MainWindowModel(IServices services) : this(services, updateScheduler: true)
-    {
-    }
-
-    private MainWindowModel(IServices services, Boolean updateScheduler)
+    private MainWindowModel(IServices services)
     {
         this.services = services;
 
@@ -65,12 +61,16 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
 
         this.WhenAnyValue(vm => vm.Jobs).Subscribe(jobs => this.RaisePropertyChanged(nameof(this.JobsText)));
         this.WhenAnyValue(vm => vm.HandWritingRecognitionLanguage).Subscribe(this.SaveHandWritingRecognitionLanguage);
-
-        if (updateScheduler)
-        {
-            RxSchedulers.MainThreadScheduler.Schedule(this.Update);
-        }
     }
+
+
+    public static MainWindowModel Create(IServices services)
+    {
+        MainWindowModel mainWindowModel = new MainWindowModel(services);
+        RxSchedulers.MainThreadScheduler.Schedule(mainWindowModel.Update);
+        return mainWindowModel;
+    }
+
 
     private async Task About()
     {

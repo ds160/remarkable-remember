@@ -20,7 +20,7 @@ public partial class App : Application
         if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopApp)
         {
             IServices services = DependencyInjection.Services.Create(desktopApp.Args);
-            Object dataContext = new MainWindowModel(services);
+            Object dataContext = MainWindowModel.Create(services);
             desktopApp.MainWindow = new MainWindow() { DataContext = dataContext };
             this.DataContext = dataContext;
         }
