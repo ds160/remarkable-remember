@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace ReMarkableRemember.Services.TabletService.Communication.Interfaces;
 
-public interface IGitHubCommunication : IDisposable
+internal interface IGitHubCommunication : IDisposable
 {
     Task<Byte[]> GetLamyEraserBinary();
 

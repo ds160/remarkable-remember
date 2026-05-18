@@ -1,5 +1,5 @@
 namespace ReMarkableRemember.Services.TabletService.Files.Interfaces;
 
-public interface ITabletFile
+internal interface ITabletFile
 {
 }

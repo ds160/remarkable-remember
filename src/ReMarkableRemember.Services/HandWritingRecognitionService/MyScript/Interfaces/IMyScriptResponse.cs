@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace ReMarkableRemember.Services.HandWritingRecognitionService.MyScript.Interfaces;
 
-public interface IMyScriptResponse : IDisposable
+internal interface IMyScriptResponse : IDisposable
 {
     Boolean RequestTooLarge { get; }
 

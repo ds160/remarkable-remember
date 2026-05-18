@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace ReMarkableRemember.Services.TabletService.Communication.Interfaces;
 
-public interface IUsbCommunication : IDisposable
+internal interface IUsbCommunication : IDisposable
 {
     Task CheckConnection();
 

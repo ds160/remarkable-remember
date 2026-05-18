@@ -4,7 +4,7 @@ using ReMarkableRemember.Settings.Configuration;
 
 namespace ReMarkableRemember.Settings;
 
-public sealed class SettingsService : ServiceBase<SettingsConfiguration>, ISettingsService
+internal sealed class SettingsService : ServiceBase<SettingsConfiguration>, ISettingsService
 {
     public SettingsService(IConfigurationService configurationService)
         : base(configurationService)

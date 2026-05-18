@@ -10,7 +10,7 @@ using ReMarkableRemember.Services.DataService.Models;
 
 namespace ReMarkableRemember.Services.DataService;
 
-public sealed class DataServiceSqlite : IDataService, IDisposable
+internal sealed class DataServiceSqlite : IDataService, IDisposable
 {
     private readonly SqliteConnection connection;
 

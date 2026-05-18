@@ -4,7 +4,7 @@ using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
 
 namespace ReMarkableRemember.Services.HandWritingRecognitionService.MyScript.Interfaces;
 
-public interface IMyScriptCommunication
+internal interface IMyScriptCommunication
 {
     void Configuration(IHandWritingRecognitionConfiguration configuration);
 

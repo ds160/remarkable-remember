@@ -4,7 +4,7 @@ using ReMarkableRemember.Services.TabletService.Configuration;
 
 namespace ReMarkableRemember.Services.TabletService.Communication.Interfaces;
 
-public interface ITabletCommunication : IDisposable
+internal interface ITabletCommunication : IDisposable
 {
     void Configuration(ITabletConfiguration configuration);
 

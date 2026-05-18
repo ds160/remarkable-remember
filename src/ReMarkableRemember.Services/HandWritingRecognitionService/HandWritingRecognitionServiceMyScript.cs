@@ -19,7 +19,7 @@ using ReMarkableRemember.Services.HandWritingRecognitionService.MyScript.Interfa
 
 namespace ReMarkableRemember.Services.HandWritingRecognitionService;
 
-public sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWritingRecognitionConfigurationMyScript>, IHandWritingRecognitionService
+internal sealed class HandWritingRecognitionServiceMyScript : ServiceBase<HandWritingRecognitionConfigurationMyScript>, IHandWritingRecognitionService
 {
     private const Int32 MAX_TASKS = 4;
 

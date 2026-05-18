@@ -7,7 +7,7 @@ using ReMarkableRemember.Services.TabletService.Configuration;
 
 namespace ReMarkableRemember.Services.TabletService.Communication;
 
-public sealed class TabletCommunication : ITabletCommunication
+internal sealed class TabletCommunication : ITabletCommunication
 {
     private const String IP = "10.11.99.1";
     private const Int32 USB_TIMEOUT = 1;

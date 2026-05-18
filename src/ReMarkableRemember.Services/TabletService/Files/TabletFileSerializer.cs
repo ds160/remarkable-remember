@@ -5,7 +5,7 @@ using ReMarkableRemember.Services.TabletService.Files.Interfaces;
 
 namespace ReMarkableRemember.Services.TabletService.Files;
 
-public sealed class TabletFileSerializer : ITabletFileSerializer
+internal sealed class TabletFileSerializer : ITabletFileSerializer
 {
     private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions()
     {

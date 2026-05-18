@@ -2,7 +2,7 @@ using System;
 
 namespace ReMarkableRemember.Services.TabletService.Files.Interfaces;
 
-public interface ITabletFileSerializer
+internal interface ITabletFileSerializer
 {
     T Deserialize<T>(String fileText) where T : struct, ITabletFile;
 

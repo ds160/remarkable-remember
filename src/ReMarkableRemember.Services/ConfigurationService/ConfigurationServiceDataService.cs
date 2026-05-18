@@ -9,7 +9,7 @@ using ReMarkableRemember.Services.DataService.Models;
 
 namespace ReMarkableRemember.Services.ConfigurationService;
 
-public class ConfigurationServiceDataService : IConfigurationService
+internal sealed class ConfigurationServiceDataService : IConfigurationService
 {
     private readonly IDataService dataService;
 

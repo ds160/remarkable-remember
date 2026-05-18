@@ -18,7 +18,7 @@ using ReMarkableRemember.Services.TabletService.Models;
 
 namespace ReMarkableRemember.Services.TabletService;
 
-public sealed partial class TabletService : ServiceBase<TabletConfiguration>, ITabletService
+internal sealed partial class TabletService : ServiceBase<TabletConfiguration>, ITabletService
 {
     private const String PATH_NOTEBOOKS = "/home/root/.local/share/remarkable/xochitl/";
     private const String PATH_OS_RELEASE = "/usr/lib/os-release";

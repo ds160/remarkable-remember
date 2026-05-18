@@ -8,7 +8,7 @@ using ReMarkableRemember.Services.HandWritingRecognitionService.MyScript.Interfa
 
 namespace ReMarkableRemember.Services.HandWritingRecognitionService.MyScript;
 
-public sealed class MyScriptCommunication : IMyScriptCommunication
+internal sealed class MyScriptCommunication : IMyScriptCommunication
 {
     private HandWritingRecognitionConfigurationMyScript? configuration;
 

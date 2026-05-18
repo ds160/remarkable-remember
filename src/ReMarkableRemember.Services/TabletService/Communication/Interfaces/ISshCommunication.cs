@@ -5,7 +5,7 @@ using ReMarkableRemember.Services.TabletService.Files.Interfaces;
 
 namespace ReMarkableRemember.Services.TabletService.Communication.Interfaces;
 
-public interface ISshCommunication : IDisposable
+internal interface ISshCommunication : IDisposable
 {
     Task Connect();
 
