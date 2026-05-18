@@ -50,8 +50,17 @@ internal sealed class TabletCommunication : ITabletCommunication
         await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
 
         SshCommunication ssh = new SshCommunication(String.IsNullOrEmpty(this.configuration.IP) ? IP : this.configuration.IP, this.configuration.Password, this.sshSemaphore);
-        await ssh.Connect().ConfigureAwait(false);
-        return ssh;
+
+        try
+        {
+            await ssh.Connect().ConfigureAwait(false);
+            return ssh;
+        }
+        catch
+        {
+            ssh.Dispose();
+            throw;
+        }
     }
 
     public async Task<IUsbCommunication> Usb()

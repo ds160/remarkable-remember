@@ -28,7 +28,11 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
 
     private String? itemsNotReadable;
 
-    public MainWindowModel(IServices services)
+    public MainWindowModel(IServices services) : this(services, updateScheduler: true)
+    {
+    }
+
+    private MainWindowModel(IServices services, Boolean updateScheduler)
     {
         this.services = services;
 
@@ -62,7 +66,10 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
         this.WhenAnyValue(vm => vm.Jobs).Subscribe(jobs => this.RaisePropertyChanged(nameof(this.JobsText)));
         this.WhenAnyValue(vm => vm.HandWritingRecognitionLanguage).Subscribe(this.SaveHandWritingRecognitionLanguage);
 
-        RxSchedulers.MainThreadScheduler.Schedule(this.Update);
+        if (updateScheduler)
+        {
+            RxSchedulers.MainThreadScheduler.Schedule(this.Update);
+        }
     }
 
     private async Task About()
@@ -326,9 +333,6 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
     {
         while (true)
         {
-            TabletConnectionStatus tabletConnectionStatus = await this.services.Tablet.GetConnectionStatus().ConfigureAwait(true);
-            this.ConnectionStatus = new ConnectionStatusViewModel(tabletConnectionStatus);
-
             Boolean updated = await this.UpdateItems().ConfigureAwait(true);
 
             await Task.Delay(TimeSpan.FromSeconds(updated ? 10 : 1)).ConfigureAwait(true);
@@ -339,6 +343,8 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
     {
         try
         {
+            TabletConnectionStatus tabletConnectionStatus = await this.services.Tablet.GetConnectionStatus().ConfigureAwait(true);
+            this.ConnectionStatus = new ConnectionStatusViewModel(tabletConnectionStatus);
             if (this.ConnectionStatus.CheckJob(Jobs.GetItems))
             {
                 Boolean update = this.Jobs is Jobs.None or Jobs.HandwritingRecognition;
