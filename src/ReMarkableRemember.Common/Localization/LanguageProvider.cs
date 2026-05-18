@@ -19,7 +19,7 @@ internal sealed class LanguageProvider : ILanguageProvider
         };
 
         this.Current = this.defaultLanguage;
-        this.CurrentCode = String.Empty;
+        this.CurrentCode = this.DefaultCode;
     }
 
     public ILocalStrings Current { get; private set; }
@@ -27,6 +27,8 @@ internal sealed class LanguageProvider : ILanguageProvider
     public String CurrentCode { get; private set; }
 
     public IEnumerable<String> SupportedCodes { get { return this.supportedlanguages.Keys; } }
+
+    public String DefaultCode { get { return String.Empty; } }
 
     public void Switch(String code)
     {
@@ -38,7 +40,7 @@ internal sealed class LanguageProvider : ILanguageProvider
         else
         {
             this.Current = this.defaultLanguage;
-            this.CurrentCode = String.Empty;
+            this.CurrentCode = this.DefaultCode;
         }
     }
 }

@@ -9,6 +9,8 @@ public interface ILanguageProvider
 
     String CurrentCode { get; }
 
+    String DefaultCode { get; }
+
     IEnumerable<String> SupportedCodes { get; }
 
     void Switch(String code);

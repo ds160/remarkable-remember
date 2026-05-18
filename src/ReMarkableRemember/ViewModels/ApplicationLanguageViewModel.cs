@@ -51,7 +51,7 @@ public sealed class ApplicationLanguageViewModel
     internal static IEnumerable<ApplicationLanguageViewModel> GetLanguages(String defaultDisplayName)
     {
         List<ApplicationLanguageViewModel> result = languages.ToList();
-        result.Insert(0, new ApplicationLanguageViewModel(String.Empty, defaultDisplayName));
+        result.Insert(0, new ApplicationLanguageViewModel(Language.Provider.DefaultCode, defaultDisplayName));
         return result;
     }
 }
