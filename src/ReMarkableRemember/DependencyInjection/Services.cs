@@ -10,12 +10,12 @@ namespace ReMarkableRemember.DependencyInjection;
 
 internal sealed class Services : IServices
 {
-    public Services(IDataService dataService, IHandWritingRecognitionService handWritingRecognitionService, ISettingsService settingsService, ITabletService tabletService)
+    private Services(IServiceProvider serviceProvider)
     {
-        this.Data = dataService;
-        this.HandWritingRecognition = handWritingRecognitionService;
-        this.Settings = settingsService;
-        this.Tablet = tabletService;
+        this.Data = serviceProvider.GetRequiredService<IDataService>();
+        this.HandWritingRecognition = serviceProvider.GetRequiredService<IHandWritingRecognitionService>();
+        this.Settings = serviceProvider.GetRequiredService<ISettingsService>();
+        this.Tablet = serviceProvider.GetRequiredService<ITabletService>();
     }
 
     public IDataService Data { get; }
@@ -29,7 +29,6 @@ internal sealed class Services : IServices
     public static IServices Create(String[]? args)
     {
         IServiceProvider serviceProvider = new ServiceCollection()
-            .AddSingleton<IServices, Services>()
             .UseConfigurationServiceForSettingsService()
             .UseDataServiceForConfigurationService()
             .UseMyScriptForHandWritingRecognitionService()
@@ -37,6 +36,6 @@ internal sealed class Services : IServices
             .UseTabletService()
             .BuildServiceProvider();
 
-        return serviceProvider.GetRequiredService<IServices>();
+        return new Services(serviceProvider);
     }
 }

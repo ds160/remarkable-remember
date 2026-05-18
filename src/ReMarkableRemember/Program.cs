@@ -1,10 +1,12 @@
 using System;
+using System.Globalization;
+using System.IO;
 using System.Reactive;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using ReactiveUI.Avalonia;
-using ReMarkableRemember.Helper;
+using ReMarkableRemember.Common.FileSystem;
 using ReMarkableRemember.ViewModels;
 using ReMarkableRemember.Views;
 
@@ -33,7 +35,9 @@ public sealed class Program
 
     private static async void ExceptionHandler(Exception exception)
     {
-        Log.Exception(exception);
+        String date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff", CultureInfo.InvariantCulture);
+        String logFilePath = FileSystem.CreateApplicationDataFilePath("logs.txt");
+        File.AppendAllText(logFilePath, $"{date}|ERROR|{exception}{Environment.NewLine}");
 
         IClassicDesktopStyleApplicationLifetime? desktopApp = Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
         if (desktopApp?.MainWindow?.IsVisible == true)

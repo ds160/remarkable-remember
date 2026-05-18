@@ -72,7 +72,7 @@ public sealed class TemplateUploadViewModel : DialogWindowModel
 
     private async Task SetSourceFilePath()
     {
-        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = false, Title = Language.Current.TemplateTitle, FileTypeFilter = new[] { FilePickerFileTypesExtensions.ImagePng, FilePickerFileTypesExtensions.ImageSvg } };
+        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = false, Title = Language.Current.TemplateTitle, FileTypeFilter = new[] { FilePickerTypes.ImagePng, FilePickerTypes.ImageSvg } };
         IEnumerable<String>? files = await this.OpenFilePicker.Handle(options);
         String? file = files?.SingleOrDefault();
         if (file != null)

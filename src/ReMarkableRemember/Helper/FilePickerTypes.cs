@@ -4,7 +4,7 @@ using ReMarkableRemember.Common.Localization;
 
 namespace ReMarkableRemember.Helper;
 
-internal static class FilePickerFileTypesExtensions
+internal static class FilePickerTypes
 {
     public static FilePickerFileType Epub
     {

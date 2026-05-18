@@ -80,7 +80,7 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
             FilePickerSaveOptions options = new FilePickerSaveOptions()
             {
                 DefaultExtension = "pdf",
-                FileTypeChoices = new[] { FilePickerFileTypesExtensions.Pdf },
+                FileTypeChoices = new[] { FilePickerTypes.Pdf },
                 SuggestedFileName = selectedItem.Name
             };
             String? targetPath = await this.OpenSaveFilePicker.Handle(options);
@@ -371,7 +371,7 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
     {
         using Job job = new Job(Jobs.Upload, this);
 
-        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = true, FileTypeFilter = new[] { FilePickerFileTypesExtensions.Pdf, FilePickerFileTypesExtensions.Epub } };
+        FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = true, FileTypeFilter = new[] { FilePickerTypes.Pdf, FilePickerTypes.Epub } };
         IEnumerable<String>? files = await this.OpenFilePicker.Handle(options);
         String? parentId = this.UploadFileParentId();
         foreach (String file in files)
