@@ -1,4 +1,5 @@
 using System;
+using ReMarkableRemember.Services.TabletService.Models.Enumerations;
 
 namespace ReMarkableRemember.Services.TabletService.Models;
 

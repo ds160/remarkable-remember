@@ -1,4 +1,4 @@
-namespace ReMarkableRemember.Services.TabletService.Models;
+namespace ReMarkableRemember.Services.TabletService.Models.Enumerations;
 
 public enum TabletError
 {

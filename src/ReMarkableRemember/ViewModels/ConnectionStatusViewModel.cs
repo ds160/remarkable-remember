@@ -2,6 +2,7 @@ using System;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Services.TabletService.Models;
+using ReMarkableRemember.Services.TabletService.Models.Enumerations;
 using ReMarkableRemember.ViewModels.Enumerations;
 
 namespace ReMarkableRemember.ViewModels;

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.Services.TabletService.Communication.Interfaces;
 using ReMarkableRemember.Services.TabletService.Exceptions;
-using ReMarkableRemember.Services.TabletService.Models;
+using ReMarkableRemember.Services.TabletService.Models.Enumerations;
 
 namespace ReMarkableRemember.Services.TabletService.Communication;
 

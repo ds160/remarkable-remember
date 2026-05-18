@@ -1,3 +1,5 @@
+using ReMarkableRemember.Services.TabletService.Models.Enumerations;
+
 namespace ReMarkableRemember.Services.TabletService.Models;
 
 public sealed class TabletConnectionStatus

@@ -15,6 +15,7 @@ using ReMarkableRemember.Services.TabletService.Exceptions;
 using ReMarkableRemember.Services.TabletService.Files;
 using ReMarkableRemember.Services.TabletService.Files.Interfaces;
 using ReMarkableRemember.Services.TabletService.Models;
+using ReMarkableRemember.Services.TabletService.Models.Enumerations;
 
 namespace ReMarkableRemember.Services.TabletService;
 

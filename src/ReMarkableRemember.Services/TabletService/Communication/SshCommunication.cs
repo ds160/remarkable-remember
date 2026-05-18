@@ -10,7 +10,7 @@ using ReMarkableRemember.Services.TabletService.Communication.Interfaces;
 using ReMarkableRemember.Services.TabletService.Exceptions;
 using ReMarkableRemember.Services.TabletService.Files;
 using ReMarkableRemember.Services.TabletService.Files.Interfaces;
-using ReMarkableRemember.Services.TabletService.Models;
+using ReMarkableRemember.Services.TabletService.Models.Enumerations;
 using Renci.SshNet;
 using Renci.SshNet.Common;
 using Renci.SshNet.Sftp;
