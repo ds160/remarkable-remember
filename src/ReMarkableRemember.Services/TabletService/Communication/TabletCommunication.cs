@@ -40,7 +40,15 @@ internal sealed class TabletCommunication : ITabletCommunication
     {
         await this.gitHubSemaphore.WaitAsync().ConfigureAwait(false);
 
-        return new GitHubCommunication(this.gitHubHttpClient, this.gitHubSemaphore);
+        try
+        {
+            return new GitHubCommunication(this.gitHubHttpClient, this.gitHubSemaphore);
+        }
+        catch
+        {
+            this.gitHubSemaphore.Release();
+            throw;
+        }
     }
 
     public async Task<ISshCommunication> Ssh()
@@ -49,16 +57,15 @@ internal sealed class TabletCommunication : ITabletCommunication
 
         await this.sshSemaphore.WaitAsync().ConfigureAwait(false);
 
-        SshCommunication ssh = new SshCommunication(String.IsNullOrEmpty(this.configuration.IP) ? IP : this.configuration.IP, this.configuration.Password, this.sshSemaphore);
-
         try
         {
+            SshCommunication ssh = new SshCommunication(String.IsNullOrEmpty(this.configuration.IP) ? IP : this.configuration.IP, this.configuration.Password, this.sshSemaphore);
             await ssh.Connect().ConfigureAwait(false);
             return ssh;
         }
         catch
         {
-            ssh.Dispose();
+            this.sshSemaphore.Release();
             throw;
         }
     }
@@ -67,7 +74,15 @@ internal sealed class TabletCommunication : ITabletCommunication
     {
         await this.usbSemaphore.WaitAsync().ConfigureAwait(false);
 
-        return new UsbCommunication(this.usbHttpClient, this.usbHttpClientConnection, this.usbSemaphore);
+        try
+        {
+            return new UsbCommunication(this.usbHttpClient, this.usbHttpClientConnection, this.usbSemaphore);
+        }
+        catch
+        {
+            this.usbSemaphore.Release();
+            throw;
+        }
     }
 
     void IDisposable.Dispose()

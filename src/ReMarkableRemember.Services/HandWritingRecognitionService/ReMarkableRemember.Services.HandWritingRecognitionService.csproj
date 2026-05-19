@@ -4,4 +4,9 @@
     <ProjectReference Include="..\..\ReMarkableRemember.Common\Notebook\ReMarkableRemember.Common.Notebook.csproj" />
     <ProjectReference Include="..\ConfigurationService\ReMarkableRemember.Services.ConfigurationService.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ReMarkableRemember.Services.HandWritingRecognitionService.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
 </Project>

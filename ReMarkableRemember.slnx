@@ -1,14 +1,22 @@
 <Solution>
   <Folder Name="/ReMarkableRemember.Common/">
     <Project Path="src/ReMarkableRemember.Common/FileSystem/ReMarkableRemember.Common.FileSystem.csproj" />
+    <Project Path="tests/ReMarkableRemember.Common/FileSystem/ReMarkableRemember.Common.FileSystem.Tests.csproj" />
     <Project Path="src/ReMarkableRemember.Common/Localization/ReMarkableRemember.Common.Localization.csproj" />
+    <Project Path="tests/ReMarkableRemember.Common/Localization/ReMarkableRemember.Common.Localization.Tests.csproj" />
     <Project Path="src/ReMarkableRemember.Common/Notebook/ReMarkableRemember.Common.Notebook.csproj" />
+    <Project Path="tests/ReMarkableRemember.Common/Notebook/ReMarkableRemember.Common.Notebook.Tests.csproj" />
   </Folder>
   <Folder Name="/ReMarkableRemember.Services/">
     <Project Path="src/ReMarkableRemember.Services/ConfigurationService/ReMarkableRemember.Services.ConfigurationService.csproj" />
+    <Project Path="tests/ReMarkableRemember.Services/ConfigurationService/ReMarkableRemember.Services.ConfigurationService.Tests.csproj" />
     <Project Path="src/ReMarkableRemember.Services/DataService/ReMarkableRemember.Services.DataService.csproj" />
+    <Project Path="tests/ReMarkableRemember.Services/DataService/ReMarkableRemember.Services.DataService.Tests.csproj" />
     <Project Path="src/ReMarkableRemember.Services/HandWritingRecognitionService/ReMarkableRemember.Services.HandWritingRecognitionService.csproj" />
+    <Project Path="tests/ReMarkableRemember.Services/HandWritingRecognitionService/ReMarkableRemember.Services.HandWritingRecognitionService.Tests.csproj" />
     <Project Path="src/ReMarkableRemember.Services/TabletService/ReMarkableRemember.Services.TabletService.csproj" />
+    <Project Path="tests/ReMarkableRemember.Services/TabletService/ReMarkableRemember.Services.TabletService.Tests.csproj" />
   </Folder>
   <Project Path="src/ReMarkableRemember/ReMarkableRemember.csproj" />
+  <Project Path="tests/ReMarkableRemember/ReMarkableRemember.Tests.csproj" />
 </Solution>

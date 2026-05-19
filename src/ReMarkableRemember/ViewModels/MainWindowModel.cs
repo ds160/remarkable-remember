@@ -467,9 +467,9 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
 
     public ItemsTreeViewModel ItemsTree { get; }
 
-    private Boolean HasBackupDirectory { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
+    internal Boolean HasBackupDirectory { get; private set { this.RaiseAndSetIfChanged(ref field, value); } }
 
-    private Jobs Jobs { get; set { this.RaiseAndSetIfChanged(ref field, value); } }
+    internal Jobs Jobs { get; private set { this.RaiseAndSetIfChanged(ref field, value); } }
 
     public String? JobsText { get { return this.Jobs.GetDisplayText(); } }
 

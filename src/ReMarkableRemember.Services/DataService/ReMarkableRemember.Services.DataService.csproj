@@ -10,4 +10,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\ReMarkableRemember.Common\FileSystem\ReMarkableRemember.Common.FileSystem.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ReMarkableRemember.Services.DataService.Tests" />
+    <InternalsVisibleTo Include="ReMarkableRemember.Tests" />
+  </ItemGroup>
 </Project>

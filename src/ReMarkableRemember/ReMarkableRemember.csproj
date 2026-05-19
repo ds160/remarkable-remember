@@ -32,4 +32,8 @@
     <ProjectReference Include="..\ReMarkableRemember.Services\HandWritingRecognitionService\ReMarkableRemember.Services.HandWritingRecognitionService.csproj" />
     <ProjectReference Include="..\ReMarkableRemember.Services\TabletService\ReMarkableRemember.Services.TabletService.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ReMarkableRemember.Tests" />
+  </ItemGroup>
 </Project>

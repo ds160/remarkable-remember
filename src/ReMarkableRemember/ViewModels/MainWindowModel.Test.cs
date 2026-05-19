@@ -17,14 +17,4 @@ public partial class MainWindowModel
     {
         return new Job(job, this);
     }
-
-    internal Jobs GetJobsForTesting()
-    {
-        return this.Jobs;
-    }
-
-    internal void SetJobsForTesting(Jobs jobs)
-    {
-        this.Jobs = jobs;
-    }
 }

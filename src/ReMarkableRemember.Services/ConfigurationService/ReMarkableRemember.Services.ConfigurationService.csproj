@@ -2,4 +2,8 @@
   <ItemGroup>
     <ProjectReference Include="..\DataService\ReMarkableRemember.Services.DataService.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ReMarkableRemember.Services.ConfigurationService.Tests" />
+  </ItemGroup>
 </Project>

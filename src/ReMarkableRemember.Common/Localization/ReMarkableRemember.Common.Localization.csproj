@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <InternalsVisibleTo Include="ReMarkableRemember"/>
+    <InternalsVisibleTo Include="ReMarkableRemember.Common.Localization.Tests"/>
+    <InternalsVisibleTo Include="ReMarkableRemember.Tests"/>
   </ItemGroup>
 </Project>
