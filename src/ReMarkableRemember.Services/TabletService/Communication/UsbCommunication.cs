@@ -15,21 +15,23 @@ namespace ReMarkableRemember.Services.TabletService.Communication;
 
 internal sealed class UsbCommunication : CommunicationBase, IUsbCommunication
 {
-    private readonly HttpClient httpClient;
-    private readonly HttpClient httpClientConnection;
+    private const Int32 USB_TIMEOUT = 1;
 
-    public UsbCommunication(HttpClient httpClient, HttpClient httpClientConnection, SemaphoreSlim semaphore)
+    private readonly HttpClient httpClient;
+    private readonly HttpClient httpClientWithTimeout;
+
+    public UsbCommunication(SemaphoreSlim semaphore)
         : base(semaphore)
     {
-        this.httpClient = httpClient;
-        this.httpClientConnection = httpClientConnection;
+        this.httpClient = new HttpClient() { BaseAddress = new Uri($"http://{IP}") };
+        this.httpClientWithTimeout = new HttpClient() { BaseAddress = new Uri($"http://{IP}"), Timeout = TimeSpan.FromSeconds(USB_TIMEOUT) };
     }
 
     public async Task CheckConnection()
     {
         try
         {
-            await this.httpClientConnection.GetStringAsync("/documents/").ConfigureAwait(false);
+            await this.httpClientWithTimeout.GetStringAsync("/documents/").ConfigureAwait(false);
         }
         catch (Exception exception)
         {
@@ -41,6 +43,8 @@ internal sealed class UsbCommunication : CommunicationBase, IUsbCommunication
     {
         try
         {
+            await this.httpClientWithTimeout.GetStringAsync("/documents/").ConfigureAwait(false);
+
             return await this.httpClient.GetStreamAsync($"/download/{id}/placeholder").ConfigureAwait(false);
         }
         catch (Exception exception)
@@ -53,7 +57,7 @@ internal sealed class UsbCommunication : CommunicationBase, IUsbCommunication
     {
         try
         {
-            await this.httpClient.GetStringAsync($"/documents/{parentId}").ConfigureAwait(false);
+            await this.httpClientWithTimeout.GetStringAsync($"/documents/{parentId}").ConfigureAwait(false);
 
             String fileName = Encoding.GetEncoding("ISO-8859-1").GetString(Encoding.UTF8.GetBytes(file.Name));
             String mediaType = UploadFileCheck(file);
@@ -118,5 +122,11 @@ internal sealed class UsbCommunication : CommunicationBase, IUsbCommunication
             ".EPUB" => "application/epub+zip",
             _ => throw new TabletException(Language.Current.TabletFileTypeNotSupported(file.Extension)),
         };
+    }
+
+    protected sealed override void OnDisposing()
+    {
+        this.httpClient.Dispose();
+        this.httpClientWithTimeout.Dispose();
     }
 }

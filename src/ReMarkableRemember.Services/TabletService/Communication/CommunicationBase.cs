@@ -5,6 +5,8 @@ namespace ReMarkableRemember.Services.TabletService.Communication;
 
 internal abstract class CommunicationBase : IDisposable
 {
+    protected const String IP = "10.11.99.1";
+
     private readonly SemaphoreSlim semaphore;
 
     protected CommunicationBase(SemaphoreSlim semaphore)
@@ -12,8 +14,21 @@ internal abstract class CommunicationBase : IDisposable
         this.semaphore = semaphore;
     }
 
-    public virtual void Dispose()
+    protected abstract void OnDisposing();
+
+    void IDisposable.Dispose()
     {
-        this.semaphore.Release();
+        try
+        {
+            this.OnDisposing();
+        }
+        catch
+        {
+            // Ignore exception
+        }
+        finally
+        {
+            this.semaphore.Release();
+        }
     }
 }

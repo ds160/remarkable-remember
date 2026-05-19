@@ -29,6 +29,8 @@ internal sealed class SshCommunication : CommunicationBase, ISshCommunication
     public SshCommunication(String ip, String password, SemaphoreSlim semaphore)
         : base(semaphore)
     {
+        ip = String.IsNullOrEmpty(ip) ? IP : ip;
+
         this.connectionInfo = new ConnectionInfo(ip, SSH_USER, new PasswordAuthenticationMethod(SSH_USER, password)) { Timeout = TimeSpan.FromSeconds(SSH_TIMEOUT) };
         this.sftpClient = new SftpClient(this.connectionInfo);
     }
@@ -36,14 +38,6 @@ internal sealed class SshCommunication : CommunicationBase, ISshCommunication
     public async Task Connect()
     {
         await Connect(this.sftpClient).ConfigureAwait(false);
-    }
-
-    public sealed override void Dispose()
-    {
-        this.sftpClient.Dispose();
-        this.sshClient?.Dispose();
-
-        base.Dispose();
     }
 
     public async Task Execute(String command, Boolean checkResult = true)
@@ -160,5 +154,11 @@ internal sealed class SshCommunication : CommunicationBase, ISshCommunication
         {
             throw new TabletException(exception.Message, exception);
         }
+    }
+
+    protected sealed override void OnDisposing()
+    {
+        this.sftpClient.Dispose();
+        this.sshClient?.Dispose();
     }
 }

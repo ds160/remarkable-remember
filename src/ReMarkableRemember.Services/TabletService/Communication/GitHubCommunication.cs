@@ -10,10 +10,10 @@ internal sealed class GitHubCommunication : CommunicationBase, IGitHubCommunicat
 {
     private readonly HttpClient httpClient;
 
-    public GitHubCommunication(HttpClient httpClient, SemaphoreSlim semaphore)
+    public GitHubCommunication(SemaphoreSlim semaphore)
         : base(semaphore)
     {
-        this.httpClient = httpClient;
+        this.httpClient = new HttpClient() { BaseAddress = new Uri("https://raw.githubusercontent.com") };
     }
 
     public async Task<Byte[]> GetLamyEraserBinary()
@@ -24,5 +24,10 @@ internal sealed class GitHubCommunication : CommunicationBase, IGitHubCommunicat
     public async Task<String> GetLamyEraserService()
     {
         return await this.httpClient.GetStringAsync("/isaacwisdom/RemarkableLamyEraser/v1/RemarkableLamyEraser/LamyEraser.service").ConfigureAwait(false);
+    }
+
+    protected sealed override void OnDisposing()
+    {
+        this.httpClient.Dispose();
     }
 }
