@@ -8,7 +8,7 @@ on:
       - '*'
 
 jobs:
-  unittests:
+  unit-tests:
     runs-on: ubuntu-latest
     steps:
       -
@@ -16,17 +16,16 @@ jobs:
         uses: actions/checkout@v6
       -
         name: Run Unit Test
-        run: dotnet test --logger trx --results-directory TestResults
+        run: dotnet test -c Release --logger trx
       -
-        name: Upload Test Results
-        uses: actions/upload-artifact@v7
+        name: Publish Test Results
+        if: (!cancelled())
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          name: reMarkableRemember-test-results
-          path: TestResults/
-        if: ${{ always() }}
+          trx_files: "${{ github.workspace }}/**/*.trx"
 
   create-release-on-tag:
-    needs: unittests
+    needs: unit-tests
     runs-on: ubuntu-latest
     outputs:
       release_upload_url: ${{ steps.create_release.outputs.upload_url }}
