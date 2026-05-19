@@ -9,12 +9,17 @@ public partial class MainWindowModel
     internal static MainWindowModel CreateForTesting(IServices services)
     {
         MainWindowModel mainWindowModel = new MainWindowModel(services);
-        mainWindowModel.UpdateItems().Wait();
+        mainWindowModel.UpdateForTesting();
         return mainWindowModel;
     }
 
     internal IJob CreateJobForTesting(Jobs job)
     {
         return new Job(job, this);
+    }
+
+    private async void UpdateForTesting()
+    {
+        await this.UpdateItems().ConfigureAwait(true);
     }
 }

@@ -27,6 +27,12 @@ public abstract class ConfigurationBase : IConfiguration
     internal void Load(IConfigurationService service)
     {
         this.service = service;
-        this.service.Load(this).Wait();
+        this.Load();
+    }
+
+    private async void Load()
+    {
+        if (this.service == null) { throw new InvalidOperationException(); }
+        await this.service.Load(this).ConfigureAwait(false);
     }
 }

@@ -1,8 +1,6 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
@@ -114,23 +112,20 @@ public sealed class MainWindowModelInitialStateTests
     }
 
     [Test]
-    public async Task Constructor_PopulatesItemsTreeFromGetItems()
+    public void Constructor_PopulatesItemsTreeFromGetItems()
     {
-        // UpdateItems only runs when CheckJob(GetItems) passes — that requires a real connection.
         TabletInformation info = new TabletInformation(TabletType.rM2, new Version(3, 0));
         this.fixture.ConnectionStatus = MainWindowModelFixture.MakeStatus(info, null);
         TabletItem doc = new TabletItem("doc-1", "1700000000000", String.Empty, "DocumentType", "MyDoc");
         this.fixture.Items = new TabletItems(new[] { doc }, new System.Collections.Generic.Dictionary<String, Exception>());
 
         MainWindowModel vm = this.fixture.Build();
-        // Update() runs synchronously through ImmediateScheduler; items are loaded inline.
-        await WaitFor(() => vm.ItemsTree.Items.Count > 0);
 
         vm.ItemsTree.Items.Should().ContainSingle().Which.Id.Should().Be("doc-1");
     }
 
     [Test]
-    public async Task Constructor_TrashedItemsAreNotShown()
+    public void Constructor_TrashedItemsAreNotShown()
     {
         TabletInformation info = new TabletInformation(TabletType.rM2, new Version(3, 0));
         this.fixture.ConnectionStatus = MainWindowModelFixture.MakeStatus(info, null);
@@ -139,20 +134,8 @@ public sealed class MainWindowModelInitialStateTests
         this.fixture.Items = new TabletItems(new[] { trashed, live }, new System.Collections.Generic.Dictionary<String, Exception>());
 
         MainWindowModel vm = this.fixture.Build();
-        await WaitFor(() => vm.ItemsTree.Items.Count > 0);
 
         vm.ItemsTree.Items.Select(i => i.Id).Should().BeEquivalentTo(["live-doc"]);
-    }
-
-    private static async Task WaitFor(Func<Boolean> predicate, Int32 timeoutMs = 2000)
-    {
-        Stopwatch sw = Stopwatch.StartNew();
-        while (sw.ElapsedMilliseconds < timeoutMs)
-        {
-            if (predicate()) { return; }
-            await Task.Delay(20);
-        }
-        throw new TimeoutException("Condition not met within the allotted time.");
     }
 }
 
@@ -165,7 +148,6 @@ public sealed class MainWindowModelCanExecuteTests
     public void SetUp()
     {
         this.fixture = new MainWindowModelFixture();
-        // Default to a fully-connected tablet so command-enablement isn't gated by connection state.
         TabletInformation info = new TabletInformation(TabletType.rM2, new Version(3, 2, 1));
         this.fixture.ConnectionStatus = MainWindowModelFixture.MakeStatus(info, null);
     }
@@ -273,27 +255,25 @@ public sealed class MainWindowModelBehaviorTests
     }
 
     [Test]
-    public async Task ShowException_HandlesShowDialogWithErrorMessage()
+    public void ShowException_HandlesShowDialogWithErrorMessage()
     {
         MainWindowModel vm = this.fixture.Build();
         DialogWindowModel? captured = null;
         using IDisposable _ = vm.ShowDialog.RegisterHandler(ctx => { captured = ctx.Input; ctx.SetOutput(false); });
 
         vm.ShowException(new InvalidOperationException("boom"));
-        await WaitFor(() => captured != null);
 
         captured.Should().BeOfType<MessageViewModel>();
         ((MessageViewModel)captured!).Message.Should().Be("boom");
     }
 
     [Test]
-    public async Task SaveHandWritingRecognitionLanguage_SwitchingLanguage_PersistsToConfiguration()
+    public void SaveHandWritingRecognitionLanguage_SwitchingLanguage_PersistsToConfiguration()
     {
         MainWindowModel vm = this.fixture.Build();
         HandWritingRecognitionLanguageViewModel german = vm.HandWritingRecognitionLanguages.Single(l => l.Code == "de_DE");
 
         vm.HandWritingRecognitionLanguage = german;
-        await WaitFor(() => this.fixture.HwrConfiguration.Object.Language == "de_DE");
 
         this.fixture.HwrConfiguration.Object.Language.Should().Be("de_DE");
         this.fixture.HwrConfiguration.Verify(c => c.Save(), Times.AtLeastOnce);
@@ -360,16 +340,5 @@ public sealed class MainWindowModelBehaviorTests
 
         job.Is(Jobs.UploadTemplate).Should().BeTrue();
         job.Is(Jobs.Backup).Should().BeFalse();
-    }
-
-    private static async Task WaitFor(Func<Boolean> predicate, Int32 timeoutMs = 2000)
-    {
-        Stopwatch sw = Stopwatch.StartNew();
-        while (sw.ElapsedMilliseconds < timeoutMs)
-        {
-            if (predicate()) { return; }
-            await Task.Delay(20);
-        }
-        throw new TimeoutException("Condition not met within the allotted time.");
     }
 }
