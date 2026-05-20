@@ -8,6 +8,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using ReactiveUI.Avalonia;
 using ReMarkableRemember.Common.FileSystem;
 using ReMarkableRemember.ViewModels;
+using ReMarkableRemember.Views;
 
 namespace ReMarkableRemember;
 
@@ -39,9 +40,10 @@ public sealed class Program
         File.AppendAllText(logFilePath, $"{date}|ERROR|{exception}{Environment.NewLine}");
 
         Window? mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-        if (mainWindow?.IsVisible == true && mainWindow?.DataContext is MainWindowModel mainWindowModel)
+        if (mainWindow?.IsVisible == true)
         {
-            mainWindowModel.ShowException(exception);
+            DialogWindow dialogWindow = new DialogWindow() { DataContext = MessageViewModel.Error(exception) };
+            dialogWindow.ShowDialog(mainWindow);
         }
     }
 }

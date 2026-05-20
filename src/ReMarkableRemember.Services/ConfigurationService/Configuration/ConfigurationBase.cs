@@ -27,12 +27,24 @@ public abstract class ConfigurationBase : IConfiguration
     internal void Load(IConfigurationService service)
     {
         this.service = service;
-        this.Load();
-    }
 
-    private async void Load()
-    {
-        if (this.service == null) { throw new InvalidOperationException(); }
-        await this.service.Load(this).ConfigureAwait(false);
+        // Workaround to call async load in a sync method and handle exception properly.
+        // Otherwise exception is lost/ignored if "async void" is used.
+        Exception? asyncException = null;
+
+        async void asyncLoad()
+        {
+            try
+            {
+                await this.service.Load(this).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                asyncException = exception;
+            }
+        }
+        asyncLoad();
+
+        if (asyncException != null) { throw asyncException; }
     }
 }

@@ -255,19 +255,6 @@ public sealed class MainWindowModelBehaviorTests
     }
 
     [Test]
-    public void ShowException_HandlesShowDialogWithErrorMessage()
-    {
-        MainWindowModel vm = this.fixture.Build();
-        DialogWindowModel? captured = null;
-        using IDisposable _ = vm.ShowDialog.RegisterHandler(ctx => { captured = ctx.Input; ctx.SetOutput(false); });
-
-        vm.ShowException(new InvalidOperationException("boom"));
-
-        captured.Should().BeOfType<MessageViewModel>();
-        ((MessageViewModel)captured!).Message.Should().Be("boom");
-    }
-
-    [Test]
     public void SaveHandWritingRecognitionLanguage_SwitchingLanguage_PersistsToConfiguration()
     {
         MainWindowModel vm = this.fixture.Build();

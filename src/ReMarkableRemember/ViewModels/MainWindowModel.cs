@@ -294,11 +294,6 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
         return this.WhenAnyValue(vm => vm.Jobs).Select(jobs => jobs is Jobs.None or Jobs.HandwritingRecognition);
     }
 
-    internal async void ShowException(Exception exception)
-    {
-        await this.ShowDialog.Handle(MessageViewModel.Error(exception, this.services));
-    }
-
     private async Task SyncTargetDirectory(String setString)
     {
         ItemViewModel? selectedItem = this.ItemsTree.SelectedItem;
@@ -362,7 +357,7 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
         }
         catch (Exception exception)
         {
-            this.ShowException(exception);
+            await this.ShowDialog.Handle(MessageViewModel.Error(exception, this.services));
         }
 
         this.ItemsTree.Items.Clear();
