@@ -27,7 +27,7 @@ internal sealed class UsbCommunication : CommunicationBase, IUsbCommunication
         this.httpClientWithTimeout = new HttpClient() { BaseAddress = new Uri($"http://{IP}"), Timeout = TimeSpan.FromSeconds(USB_TIMEOUT) };
     }
 
-    public async Task CheckConnection()
+    internal async Task CheckConnection()
     {
         try
         {
@@ -43,8 +43,6 @@ internal sealed class UsbCommunication : CommunicationBase, IUsbCommunication
     {
         try
         {
-            await this.httpClientWithTimeout.GetStringAsync("/documents/").ConfigureAwait(false);
-
             return await this.httpClient.GetStreamAsync($"/download/{id}/placeholder").ConfigureAwait(false);
         }
         catch (Exception exception)

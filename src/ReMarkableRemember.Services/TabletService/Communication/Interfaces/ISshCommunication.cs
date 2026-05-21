@@ -7,8 +7,6 @@ namespace ReMarkableRemember.Services.TabletService.Communication.Interfaces;
 
 internal interface ISshCommunication : IDisposable
 {
-    Task Connect();
-
     Task Execute(String command, Boolean checkResult = true);
 
     Task FileDelete(String path);

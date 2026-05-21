@@ -66,7 +66,9 @@ internal sealed class TabletCommunication : ITabletCommunication
 
         try
         {
-            return new UsbCommunication(this.usbSemaphore);
+            UsbCommunication usb = new UsbCommunication(this.usbSemaphore);
+            await usb.CheckConnection().ConfigureAwait(false);
+            return usb;
         }
         catch
         {

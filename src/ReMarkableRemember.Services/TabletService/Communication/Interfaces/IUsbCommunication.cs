@@ -6,8 +6,6 @@ namespace ReMarkableRemember.Services.TabletService.Communication.Interfaces;
 
 internal interface IUsbCommunication : IDisposable
 {
-    Task CheckConnection();
-
     Task<Stream> Download(String id);
 
     Task Upload(FileInfo file, String? parentId);

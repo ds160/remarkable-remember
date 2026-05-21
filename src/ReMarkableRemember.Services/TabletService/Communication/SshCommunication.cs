@@ -35,7 +35,7 @@ internal sealed class SshCommunication : CommunicationBase, ISshCommunication
         this.sftpClient = new SftpClient(this.connectionInfo);
     }
 
-    public async Task Connect()
+    internal async Task Connect()
     {
         await Connect(this.sftpClient).ConfigureAwait(false);
     }

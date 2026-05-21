@@ -116,7 +116,6 @@ internal sealed partial class TabletService : ServiceBase<TabletConfiguration>, 
         try
         {
             using IUsbCommunication usb = await this.communication.Usb().ConfigureAwait(false);
-            await usb.CheckConnection().ConfigureAwait(false);
         }
         catch (TabletException exception)
         {

@@ -24,7 +24,6 @@ public sealed class TabletServiceConnectionStatusTests
     {
         TabletServiceFixture fixture = new TabletServiceFixture();
         StubInformation(fixture);
-        fixture.Usb.Setup(u => u.CheckConnection()).Returns(Task.CompletedTask);
 
         TabletService service = fixture.Build();
         TabletConnectionStatus status = await service.GetConnectionStatus();
@@ -39,7 +38,7 @@ public sealed class TabletServiceConnectionStatusTests
     public async Task GetConnectionStatus_SshFails_ReturnsStatusWithSshError()
     {
         TabletServiceFixture fixture = new TabletServiceFixture();
-        fixture.Ssh.Setup(s => s.FileReadText(It.IsAny<String>()))
+        fixture.Communication.Setup(c => c.Ssh())
             .ThrowsAsync(new TabletException(TabletError.SshNotConnected, "ssh boom"));
 
         TabletService service = fixture.Build();
@@ -54,7 +53,7 @@ public sealed class TabletServiceConnectionStatusTests
     {
         TabletServiceFixture fixture = new TabletServiceFixture();
         StubInformation(fixture);
-        fixture.Usb.Setup(u => u.CheckConnection())
+        fixture.Communication.Setup(c => c.Usb())
             .ThrowsAsync(new TabletException(TabletError.UsbNotConnected, "usb boom"));
 
         TabletService service = fixture.Build();
