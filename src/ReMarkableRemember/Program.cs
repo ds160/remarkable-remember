@@ -42,7 +42,7 @@ public sealed class Program
         Window? mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
         if (mainWindow?.IsVisible == true)
         {
-            DialogWindow dialogWindow = new DialogWindow() { DataContext = MessageViewModel.Error(exception) };
+            DialogWindow dialogWindow = new DialogWindow() { DataContext = MessageViewModel.ApplicationException(exception) };
             dialogWindow.ShowDialog(mainWindow);
         }
     }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using FluentAssertions;
 using NUnit.Framework;
-using ReMarkableRemember.Helper;
+using ReMarkableRemember.ViewModels.Helper;
 
 namespace ReMarkableRemember.Tests;
 

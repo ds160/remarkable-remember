@@ -21,20 +21,29 @@ public sealed class MessageViewModel : DialogWindowModel
         this.Message = message;
     }
 
+    public IImage Image { get; }
+
+    public String Message { get; }
+
     [Browsable(false)]
-    internal static MessageViewModel Error(Exception exception)
+    internal static MessageViewModel ApplicationException(Exception exception)
     {
         return ErrorCore(exception.Message, imageLoader);
     }
 
-    internal static MessageViewModel Error(Exception exception, IServices services)
+    public static MessageViewModel Error(Exception exception, IServices services)
     {
         return ErrorCore(exception.Message, services.ImageLoader);
     }
 
-    internal static MessageViewModel Error(String message, IServices services)
+    public static MessageViewModel Error(String message, IServices services)
     {
         return ErrorCore(message, services.ImageLoader);
+    }
+
+    public static MessageViewModel Question(String title, String message, IServices services)
+    {
+        return QuestionCore(title, message, services.ImageLoader);
     }
 
     private static MessageViewModel ErrorCore(String message, IImageLoader imageLoader)
@@ -42,17 +51,8 @@ public sealed class MessageViewModel : DialogWindowModel
         return new MessageViewModel(Language.Current.ErrorTitle, message, imageLoader.Svg(IMAGE_ERROR), Language.Current.ButtonOK);
     }
 
-    internal static MessageViewModel Question(String title, String message, IServices services)
-    {
-        return QuestionCore(title, message, services.ImageLoader);
-    }
-
     private static MessageViewModel QuestionCore(String title, String message, IImageLoader imageLoader)
     {
         return new MessageViewModel(title, message, imageLoader.Svg(IMAGE_QUESTION), Language.Current.ButtonYes, Language.Current.ButtonNo);
     }
-
-    public IImage Image { get; }
-
-    public String Message { get; }
 }

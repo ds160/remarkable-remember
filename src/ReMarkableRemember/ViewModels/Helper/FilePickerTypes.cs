@@ -2,7 +2,7 @@ using System;
 using Avalonia.Platform.Storage;
 using ReMarkableRemember.Common.Localization;
 
-namespace ReMarkableRemember.Helper;
+namespace ReMarkableRemember.ViewModels.Helper;
 
 internal static class FilePickerTypes
 {

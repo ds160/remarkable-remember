@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Controls.DataGridHierarchical;
 using Avalonia.Controls.Selection;
 using ReactiveUI;
-using ReMarkableRemember.Helper;
+using ReMarkableRemember.ViewModels.Helper;
 
 namespace ReMarkableRemember.ViewModels;
 

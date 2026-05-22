@@ -8,9 +8,9 @@ using Avalonia.Platform.Storage;
 using ReactiveUI;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.DependencyInjection;
-using ReMarkableRemember.Helper;
 using ReMarkableRemember.Services.DataService.Models;
 using ReMarkableRemember.Services.TabletService.Models;
+using ReMarkableRemember.ViewModels.Helper;
 
 namespace ReMarkableRemember.ViewModels;
 

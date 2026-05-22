@@ -5,7 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 
-namespace ReMarkableRemember.Helper;
+namespace ReMarkableRemember.ViewModels.Helper;
 
 public sealed class OptimizedList<T> : IList<T>, INotifyPropertyChanged, INotifyCollectionChanged
 {
