@@ -16,7 +16,7 @@
     <PackageVersion Include="NUnit" Version="4.6.1" />
     <PackageVersion Include="NUnit.Analyzers" Version="4.14.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="6.2.0" />
-    <PackageVersion Include="ProDataGrid" Version="12.0.0" />
+    <PackageVersion Include="ProDataGrid" Version="12.0.4" />
     <PackageVersion Include="ReactiveUI.Avalonia" Version="12.0.3" />
     <PackageVersion Include="SSH.NET" Version="2025.1.0" />
     <PackageVersion Include="Svg.Controls.Avalonia" Version="12.0.0.13" />
