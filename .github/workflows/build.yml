@@ -147,6 +147,7 @@ jobs:
           asset_content_type: application/octet-stream
 
   build-macos:
+    if: false
     needs: create-release-on-tag
     runs-on: macos-latest
     strategy:
