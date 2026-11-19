@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using ReactiveUI;
+using ReactiveUI.Binding;
 using ReMarkableRemember.ViewModels;
 
 namespace ReMarkableRemember.Views;

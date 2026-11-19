@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
+using ReactiveUI.Binding;
 using ReMarkableRemember.ViewModels;
 
 namespace ReMarkableRemember.Views;

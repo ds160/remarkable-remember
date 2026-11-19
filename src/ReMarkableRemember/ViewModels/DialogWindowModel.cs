@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
+using ReactiveUI.Binding;
+using ReactiveUI.Primitives;
 
 namespace ReMarkableRemember.ViewModels;
 
@@ -23,9 +24,9 @@ public abstract class DialogWindowModel : ViewModelBase
         this.Title = title;
     }
 
-    public ReactiveCommand<Unit, Boolean> CommandCancel { get; }
+    public ReactiveCommand<RxVoid, Boolean> CommandCancel { get; }
 
-    public ReactiveCommand<Unit, Boolean> CommandClose { get; }
+    public ReactiveCommand<RxVoid, Boolean> CommandClose { get; }
 
     public Object Content { get { return this; } }
 

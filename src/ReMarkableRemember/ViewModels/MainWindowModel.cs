@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Platform.Storage;
-using DynamicData.Binding;
 using ReactiveUI;
+using ReactiveUI.Binding;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.DependencyInjection;
 using ReMarkableRemember.Services.DataService.Models;
@@ -67,7 +66,7 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
     public static MainWindowModel Create(IServices services)
     {
         MainWindowModel mainWindowModel = new MainWindowModel(services);
-        RxSchedulers.MainThreadScheduler.Schedule(mainWindowModel.Update);
+        RxSchedulers.MainThreadScheduler.Schedule(new UpdateSchedule(mainWindowModel));
         return mainWindowModel;
     }
 
@@ -234,7 +233,7 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
 
                 observer.OnNext(selectedItem?.CanOpen() == true);
 
-                selectedItemObservable = selectedItem?.WhenAnyPropertyChanged().Subscribe(item => observer.OnNext(item?.CanOpen() == true));
+                selectedItemObservable = selectedItem?.Changed.Subscribe(_ => observer.OnNext(selectedItem?.CanOpen() == true));
             });
         });
     }
@@ -324,16 +323,6 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
         return Observable.CombineLatest(jobs, treeSelection, (value1, value2) => value1 && value2);
     }
 
-    private async void Update()
-    {
-        while (true)
-        {
-            Boolean updated = await this.UpdateItems().ConfigureAwait(true);
-
-            await Task.Delay(TimeSpan.FromSeconds(updated ? 10 : 1)).ConfigureAwait(true);
-        }
-    }
-
     private async Task<Boolean> UpdateItems()
     {
         try
@@ -380,6 +369,8 @@ public sealed partial class MainWindowModel : ViewModelBase, IAppModel
 
         FilePickerOpenOptions options = new FilePickerOpenOptions() { AllowMultiple = true, FileTypeFilter = new[] { FilePickerTypes.Pdf, FilePickerTypes.Epub } };
         IEnumerable<String>? files = await this.OpenFilePicker.Handle(options);
+        if (files is null) { return; }
+
         String? parentId = this.UploadFileParentId();
         foreach (String file in files)
         {

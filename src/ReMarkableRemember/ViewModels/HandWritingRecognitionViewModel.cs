@@ -1,8 +1,8 @@
 using System;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ReactiveUI;
+using ReactiveUI.Binding;
 using ReMarkableRemember.Common.Localization;
 
 namespace ReMarkableRemember.ViewModels;

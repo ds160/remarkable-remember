@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ReactiveUI;
+using ReactiveUI.Binding;
 using ReMarkableRemember.Common.Localization;
 using ReMarkableRemember.DependencyInjection;
 using ReMarkableRemember.Services.HandWritingRecognitionService.Configuration;
